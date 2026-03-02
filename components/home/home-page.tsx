@@ -3,16 +3,11 @@
 
 import { Header } from "@/components/navigation/header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
-import { PhilosopherCard } from "@/components/home/philosopher-card";
-import { philosophers } from "@/lib/data";
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { PhilosophersList } from "@/components/home/philosophers-list";
 
 const categories = ["전체 보기", "스토아 철학", "동양 사상", "현대 철학"];
 
 export function HomePage() {
-  const [selectedCategory, setSelectedCategory] = useState("전체 보기");
-
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
       <Header title="지혜의 다리" />
@@ -39,12 +34,7 @@ export function HomePage() {
             {categories.map((category) => (
               <button
                 key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`flex-none px-5 py-2.5 rounded-full border font-serif text-sm whitespace-nowrap transition-colors ${
-                  selectedCategory === category
-                    ? "border-primary/20 bg-stone-100 text-foreground"
-                    : "border-primary/20 bg-transparent text-muted hover:bg-stone-50 hover:text-foreground"
-                }`}
+                className="flex-none px-5 py-2.5 rounded-full border font-serif text-sm whitespace-nowrap transition-colors border-primary/20 bg-transparent text-muted hover:bg-stone-50 hover:text-foreground"
               >
                 {category}
               </button>
@@ -53,27 +43,7 @@ export function HomePage() {
         </div>
 
         {/* Content Cards */}
-        <div className="w-full space-y-8">
-          {philosophers.map((philosopher, index) => (
-            <motion.div
-              key={philosopher.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <PhilosopherCard
-                philosopher={philosopher}
-                description={
-                  [
-                    "내면의 요새를 지키는 법",
-                    "물처럼 부드럽게 흐르는 삶",
-                    "시간의 짧음에 대하여",
-                  ][index]
-                }
-              />
-            </motion.div>
-          ))}
-        </div>
+        <PhilosophersList />
 
         <div className="mt-12 mb-4 text-center">
           <button className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors font-medium border-b border-transparent hover:border-foreground pb-0.5">
