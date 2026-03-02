@@ -2,7 +2,7 @@
 "use client";
 
 import { Philosopher } from "@/types";
-import { Landscape, WaterDrop, MenuBook } from "lucide-react";
+import { Mountain, WaterDrop, MenuBook } from "lucide-react";
 
 interface PhilosopherCardProps {
   philosopher: Philosopher;
@@ -14,7 +14,7 @@ export function PhilosopherCard({ philosopher, description, onClick }: Philosoph
   const getIcon = (id: string) => {
     switch (id) {
       case "marcus-aurelius":
-        return Landscape;
+        return Mountain;
       case "laozi":
         return WaterDrop;
       default:
