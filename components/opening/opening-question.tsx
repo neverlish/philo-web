@@ -2,7 +2,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Spa } from "lucide-react";
+import { Leaf } from "lucide-react";
 import { useEffect } from "react";
 
 export function OpeningQuestion() {
@@ -34,7 +34,7 @@ export function OpeningQuestion() {
       {/* Main content */}
       <main className="flex-1 flex flex-col justify-center items-center w-full max-w-md px-8 z-10">
         <div className="mb-10 opacity-80">
-          <Spa className="w-16 h-16 text-primary mx-auto" strokeWidth={1} />
+          <Leaf className="w-16 h-16 text-primary mx-auto" strokeWidth={1} />
         </div>
 
         <h1 className="text-3xl md:text-4xl font-bold leading-tight text-center text-foreground mb-16 tracking-tight font-serif">
