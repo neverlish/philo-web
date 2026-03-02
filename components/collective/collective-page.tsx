@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ParticleCanvas } from "@/components/animations/particle-canvas";
+import { BottomNav } from "@/components/navigation/bottom-nav";
 import { Heart, MessageCircle, Share2 } from "lucide-react";
 
 interface CollectiveThought {
@@ -209,6 +210,8 @@ export function CollectivePage() {
       >
         <span className="material-symbols-outlined">add</span>
       </motion.button>
+
+      <BottomNav />
     </div>
   );
 }

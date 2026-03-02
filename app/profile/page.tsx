@@ -65,7 +65,7 @@ export default function ProfilePage() {
                 className="w-full flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:border-primary/30 transition-colors"
               >
                 <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-5 h-5 text-muted" />
+                  <Icon className="w-5 h-5 text-foreground" strokeWidth={1.5} />
                 </div>
                 <div className="flex-1 text-left">
                   <p className="text-sm font-medium text-foreground mb-0.5">
