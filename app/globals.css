@@ -6,7 +6,8 @@
 
 @layer base {
   body {
-    @apply bg-background text-foreground;
+    background-color: #F9F7F2;
+    color: #2C2420;
   }
   .material-symbols-outlined {
     font-family: 'Material Symbols Outlined';
