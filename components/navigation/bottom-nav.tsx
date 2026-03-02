@@ -1,7 +1,7 @@
 // components/navigation/bottom-nav.tsx
 "use client";
 
-import { Home, Book, Group, Person, Bookmark } from "lucide-react";
+import { Home, Book, Group, User, Bookmark } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -10,7 +10,7 @@ const navItems = [
   { href: "/journal", label: "저널", icon: Book, filled: false },
   { href: "/collective", label: "모두의 생각", icon: Group, filled: false },
   { href: "/saved", label: "저장", icon: Bookmark, filled: false },
-  { href: "/profile", label: "프로필", icon: Person, filled: false },
+  { href: "/profile", label: "프로필", icon: User, filled: false },
 ];
 
 export function BottomNav() {
