@@ -2,7 +2,7 @@
 "use client";
 
 import { Philosopher } from "@/types";
-import { Mountain, Droplet, MenuBook } from "lucide-react";
+import { Mountain, Droplet, Book } from "lucide-react";
 
 interface PhilosopherCardProps {
   philosopher: Philosopher;
@@ -18,7 +18,7 @@ export function PhilosopherCard({ philosopher, description, onClick }: Philosoph
       case "laozi":
         return Droplet;
       default:
-        return MenuBook;
+        return Book;
     }
   };
 
