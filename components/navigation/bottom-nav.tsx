@@ -1,13 +1,13 @@
 // components/navigation/bottom-nav.tsx
 "use client";
 
-import { Home, MenuBook, Groups, Person, Bookmark } from "lucide-react";
+import { Home, Book, Groups, Person, Bookmark } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/", label: "홈", icon: Home, filled: true },
-  { href: "/journal", label: "저널", icon: MenuBook, filled: false },
+  { href: "/journal", label: "저널", icon: Book, filled: false },
   { href: "/collective", label: "모두의 생각", icon: Groups, filled: false },
   { href: "/saved", label: "저장", icon: Bookmark, filled: false },
   { href: "/profile", label: "프로필", icon: Person, filled: false },
