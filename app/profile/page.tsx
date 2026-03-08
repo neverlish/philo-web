@@ -1,11 +1,20 @@
 // app/profile/page.tsx
-"use client";
-
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { Header } from "@/components/navigation/header";
+import { LoginPrompt } from "@/components/auth/LoginPrompt";
+import { createClient } from "@/lib/supabase/server-auth";
 import { Settings, Bell, HelpCircle, Shield } from "lucide-react";
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
+    return <LoginPrompt message="프로필을 보려면 로그인이 필요해요" />;
+  }
+
+  const user = session.user;
+
   const menuItems = [
     { icon: Bell, label: "알림 설정", description: "푸시 알림 관리" },
     { icon: HelpCircle, label: "도움말", description: "앱 사용 가이드" },
@@ -21,17 +30,25 @@ export default function ProfilePage() {
         {/* Profile Section */}
         <div className="w-full py-6 mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-3xl text-primary">
-                person
-              </span>
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center overflow-hidden">
+              {user.user_metadata?.avatar_url ? (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="material-symbols-outlined text-3xl text-primary">
+                  person
+                </span>
+              )}
             </div>
             <div className="flex-1">
               <h2 className="text-lg font-medium text-foreground mb-1">
-                철학하는 사람
+                {user.user_metadata?.full_name || user.user_metadata?.name || '철학하는 사람'}
               </h2>
               <p className="text-sm text-muted">
-                2024년 3월 1일 가입
+                {user.email}
               </p>
             </div>
           </div>

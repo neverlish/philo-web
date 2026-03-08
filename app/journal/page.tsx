@@ -1,10 +1,16 @@
 // app/journal/page.tsx
-"use client";
-
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { Header } from "@/components/navigation/header";
+import { LoginPrompt } from "@/components/auth/LoginPrompt";
+import { createClient } from "@/lib/supabase/server-auth";
 
-export default function JournalPage() {
+export default async function JournalPage() {
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
+    return <LoginPrompt message="일기를 작성하려면 로그인이 필요해요" />;
+  }
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
       <Header title="저널" />
