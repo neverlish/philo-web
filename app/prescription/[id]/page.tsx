@@ -3,8 +3,9 @@ import { PrescriptionDetail } from "@/components/prescription/prescription-detai
 import { prescriptions } from "@/lib/data";
 import { notFound } from "next/navigation";
 
-export default function PrescriptionPage({ params }: { params: { id: string } }) {
-  const prescription = prescriptions.find((p) => p.id === params.id);
+export default async function PrescriptionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const prescription = prescriptions.find((p) => p.id === id);
 
   if (!prescription) {
     notFound();

@@ -6,14 +6,15 @@ export const dynamic = 'force-dynamic'
 
 // GET /api/philosophers/[id] - 철학자 상세 조회
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const { data: philosopher, error: philosopherError } = await supabase
       .from('philosophers')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (philosopherError) throw philosopherError
@@ -22,7 +23,7 @@ export async function GET(
     const { data: quotes, error: quotesError } = await supabase
       .from('quotes')
       .select('*')
-      .eq('philosopher_id', params.id)
+      .eq('philosopher_id', id)
       .order('created_at', { ascending: false })
 
     if (quotesError) throw quotesError
