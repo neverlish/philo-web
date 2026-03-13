@@ -34,7 +34,7 @@ interface MockQueryBuilder {
 }
 
 // Mock data store
-let mockData = {
+let mockData: Record<string, any[]> = {
   philosophers: [],
   quotes: [],
   concerns: [],
@@ -60,7 +60,7 @@ export function resetMockData() {
 // Set mock data
 export function setMockData(table: string, data: any[]) {
   if (table in mockData) {
-    mockData[table as keyof typeof mockData] = data
+    mockData[table] = data
   }
 }
 
@@ -102,11 +102,12 @@ function createMockQueryBuilder(table: string): MockQueryBuilder {
 
     // Apply sorting
     if (orderBy) {
+      const order = orderBy
       data.sort((a, b) => {
-        const aVal = a[orderBy.column]
-        const bVal = b[orderBy.column]
-        if (aVal < bVal) return orderBy.ascending ? -1 : 1
-        if (aVal > bVal) return orderBy.ascending ? 1 : -1
+        const aVal = a[order.column]
+        const bVal = b[order.column]
+        if (aVal < bVal) return order.ascending ? -1 : 1
+        if (aVal > bVal) return order.ascending ? 1 : -1
         return 0
       })
     }
@@ -138,7 +139,7 @@ function createMockQueryBuilder(table: string): MockQueryBuilder {
     },
     insert: (newData: any) => {
       const item = Array.isArray(newData) ? newData : [newData]
-      mockData[table as keyof typeof mockData].push(...item)
+      ;(mockData[table] ??= []).push(...item)
       return createMockQueryBuilder(table)
     },
     update: (updates: any) => {

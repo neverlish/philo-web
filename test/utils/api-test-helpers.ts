@@ -5,7 +5,7 @@ import { NextRequest } from 'next/server'
  */
 export function createMockRequest(url: string, init?: RequestInit): NextRequest {
   const urlObj = new URL(url, 'http://localhost:3000')
-  return new NextRequest(urlObj, init)
+  return new NextRequest(urlObj, init as any)
 }
 
 /**

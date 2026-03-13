@@ -17,7 +17,7 @@ export async function fetchQuotes(params?: {
   const url = new URL('/api/quotes', window.location.origin)
   if (params?.category) url.searchParams.set('category', params.category)
   if (params?.concern) url.searchParams.set('concern', params.concern)
-  if (params?.philosopher_id) url.searchParams.set('philosopher_id', params.phosopher_id)
+  if (params?.philosopher_id) url.searchParams.set('philosopher_id', params.philosopher_id)
   if (params?.today) url.searchParams.set('today', 'true')
 
   const response = await fetch(url.toString())

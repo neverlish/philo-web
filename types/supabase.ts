@@ -37,6 +37,7 @@ export type Database = {
           text?: string
           updated_at?: string | null
         }
+        Relationships: []
       }
       philosophers: {
         Row: {
@@ -84,6 +85,7 @@ export type Database = {
           updated_at?: string | null
           years?: string | null
         }
+        Relationships: []
       }
       quotes: {
         Row: {
@@ -125,6 +127,7 @@ export type Database = {
           text?: string
           updated_at?: string | null
         }
+        Relationships: []
       }
       user_read_quotes: {
         Row: {
@@ -145,6 +148,7 @@ export type Database = {
           read_at?: string | null
           user_id?: string
         }
+        Relationships: []
       }
       user_saved_philosophers: {
         Row: {
@@ -165,6 +169,7 @@ export type Database = {
           philosopher_id?: string
           user_id?: string
         }
+        Relationships: []
       }
       user_saved_quotes: {
         Row: {
@@ -185,6 +190,7 @@ export type Database = {
           quote_id?: string
           user_id?: string
         }
+        Relationships: []
       }
       users: {
         Row: {
@@ -217,7 +223,10 @@ export type Database = {
           onboarded?: boolean | null
           updated_at?: string | null
         }
+        Relationships: []
       }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
   }
 }

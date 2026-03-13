@@ -34,7 +34,7 @@ export async function getQuotes(params?: {
     .order('created_at', { ascending: false })
 
   if (params?.category) query = query.eq('category', params.category)
-  if (params?.philosopher_id) query = query.eq('philosopher_id', params.phosopher_id)
+  if (params?.philosopher_id) query = query.eq('philosopher_id', params.philosopher_id)
   if (params?.today) {
     const todayDate = new Date().toISOString().split('T')[0]
     query = query.eq('date_scheduled', todayDate).limit(1)
