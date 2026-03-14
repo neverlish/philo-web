@@ -17,7 +17,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="border-t border-border bg-background/95 backdrop-blur-lg px-6 py-4 sticky bottom-0">
+    <nav className="border-t border-border bg-background/95 backdrop-blur-lg px-6 py-3 sticky bottom-0">
       <div className="flex justify-between items-center max-w-md mx-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -27,28 +27,22 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1.5 transition-colors ${
+              aria-label={item.label}
+              className={`flex items-center justify-center transition-colors ${
                 isActive ? "text-primary" : "text-muted hover:text-foreground"
               }`}
             >
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                  isActive && item.filled ? "bg-primary/10" : ""
+                  isActive ? "bg-primary/10" : ""
                 }`}
               >
                 <Icon
-                  className="w-6 h-6"
-                  strokeWidth={isActive && item.filled ? 2.5 : 1.5}
+                  className="w-5 h-5"
+                  strokeWidth={isActive ? 2.5 : 1.5}
                   fill={isActive && item.filled ? "currentColor" : "none"}
                 />
               </div>
-              <span
-                className={`text-[10px] tracking-wider uppercase font-medium ${
-                  isActive ? "font-bold" : ""
-                }`}
-              >
-                {item.label}
-              </span>
             </Link>
           );
         })}
