@@ -1,7 +1,7 @@
 // components/home/home-page.tsx
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
@@ -14,9 +14,14 @@ const categories = ["전체 보기", "스토아 철학", "동양 사상", "현�
 export function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    if (loading || !user) return;
+    if (loading) return;
+    if (!user) {
+      setChecking(false);
+      return;
+    }
 
     const today = new Date().toISOString().split("T")[0];
     supabase
@@ -28,9 +33,13 @@ export function HomePage() {
       .then(({ data }) => {
         if (!data) {
           router.push("/opening");
+        } else {
+          setChecking(false);
         }
       });
   }, [user, loading, router]);
+
+  if (checking) return null;
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
