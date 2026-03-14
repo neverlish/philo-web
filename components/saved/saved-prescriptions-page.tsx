@@ -6,62 +6,9 @@ import { BottomNav } from "@/components/navigation/bottom-nav";
 import { SavedCard, SavedPrescription } from "@/components/saved/saved-card";
 import { Header } from "@/components/navigation/header";
 
-const mockSavedPrescriptions: SavedPrescription[] = [
-  {
-    id: "1",
-    philosopher: "마르쿠스 아우렐리우스",
-    philosopherId: "marcus-aurelius",
-    title: "내면의 요새를 지키는 법",
-    excerpt:
-      "외부의 혼란이 내면의 평화를 흔들게 하지 마라. 너의 힘으로 통제할 수 없는 것에 대해 걱정하는 대신, 너 자신을 향해 나아가라.",
-    savedAt: "2024년 3월 1일",
-    category: "스토아 철학",
-  },
-  {
-    id: "2",
-    philosopher: "장자",
-    philosopherId: "zhuangzi",
-    title: "물처럼 부드럽게 흐르는 삶",
-    excerpt:
-      "물은 가장 부드러운 것이면서 가장 강한 힘을 가지고 있다. 어떤 장애물도 물을 막을 수 없다. 물처럼 유연하게 살아가라.",
-    savedAt: "2024년 2월 28일",
-    category: "동양 사상",
-  },
-  {
-    id: "3",
-    philosopher: "세네카",
-    philosopherId: "seneca",
-    title: "시간의 짧음에 대하여",
-    excerpt:
-      "시간이 부족한 것이 아니라, 우리가 시간을 낭비하고 있을 뿐이다. 소유한 시간을 현명하게 사용하라. 인생은 짧지만, 충분히 길다.",
-    savedAt: "2024년 2월 25일",
-    category: "스토아 철학",
-  },
-  {
-    id: "4",
-    philosopher: "노자",
-    philosopherId: "laozi",
-    title: "무위의 지혜",
-    excerpt:
-      "하는 것이 없는 것이 모든 것을 하는 것이다. 강요하지 말고 흐름에 맡겨라. 자연의 이치에 따르면 모든 것이 저절로 이루어진다.",
-    savedAt: "2024년 2월 20일",
-    category: "동양 사상",
-  },
-  {
-    id: "5",
-    philosopher: "에피쿠로스",
-    philosopherId: "epicurus",
-    title: "행복의 네 가지 재료",
-    excerpt:
-      "행복한 삶을 위해서는 다음이 필요하다: 훌륭한 친구, 자유, 사색, 그리고 단순한 음식. 이것이 에피쿠로스가 말한 진정한 쾌락이다.",
-    savedAt: "2024년 2월 15일",
-    category: "고대 철학",
-  },
-];
-
-export function SavedPrescriptionsPage() {
+export function SavedPrescriptionsPage({ savedPrescriptions: initialPrescriptions }: { savedPrescriptions: SavedPrescription[] }) {
   const [savedPrescriptions, setSavedPrescriptions] = useState<SavedPrescription[]>(
-    mockSavedPrescriptions
+    initialPrescriptions
   );
   const [filter, setFilter] = useState<"all" | "stoic" | "eastern" | "modern">("all");
 
