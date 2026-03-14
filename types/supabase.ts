@@ -9,6 +9,60 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      collective_post_likes: {
+        Row: {
+          id: string
+          user_id: string
+          post_id: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          post_id: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          post_id?: string
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      collective_posts: {
+        Row: {
+          id: string
+          user_id: string
+          content: string
+          philosopher_name: string | null
+          prescription_id: string | null
+          author_name: string
+          likes_count: number
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          content: string
+          philosopher_name?: string | null
+          prescription_id?: string | null
+          author_name: string
+          likes_count?: number
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          content?: string
+          philosopher_name?: string | null
+          prescription_id?: string | null
+          author_name?: string
+          likes_count?: number
+          created_at?: string | null
+        }
+        Relationships: []
+      }
       ai_prescriptions: {
         Row: {
           id: string
