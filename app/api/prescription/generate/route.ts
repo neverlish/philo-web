@@ -37,55 +37,87 @@ ${PHILOSOPHER_CONTEXT}
   "subtitle": "처방 부제 - 관점 또는 방향 제시 (20자 이내)"
 }`
 
+interface ClaudeResponse {
+  philosopher: { name: string; school: string; era: string }
+  quote: { text: string; meaning: string; application: string }
+  title: string
+  subtitle: string
+}
+
 export async function POST(request: Request) {
-  const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  try {
+    const supabase = await createClient()
+    const { data: { session } } = await supabase.auth.getSession()
 
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-  const body = await request.json()
-  const { concern, conversationId } = body
+    let body: { concern?: string; conversationId?: string }
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
 
-  if (!concern) {
-    return NextResponse.json({ error: 'concern is required' }, { status: 400 })
-  }
+    const { concern, conversationId } = body
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    if (!concern) {
+      return NextResponse.json({ error: 'concern is required' }, { status: 400 })
+    }
 
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 1024,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: `나의 고민: ${concern}` }],
-  })
+    if (concern.length > 1000) {
+      return NextResponse.json({ error: 'concern must be 1000 characters or less' }, { status: 400 })
+    }
 
-  const responseText = message.content[0].type === 'text' ? message.content[0].text : ''
-  const parsed = JSON.parse(responseText)
+    const anthropicApiKey = process.env.ANTHROPIC_API_KEY
+    if (!anthropicApiKey) {
+      throw new Error('ANTHROPIC_API_KEY environment variable is not set')
+    }
+    const anthropic = new Anthropic({ apiKey: anthropicApiKey })
 
-  const { data, error } = await supabase
-    .from('ai_prescriptions')
-    .insert({
-      user_id: session.user.id,
-      conversation_id: conversationId || null,
-      concern,
-      philosopher_name: parsed.philosopher.name,
-      philosopher_school: parsed.philosopher.school,
-      philosopher_era: parsed.philosopher.era,
-      quote_text: parsed.quote.text,
-      quote_meaning: parsed.quote.meaning,
-      quote_application: parsed.quote.application,
-      title: parsed.title,
-      subtitle: parsed.subtitle,
+    const message = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: `나의 고민: ${concern}` }],
     })
-    .select('id')
-    .single()
 
-  if (error) {
-    console.error('DB insert error:', error)
-    return NextResponse.json({ error: 'Failed to save prescription' }, { status: 500 })
+    const responseText = message.content[0].type === 'text' ? message.content[0].text : ''
+    let parsed: ClaudeResponse
+    try {
+      parsed = JSON.parse(responseText)
+    } catch {
+      console.error('Failed to parse Claude response:', responseText)
+      return NextResponse.json({ error: 'Failed to generate prescription' }, { status: 500 })
+    }
+
+    const { data, error } = await supabase
+      .from('ai_prescriptions')
+      .insert({
+        user_id: session.user.id,
+        conversation_id: conversationId || null,
+        concern,
+        philosopher_name: parsed.philosopher.name,
+        philosopher_school: parsed.philosopher.school,
+        philosopher_era: parsed.philosopher.era,
+        quote_text: parsed.quote.text,
+        quote_meaning: parsed.quote.meaning,
+        quote_application: parsed.quote.application,
+        title: parsed.title,
+        subtitle: parsed.subtitle,
+      })
+      .select('id')
+      .single()
+
+    if (error) {
+      console.error('DB insert error:', error)
+      return NextResponse.json({ error: 'Failed to save prescription' }, { status: 500 })
+    }
+
+    return NextResponse.json({ prescriptionId: data.id })
+  } catch (error) {
+    console.error('Prescription generation error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-
-  return NextResponse.json({ prescriptionId: data.id })
 }

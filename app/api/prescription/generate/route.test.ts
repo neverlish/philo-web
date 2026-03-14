@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+process.env.ANTHROPIC_API_KEY = 'test-api-key'
+
 const mockCreate = vi.fn().mockResolvedValue({
   content: [
     {
@@ -92,5 +94,44 @@ describe('POST /api/prescription/generate', () => {
     const body = await response.json()
     expect(body).toHaveProperty('prescriptionId')
     expect(body.prescriptionId).toBe('prescription-abc')
+  })
+
+  it('should return 400 if concern exceeds 1000 characters', async () => {
+    const { POST } = await import('./route')
+    const request = new Request('http://localhost:3000/api/prescription/generate', {
+      method: 'POST',
+      body: JSON.stringify({ concern: 'a'.repeat(1001), conversationId: 'conv-123' }),
+    })
+    const response = await POST(request)
+    expect(response.status).toBe(400)
+  })
+
+  it('should return 500 if DB insert fails', async () => {
+    const { createClient } = await import('@/lib/supabase/server-auth')
+    vi.mocked(createClient).mockResolvedValueOnce({
+      auth: {
+        getSession: vi.fn().mockResolvedValue({
+          data: { session: { user: { id: 'user-123' } } },
+        }),
+      },
+      from: vi.fn().mockReturnValue({
+        insert: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: null,
+              error: { message: 'DB error' },
+            }),
+          }),
+        }),
+      }),
+    } as any)
+
+    const { POST } = await import('./route')
+    const request = new Request('http://localhost:3000/api/prescription/generate', {
+      method: 'POST',
+      body: JSON.stringify({ concern: '테스트 고민', conversationId: 'conv-123' }),
+    })
+    const response = await POST(request)
+    expect(response.status).toBe(500)
   })
 })
