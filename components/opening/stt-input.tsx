@@ -8,8 +8,10 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase/client";
 
+type Status = "idle" | "listening" | "done" | "noInput";
+
 export function STTInput() {
-  const [isListening, setIsListening] = useState(false);
+  const [status, setStatus] = useState<Status>("idle");
   const [transcript, setTranscript] = useState("");
   const transcriptRef = useRef("");
   const router = useRouter();
@@ -31,37 +33,45 @@ export function STTInput() {
     }
   };
 
+  const skip = () => {
+    saveCheckIn("").finally(() => {
+      router.push("/");
+    });
+  };
+
   const startListening = () => {
-    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) return;
 
-      recognition.lang = "ko-KR";
-      recognition.continuous = false;
-      recognition.interimResults = true;
+    transcriptRef.current = "";
+    setTranscript("");
 
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
 
-      recognition.onresult = (event: any) => {
-        const result = event.results[0][0].transcript;
-        transcriptRef.current = result;
-        setTranscript(result);
-      };
+    recognition.lang = "ko-KR";
+    recognition.continuous = false;
+    recognition.interimResults = true;
 
-      recognition.onend = () => {
-        setIsListening(false);
-        // Save check-in and auto proceed after 2 seconds
-        saveCheckIn(transcriptRef.current).finally(() => {
-          setTimeout(() => {
-            router.push("/");
-          }, 2000);
-        });
-      };
+    recognition.onstart = () => setStatus("listening");
 
-      recognition.start();
-    }
+    recognition.onresult = (event: any) => {
+      const result = event.results[0][0].transcript;
+      transcriptRef.current = result;
+      setTranscript(result);
+    };
+
+    recognition.onend = () => {
+      if (!transcriptRef.current) {
+        setStatus("noInput");
+        return;
+      }
+      setStatus("done");
+      saveCheckIn(transcriptRef.current).finally(() => {
+        setTimeout(() => router.push("/"), 2000);
+      });
+    };
+
+    recognition.start();
   };
 
   return (
@@ -75,8 +85,8 @@ export function STTInput() {
         </div>
       </div>
 
-      {/* Dissolving Text Container */}
-      <div className="relative mb-20">
+      {/* Text Container */}
+      <div className="relative mb-20 min-h-[80px] flex items-center justify-center">
         {transcript ? (
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -85,6 +95,14 @@ export function STTInput() {
           >
             {transcript}
           </motion.h1>
+        ) : status === "noInput" ? (
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-lg text-muted leading-relaxed"
+          >
+            목소리가 들리지 않았어요.<br />다시 한번 말씀해주세요.
+          </motion.p>
         ) : (
           <motion.h1
             initial={{ opacity: 1 }}
@@ -100,27 +118,28 @@ export function STTInput() {
       {/* STT Button */}
       <div className="relative flex items-center justify-center mb-10">
         <motion.div
-          className={`absolute w-32 h-32 bg-primary/10 rounded-full ${isListening ? "animate-ping" : ""}`}
+          className={`absolute w-32 h-32 bg-primary/10 rounded-full ${status === "listening" ? "animate-ping" : ""}`}
         />
         <motion.div
-          className={`absolute w-28 h-28 bg-primary/20 rounded-full ${isListening ? "animate-pulse" : ""}`}
+          className={`absolute w-28 h-28 bg-primary/20 rounded-full ${status === "listening" ? "animate-pulse" : ""}`}
         />
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={startListening}
-          className="relative w-24 h-24 bg-gradient-to-br from-stone-100 to-stone-200 rounded-full shadow-lg flex items-center justify-center border border-border"
+          disabled={status === "listening" || status === "done"}
+          className="relative w-24 h-24 bg-gradient-to-br from-stone-100 to-stone-200 rounded-full shadow-lg flex items-center justify-center border border-border disabled:opacity-50"
         >
           <Mic className="w-10 h-10 text-primary" strokeWidth={2} />
         </motion.button>
       </div>
 
       <p className="text-sm font-medium text-primary mb-2">
-        {isListening ? "듣고 있어요..." : "눌러서 이야기하기"}
+        {status === "listening" ? "듣고 있어요..." : status === "done" ? "잘 들었어요" : "눌러서 이야기하기"}
       </p>
 
-      {/* Prompt */}
-      {transcript && (
+      {/* Done feedback */}
+      {status === "done" && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.4 }}
@@ -128,6 +147,19 @@ export function STTInput() {
         >
           <p className="text-sm tracking-widest text-muted">생각이 흩어지고 있습니다...</p>
         </motion.div>
+      )}
+
+      {/* Skip button */}
+      {status !== "done" && (
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          onClick={skip}
+          className="mt-8 text-xs text-muted hover:text-foreground transition-colors underline underline-offset-4"
+        >
+          오늘은 넘기기
+        </motion.button>
       )}
 
       {/* Page Indicator */}
