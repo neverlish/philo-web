@@ -1,13 +1,37 @@
 // components/home/home-page.tsx
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { PhilosophersList } from "@/components/home/philosophers-list";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase/client";
 
 const categories = ["전체 보기", "스토아 철학", "동양 사상", "현대 철학"];
 
 export function HomePage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading || !user) return;
+
+    const today = new Date().toISOString().split("T")[0];
+    supabase
+      .from("check_ins")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("check_in_date", today)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) {
+          router.push("/opening");
+        }
+      });
+  }, [user, loading, router]);
+
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
       <Header title="지혜의 다리" />

@@ -1,15 +1,35 @@
 // components/opening/stt-input.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Mic } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase/client";
 
 export function STTInput() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
+  const transcriptRef = useRef("");
   const router = useRouter();
+  const { user } = useAuth();
+
+  const saveCheckIn = async (text: string) => {
+    if (!user) return;
+    const today = new Date().toISOString().split("T")[0];
+    await supabase.from("check_ins").upsert(
+      { user_id: user.id, check_in_date: today, checked_in_at: new Date().toISOString() },
+      { onConflict: "user_id,check_in_date" }
+    );
+    if (text) {
+      await supabase.from("chat_conversations").insert({
+        user_id: user.id,
+        initial_concern: text,
+        messages: [],
+      });
+    }
+  };
 
   const startListening = () => {
     if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
@@ -26,15 +46,18 @@ export function STTInput() {
 
       recognition.onresult = (event: any) => {
         const result = event.results[0][0].transcript;
+        transcriptRef.current = result;
         setTranscript(result);
       };
 
       recognition.onend = () => {
         setIsListening(false);
-        // Auto proceed after 2 seconds
-        setTimeout(() => {
-          router.push("/");
-        }, 2000);
+        // Save check-in and auto proceed after 2 seconds
+        saveCheckIn(transcriptRef.current).finally(() => {
+          setTimeout(() => {
+            router.push("/");
+          }, 2000);
+        });
       };
 
       recognition.start();
