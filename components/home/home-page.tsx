@@ -12,7 +12,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase/client";
 import type { DbPhilosopher } from "@/types";
 
-const categories = ["전체 보기", "스토아 철학", "동양 사상", "현대 철학"];
+const categories = [
+  { label: "전체 보기", params: {} },
+  { label: "스토아 철학", params: { keyword: "스토아" } },
+  { label: "동양 사상", params: { region: "동양" } },
+  { label: "현대 철학", params: { era: "현대" } },
+];
+
+export type CategoryFilter = { keyword?: string; region?: string; era?: string };
 
 interface HomePageProps {
   initialPhilosophers: DbPhilosopher[];
@@ -24,6 +31,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [hasConcern, setHasConcern] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState(0);
 
   useEffect(() => {
     if (loading) return;
@@ -83,19 +91,28 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
         {/* Category Filters */}
         <div className="w-full mb-10">
           <div className="flex gap-3 overflow-x-auto pb-2">
-            {categories.map((category) => (
+            {categories.map((category, index) => (
               <button
-                key={category}
-                className="flex-none px-5 py-2.5 rounded-full border font-serif text-sm whitespace-nowrap transition-colors border-primary/20 bg-transparent text-muted hover:bg-stone-50 hover:text-foreground"
+                key={category.label}
+                onClick={() => setSelectedCategory(index)}
+                className={`flex-none px-5 py-2.5 rounded-full border font-serif text-sm whitespace-nowrap transition-colors ${
+                  selectedCategory === index
+                    ? "border-primary/30 bg-stone-100 text-foreground"
+                    : "border-primary/20 bg-transparent text-muted hover:bg-stone-50 hover:text-foreground"
+                }`}
               >
-                {category}
+                {category.label}
               </button>
             ))}
           </div>
         </div>
 
         {/* Content Cards */}
-        <PhilosophersList initialPhilosophers={initialPhilosophers} initialHasMore={initialHasMore} />
+        <PhilosophersList
+          initialPhilosophers={selectedCategory === 0 ? initialPhilosophers : []}
+          initialHasMore={selectedCategory === 0 ? initialHasMore : true}
+          filter={categories[selectedCategory].params}
+        />
 
         <div className="mt-12 mb-4 text-center">
           <button className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors font-medium border-b border-transparent hover:border-foreground pb-0.5">

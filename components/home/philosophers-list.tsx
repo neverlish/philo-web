@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { PhilosopherCard } from "./philosopher-card";
 import { Loader2 } from "lucide-react";
 import type { DbPhilosopher } from "@/types";
+import type { CategoryFilter } from "./home-page";
 
 const PAGE_SIZE = 5;
 
@@ -19,23 +20,55 @@ const descriptions = [
   "통제할 수 없는 것을 놓아주기",
 ];
 
+function buildQuery(filter: CategoryFilter, offset: number) {
+  const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) });
+  if (filter.keyword) params.set("keyword", filter.keyword);
+  if (filter.region) params.set("region", filter.region);
+  if (filter.era) params.set("era", filter.era);
+  return `/api/philosophers?${params.toString()}`;
+}
+
 interface PhilosophersListProps {
   initialPhilosophers: DbPhilosopher[];
   initialHasMore: boolean;
+  filter: CategoryFilter;
 }
 
-export function PhilosophersList({ initialPhilosophers, initialHasMore }: PhilosophersListProps) {
+export function PhilosophersList({ initialPhilosophers, initialHasMore, filter }: PhilosophersListProps) {
   const [philosophers, setPhilosophers] = useState<DbPhilosopher[]>(initialPhilosophers);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [loading, setLoading] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const offsetRef = useRef(initialPhilosophers.length);
 
+  // 필터 변경 시 리셋 후 첫 페이지 fetch
+  useEffect(() => {
+    setPhilosophers(initialPhilosophers);
+    setHasMore(initialHasMore);
+    offsetRef.current = initialPhilosophers.length;
+
+    // 전체 보기가 아닌 필터는 SSR 데이터 없이 시작하므로 즉시 fetch
+    if (initialPhilosophers.length === 0) {
+      setLoading(true);
+      fetch(buildQuery(filter, 0))
+        .then((res) => res.ok ? res.json() : { philosophers: [] })
+        .then((data) => {
+          const next: DbPhilosopher[] = data.philosophers ?? [];
+          setPhilosophers(next);
+          offsetRef.current = next.length;
+          setHasMore(next.length === PAGE_SIZE);
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
+
   const loadMore = useCallback(async () => {
     if (loading || !hasMore) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/philosophers?limit=${PAGE_SIZE}&offset=${offsetRef.current}`);
+      const res = await fetch(buildQuery(filter, offsetRef.current));
       if (!res.ok) return;
       const data = await res.json();
       const next: DbPhilosopher[] = data.philosophers ?? [];
@@ -47,7 +80,7 @@ export function PhilosophersList({ initialPhilosophers, initialHasMore }: Philos
     } finally {
       setLoading(false);
     }
-  }, [loading, hasMore]);
+  }, [loading, hasMore, filter]);
 
   useEffect(() => {
     if (!hasMore) return;
@@ -64,10 +97,24 @@ export function PhilosophersList({ initialPhilosophers, initialHasMore }: Philos
     return () => observer.disconnect();
   }, [loadMore, hasMore]);
 
-  if (philosophers.length === 0) {
+  if (loading && philosophers.length === 0) {
+    return (
+      <div className="w-full space-y-8">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="w-full space-y-3">
+            <div className="h-48 w-full rounded-lg bg-primary/10 animate-pulse" />
+            <div className="h-3 w-1/3 rounded bg-primary/10 animate-pulse" />
+            <div className="h-5 w-2/3 rounded bg-primary/10 animate-pulse" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (!loading && philosophers.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-muted">철학자 데이터가 없습니다</p>
+        <p className="text-muted">해당하는 철학자가 없습니다</p>
       </div>
     );
   }
