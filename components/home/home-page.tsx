@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { Header } from "@/components/navigation/header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { PhilosophersList } from "@/components/home/philosophers-list";
@@ -15,6 +16,7 @@ export function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [checking, setChecking] = useState(true);
+  const [hasConcern, setHasConcern] = useState(true);
 
   useEffect(() => {
     if (loading) return;
@@ -30,12 +32,22 @@ export function HomePage() {
       .eq("user_id", user.id)
       .eq("check_in_date", today)
       .maybeSingle()
-      .then(({ data }) => {
-        if (!data) {
+      .then(async ({ data: checkIn }) => {
+        if (!checkIn) {
           router.push("/opening");
-        } else {
-          setChecking(false);
+          return;
         }
+        // 오늘 concern이 있는 chat_conversations 확인
+        const { data: conv } = await supabase
+          .from("chat_conversations")
+          .select("id")
+          .eq("user_id", user.id)
+          .neq("initial_concern", "")
+          .gte("created_at", today + "T00:00:00")
+          .maybeSingle();
+
+        setHasConcern(!!conv);
+        setChecking(false);
       });
   }, [user, loading, router]);
 
@@ -85,6 +97,20 @@ export function HomePage() {
           </button>
         </div>
       </main>
+
+      {!hasConcern && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => router.push("/opening/input")}
+          className="fixed bottom-24 right-6 flex items-center gap-2 bg-primary text-primary-foreground px-4 py-3 rounded-2xl shadow-lg z-20"
+        >
+          <span className="material-symbols-outlined text-[18px]">mic</span>
+          <span className="text-sm font-medium">오늘 말하기</span>
+        </motion.button>
+      )}
 
       <BottomNav />
     </div>
