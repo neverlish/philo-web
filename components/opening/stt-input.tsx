@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase/client";
 
-type Status = "idle" | "listening" | "done" | "noInput";
+type Status = "idle" | "listening" | "done" | "generating" | "noInput";
 
 export function STTInput() {
   const [status, setStatus] = useState<Status>("idle");
@@ -73,6 +73,7 @@ export function STTInput() {
       }
       setStatus("done");
       saveCheckIn(transcriptRef.current).then(async (conversationId) => {
+        setStatus("generating");
         try {
           const res = await fetch('/api/prescription/generate', {
             method: 'POST',
@@ -150,7 +151,7 @@ export function STTInput() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={startListening}
-          disabled={status === "listening" || status === "done"}
+          disabled={status === "listening" || status === "done" || status === "generating"}
           className="relative w-24 h-24 bg-gradient-to-br from-stone-100 to-stone-200 rounded-full shadow-lg flex items-center justify-center border border-border disabled:opacity-50"
         >
           <Mic className="w-10 h-10 text-primary" strokeWidth={2} />
@@ -158,22 +159,32 @@ export function STTInput() {
       </div>
 
       <p className="text-sm font-medium text-primary mb-2">
-        {status === "listening" ? "듣고 있어요..." : status === "done" ? "잘 들었어요" : "눌러서 이야기하기"}
+        {status === "listening" ? "듣고 있어요..." : status === "done" || status === "generating" ? "잘 들었어요" : "눌러서 이야기하기"}
       </p>
 
-      {/* Done feedback */}
-      {status === "done" && (
+      {/* Generating feedback */}
+      {status === "generating" && (
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.4 }}
-          className="mt-20"
+          animate={{ opacity: 1 }}
+          className="mt-12 flex flex-col items-center gap-4"
         >
-          <p className="text-sm tracking-widest text-muted">생각이 흩어지고 있습니다...</p>
+          <div className="flex gap-1.5">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="w-2 h-2 rounded-full bg-primary"
+                animate={{ opacity: [0.3, 1, 0.3] }}
+                transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+              />
+            ))}
+          </div>
+          <p className="text-sm text-muted">철학적 처방을 준비하고 있어요...</p>
         </motion.div>
       )}
 
       {/* Skip button */}
-      {status !== "done" && (
+      {status !== "done" && status !== "generating" && (
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

@@ -39,9 +39,10 @@ export function SavedPrescriptionsPage({ savedPrescriptions: initialPrescription
     filter === "all"
       ? savedPrescriptions
       : savedPrescriptions.filter((p) => {
-          if (filter === "stoic") return p.category === "스토아 철학";
-          if (filter === "eastern") return p.category === "동양 사상";
-          if (filter === "modern") return p.category === "현대 철학";
+          const cat = p.category;
+          if (filter === "stoic") return cat.includes("스토아") || cat.includes("Stoic");
+          if (filter === "eastern") return cat.includes("도가") || cat.includes("유가") || cat.includes("불교") || cat.includes("동양") || cat.includes("동아시아");
+          if (filter === "modern") return cat.includes("현대") || cat.includes("근대") || cat.includes("실존");
           return true;
         });
 
