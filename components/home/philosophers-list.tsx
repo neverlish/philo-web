@@ -105,7 +105,7 @@ export function PhilosophersList() {
             name: philosopher.name,
             nameEn: philosopher.name_en,
             era: philosopher.era,
-            school: "", // API에는 없지만 호환을 위해 빈 문자열
+            school: "",
             description: philosopher.description || "",
           }}
           description={descriptions[index % descriptions.length]}

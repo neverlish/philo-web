@@ -1,16 +1,14 @@
 // components/home/philosopher-card.tsx
-"use client";
-
 import { Philosopher } from "@/types";
 import { Mountain, Droplet, Book } from "lucide-react";
+import Link from "next/link";
 
 interface PhilosopherCardProps {
   philosopher: Philosopher;
   description: string;
-  onClick?: () => void;
 }
 
-export function PhilosopherCard({ philosopher, description, onClick }: PhilosopherCardProps) {
+export function PhilosopherCard({ philosopher, description }: PhilosopherCardProps) {
   const getIcon = (id: string) => {
     switch (id) {
       case "marcus-aurelius":
@@ -25,9 +23,9 @@ export function PhilosopherCard({ philosopher, description, onClick }: Philosoph
   const Icon = getIcon(philosopher.id);
 
   return (
-    <div
-      className="group relative flex flex-col gap-3 transition-all duration-300 cursor-pointer"
-      onClick={onClick}
+    <Link
+      href={`/philosopher/${philosopher.id}`}
+      className="group relative flex flex-col gap-3 transition-all duration-300"
     >
       <div className="w-full aspect-[4/3] bg-stone-100 dark:bg-stone-800 rounded-lg overflow-hidden relative">
         <div className="absolute inset-0 bg-foreground/5 flex items-center justify-center">
@@ -45,6 +43,6 @@ export function PhilosopherCard({ philosopher, description, onClick }: Philosoph
           {philosopher.description}
         </p>
       </div>
-    </div>
+    </Link>
   );
 }
