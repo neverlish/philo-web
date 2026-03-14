@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { createClient } from '@/lib/supabase/server-auth'
 
 const PHILOSOPHER_CONTEXT = `
@@ -36,6 +37,33 @@ ${PHILOSOPHER_CONTEXT}
   "title": "처방 제목 - 고민의 핵심을 짚는 한 문장 (20자 이내)",
   "subtitle": "처방 부제 - 관점 또는 방향 제시 (20자 이내)"
 }`
+
+const ClaudeResponseSchema = {
+  type: 'object',
+  properties: {
+    philosopher: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        school: { type: 'string' },
+        era: { type: 'string' },
+      },
+      required: ['name', 'school', 'era'],
+    },
+    quote: {
+      type: 'object',
+      properties: {
+        text: { type: 'string' },
+        meaning: { type: 'string' },
+        application: { type: 'string' },
+      },
+      required: ['text', 'meaning', 'application'],
+    },
+    title: { type: 'string' },
+    subtitle: { type: 'string' },
+  },
+  required: ['philosopher', 'quote', 'title', 'subtitle'],
+} as const
 
 interface ClaudeResponse {
   philosopher: { name: string; school: string; era: string }
@@ -76,19 +104,19 @@ export async function POST(request: Request) {
     }
     const anthropic = new Anthropic({ apiKey: anthropicApiKey })
 
-    const message = await anthropic.messages.create({
+    const message = await anthropic.messages.parse({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: `나의 고민: ${concern}` }],
+      output_config: {
+        format: jsonSchemaOutputFormat(ClaudeResponseSchema),
+      },
     })
 
-    const responseText = message.content[0].type === 'text' ? message.content[0].text : ''
-    let parsed: ClaudeResponse
-    try {
-      parsed = JSON.parse(responseText)
-    } catch {
-      console.error('Failed to parse Claude response:', responseText)
+    const parsed = message.parsed_output as ClaudeResponse | null
+    if (!parsed) {
+      console.error('Failed to parse Claude response:', message.content)
       return NextResponse.json({ error: 'Failed to generate prescription' }, { status: 500 })
     }
 

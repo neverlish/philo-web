@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase/client";
 
-type Status = "idle" | "listening" | "done" | "generating" | "noInput";
+type Status = "idle" | "listening" | "done" | "generating" | "noInput" | "error";
 
 export function STTInput() {
   const [status, setStatus] = useState<Status>("idle");
@@ -87,10 +87,10 @@ export function STTInput() {
             const { prescriptionId } = await res.json();
             router.push(`/prescription/ai/${prescriptionId}`);
           } else {
-            router.push('/');
+            setStatus('error');
           }
         } catch {
-          router.push('/');
+          setStatus('error');
         }
       });
     };
@@ -162,6 +162,23 @@ export function STTInput() {
         {status === "listening" ? "듣고 있어요..." : status === "done" || status === "generating" ? "잘 들었어요" : "눌러서 이야기하기"}
       </p>
 
+      {/* Error feedback */}
+      {status === "error" && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mt-12 flex flex-col items-center gap-4"
+        >
+          <p className="text-sm text-destructive">처방 생성에 실패했어요.<br />잠시 후 다시 시도해주세요.</p>
+          <button
+            onClick={() => setStatus("idle")}
+            className="text-xs text-muted hover:text-foreground transition-colors underline underline-offset-4"
+          >
+            다시 시도하기
+          </button>
+        </motion.div>
+      )}
+
       {/* Generating feedback */}
       {status === "generating" && (
         <motion.div
@@ -184,7 +201,7 @@ export function STTInput() {
       )}
 
       {/* Skip button */}
-      {status !== "done" && status !== "generating" && (
+      {status !== "done" && status !== "generating" && status !== "error" && (
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
