@@ -124,6 +124,7 @@ export function PhilosophersList({ initialPhilosophers, initialHasMore, filter }
       {philosophers.map((philosopher, index) => (
         <PhilosopherCard
           key={philosopher.id}
+          index={index}
           philosopher={{
             id: philosopher.id,
             name: philosopher.name,
