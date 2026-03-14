@@ -3,7 +3,7 @@ import { BottomNav } from "@/components/navigation/bottom-nav";
 import { Header } from "@/components/navigation/header";
 import { LoginPrompt } from "@/components/auth/LoginPrompt";
 import { createClient } from "@/lib/supabase/server-auth";
-import { Settings, Bell, HelpCircle, Shield } from "lucide-react";
+import { Settings, Bell, HelpCircle, Shield, ChevronRight, User } from "lucide-react";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -38,9 +38,7 @@ export default async function ProfilePage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="material-symbols-outlined text-3xl text-primary">
-                  person
-                </span>
+                <User className="w-8 h-8 text-primary" strokeWidth={1.5} />
               )}
             </div>
             <div className="flex-1">
@@ -90,9 +88,7 @@ export default async function ProfilePage() {
                   </p>
                   <p className="text-xs text-muted">{item.description}</p>
                 </div>
-                <span className="material-symbols-outlined text-muted">
-                  chevron_right
-                </span>
+                <ChevronRight className="w-4 h-4 text-muted" />
               </button>
             );
           })}

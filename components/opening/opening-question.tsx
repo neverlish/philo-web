@@ -2,7 +2,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Leaf } from "lucide-react";
+import { Leaf, Menu, UserCircle, Mic } from "lucide-react";
 import { useEffect } from "react";
 
 export function OpeningQuestion() {
@@ -26,9 +26,9 @@ export function OpeningQuestion() {
 
       {/* Header */}
       <header className="w-full flex justify-between items-center z-10 opacity-60">
-        <span className="material-symbols-outlined text-foreground text-xl cursor-pointer">menu</span>
+        <Menu className="w-5 h-5 text-foreground cursor-pointer" />
         <div className="w-8 h-1 bg-muted rounded-full" />
-        <span className="material-symbols-outlined text-foreground text-xl cursor-pointer">account_circle</span>
+        <UserCircle className="w-5 h-5 text-foreground cursor-pointer" />
       </header>
 
       {/* Main content */}
@@ -45,7 +45,7 @@ export function OpeningQuestion() {
 
         <div className="relative flex items-center justify-center mb-10 cursor-pointer animate-pulse">
           <div className="relative w-24 h-24 bg-gradient-to-br from-stone-100 to-stone-200 dark:from-stone-800 dark:to-stone-900 rounded-full shadow-lg flex items-center justify-center border border-border">
-            <span className="material-symbols-outlined text-4xl text-primary">mic</span>
+            <Mic className="w-10 h-10 text-primary" strokeWidth={1.5} />
           </div>
         </div>
 

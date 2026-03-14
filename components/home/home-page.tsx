@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Mic } from "lucide-react";
+import { Mic, ArrowRight } from "lucide-react";
 import { Header } from "@/components/navigation/header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { PhilosophersList } from "@/components/home/philosophers-list";
@@ -94,7 +94,7 @@ export function HomePage() {
         <div className="mt-12 mb-4 text-center">
           <button className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors font-medium border-b border-transparent hover:border-foreground pb-0.5">
             <span>더 많은 지혜 탐험하기</span>
-            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            <ArrowRight className="w-4 h-4" strokeWidth={1.5} />
           </button>
         </div>
       </main>

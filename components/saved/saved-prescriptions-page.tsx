@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { Bookmark } from "lucide-react";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { SavedCard, SavedPrescription } from "@/components/saved/saved-card";
 import { Header } from "@/components/navigation/header";
@@ -98,7 +99,7 @@ export function SavedPrescriptionsPage({ savedPrescriptions: initialPrescription
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center py-20">
             <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mb-4">
-              <span className="material-symbols-outlined text-3xl text-muted">bookmark_border</span>
+              <Bookmark className="w-8 h-8 text-muted" strokeWidth={1.5} />
             </div>
             <p className="text-sm text-muted mb-2">저장된 처방이 없습니다</p>
             <p className="text-xs text-muted">

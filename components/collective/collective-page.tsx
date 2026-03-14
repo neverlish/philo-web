@@ -5,7 +5,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ParticleCanvas } from "@/components/animations/particle-canvas";
 import { BottomNav } from "@/components/navigation/bottom-nav";
-import { Heart, MessageCircle, Share2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, Plus } from "lucide-react";
 
 interface CollectiveThought {
   id: string;
@@ -208,7 +208,7 @@ export function CollectivePage() {
         whileTap={{ scale: 0.95 }}
         className="fixed bottom-24 right-6 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center z-20"
       >
-        <span className="material-symbols-outlined">add</span>
+        <Plus className="w-6 h-6" />
       </motion.button>
 
       <BottomNav />

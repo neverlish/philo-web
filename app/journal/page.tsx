@@ -3,6 +3,7 @@ import { BottomNav } from "@/components/navigation/bottom-nav";
 import { Header } from "@/components/navigation/header";
 import { LoginPrompt } from "@/components/auth/LoginPrompt";
 import { createClient } from "@/lib/supabase/server-auth";
+import { BookOpen, Clock } from "lucide-react";
 
 export default async function JournalPage() {
   const supabase = await createClient();
@@ -18,9 +19,7 @@ export default async function JournalPage() {
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-32">
         <div className="text-center space-y-4">
           <div className="w-20 h-20 mx-auto rounded-full bg-stone-100 flex items-center justify-center">
-            <span className="material-symbols-outlined text-4xl text-muted">
-              menu_book
-            </span>
+            <BookOpen className="w-10 h-10 text-muted" strokeWidth={1.5} />
           </div>
 
           <h2 className="text-2xl font-serif font-normal text-foreground">
@@ -35,9 +34,7 @@ export default async function JournalPage() {
 
           <div className="pt-4">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
-              <span className="material-symbols-outlined text-sm text-primary">
-                schedule
-              </span>
+              <Clock className="w-3.5 h-3.5 text-primary" />
               <span className="text-xs font-medium text-primary">
                 2026년 2분기 예정
               </span>
