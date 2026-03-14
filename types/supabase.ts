@@ -9,6 +9,54 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_prescriptions: {
+        Row: {
+          id: string
+          user_id: string
+          conversation_id: string | null
+          concern: string
+          philosopher_name: string
+          philosopher_school: string
+          philosopher_era: string
+          quote_text: string
+          quote_meaning: string
+          quote_application: string
+          title: string
+          subtitle: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          conversation_id?: string | null
+          concern: string
+          philosopher_name: string
+          philosopher_school: string
+          philosopher_era: string
+          quote_text: string
+          quote_meaning: string
+          quote_application: string
+          title: string
+          subtitle: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          conversation_id?: string | null
+          concern?: string
+          philosopher_name?: string
+          philosopher_school?: string
+          philosopher_era?: string
+          quote_text?: string
+          quote_meaning?: string
+          quote_application?: string
+          title?: string
+          subtitle?: string
+          created_at?: string | null
+        }
+        Relationships: []
+      }
       chat_conversations: {
         Row: {
           id: string
