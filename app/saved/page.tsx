@@ -2,6 +2,18 @@ import { SavedPrescriptionsPage } from "@/components/saved/saved-prescriptions-p
 import { LoginPrompt } from "@/components/auth/LoginPrompt";
 import { createClient } from "@/lib/supabase/server-auth";
 
+interface SavedRow {
+  id: string
+  saved_at: string
+  prescription_id: string
+  ai_prescriptions: {
+    title: string
+    philosopher_name: string
+    philosopher_school: string
+    quote_text: string
+  } | null
+}
+
 export default async function Page() {
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
@@ -10,7 +22,7 @@ export default async function Page() {
     return <LoginPrompt message="저장된 처방을 보려면 로그인이 필요해요" />;
   }
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('user_saved_prescriptions')
     .select(`
       id,
@@ -26,8 +38,9 @@ export default async function Page() {
     .eq('user_id', session.user.id)
     .order('saved_at', { ascending: false })
 
-  const savedPrescriptions = ((data as any[]) ?? []).map((row) => {
-    const ap = row.ai_prescriptions as any
+  const rows = (data ?? []) as SavedRow[]
+  const savedPrescriptions = rows.map((row) => {
+    const ap = row.ai_prescriptions
     return {
       id: row.id,
       prescriptionId: row.prescription_id,

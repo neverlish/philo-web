@@ -7,6 +7,7 @@ import Link from "next/link";
 
 export interface SavedPrescription {
   id: string;
+  prescriptionId: string;
   philosopher: string;
   philosopherId: string;
   title: string;
@@ -18,7 +19,7 @@ export interface SavedPrescription {
 interface SavedCardProps {
   prescription: SavedPrescription;
   index: number;
-  onDelete?: (id: string) => void;
+  onDelete?: (id: string) => Promise<void>;
 }
 
 export function SavedCard({ prescription, index, onDelete }: SavedCardProps) {
@@ -29,7 +30,7 @@ export function SavedCard({ prescription, index, onDelete }: SavedCardProps) {
       transition={{ delay: index * 0.05 }}
     >
       <Link
-        href={`/prescription/${prescription.philosopherId}`}
+        href={`/prescription/ai/${prescription.prescriptionId}`}
         className="block group"
       >
         <div className="bg-card border border-border rounded-2xl p-5 hover:border-primary/30 transition-all hover:shadow-lg">

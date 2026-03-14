@@ -87,4 +87,15 @@ describe('DELETE /api/prescriptions/[id]/save', () => {
     const body = await response.json()
     expect(body).toEqual({ saved: false })
   })
+
+  it('should return 500 if delete fails', async () => {
+    mockDeleteEq2.mockResolvedValueOnce({ error: { message: 'DB error' } })
+
+    const { DELETE } = await import('./route')
+    const request = new Request('http://localhost/api/prescriptions/abc/save', {
+      method: 'DELETE',
+    })
+    const response = await DELETE(request, { params: Promise.resolve({ id: 'abc' }) })
+    expect(response.status).toBe(500)
+  })
 })

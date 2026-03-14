@@ -12,8 +12,19 @@ export function SavedPrescriptionsPage({ savedPrescriptions: initialPrescription
   );
   const [filter, setFilter] = useState<"all" | "stoic" | "eastern" | "modern">("all");
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    const prescription = savedPrescriptions.find((p) => p.id === id)
+    if (!prescription) return
+
     setSavedPrescriptions((prev) => prev.filter((p) => p.id !== id));
+
+    try {
+      await fetch(`/api/prescriptions/${prescription.prescriptionId}/save`, {
+        method: 'DELETE',
+      })
+    } catch {
+      // 실패해도 UI는 그대로 유지 (낙관적 업데이트)
+    }
   };
 
   const categories = [
