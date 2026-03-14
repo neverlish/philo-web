@@ -17,20 +17,26 @@ export function STTInput() {
   const router = useRouter();
   const { user } = useAuth();
 
-  const saveCheckIn = async (text: string) => {
-    if (!user) return;
+  const saveCheckIn = async (text: string): Promise<string | null> => {
+    if (!user) return null;
     const today = new Date().toISOString().split("T")[0];
     await supabase.from("check_ins").upsert(
       { user_id: user.id, check_in_date: today, checked_in_at: new Date().toISOString() },
       { onConflict: "user_id,check_in_date", ignoreDuplicates: true }
     );
     if (text) {
-      await supabase.from("chat_conversations").insert({
-        user_id: user.id,
-        initial_concern: text,
-        messages: [],
-      });
+      const { data } = await supabase
+        .from("chat_conversations")
+        .insert({
+          user_id: user.id,
+          initial_concern: text,
+          messages: [],
+        })
+        .select('id')
+        .single();
+      return data?.id ?? null;
     }
+    return null;
   };
 
   const skip = () => {
@@ -66,8 +72,25 @@ export function STTInput() {
         return;
       }
       setStatus("done");
-      saveCheckIn(transcriptRef.current).finally(() => {
-        setTimeout(() => router.push("/"), 2000);
+      saveCheckIn(transcriptRef.current).then(async (conversationId) => {
+        try {
+          const res = await fetch('/api/prescription/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              concern: transcriptRef.current,
+              conversationId,
+            }),
+          });
+          if (res.ok) {
+            const { prescriptionId } = await res.json();
+            router.push(`/prescription/ai/${prescriptionId}`);
+          } else {
+            router.push('/');
+          }
+        } catch {
+          router.push('/');
+        }
       });
     };
 
