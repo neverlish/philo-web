@@ -270,6 +270,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_saved_prescriptions: {
+        Row: {
+          id: string
+          user_id: string
+          prescription_id: string
+          saved_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          prescription_id: string
+          saved_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          prescription_id?: string
+          saved_at?: string
+        }
+        Relationships: []
+      }
       user_saved_quotes: {
         Row: {
           created_at: string | null
