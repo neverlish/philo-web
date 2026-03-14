@@ -1,16 +1,43 @@
-// components/prescription/prescription-detail.tsx
 "use client";
 
+import { useState } from "react";
 import { Prescription } from "@/types";
 import { ArrowLeft, Bookmark, Share2, Clock } from "lucide-react";
 import Link from "next/link";
 
 interface PrescriptionDetailProps {
   prescription: Prescription;
+  isSaved?: boolean;
+  prescriptionId?: string;
 }
 
-export function PrescriptionDetail({ prescription }: PrescriptionDetailProps) {
+export function PrescriptionDetail({
+  prescription,
+  isSaved: initialIsSaved = false,
+  prescriptionId,
+}: PrescriptionDetailProps) {
   const { quote, philosopher, title, subtitle } = prescription;
+  const [saved, setSaved] = useState(initialIsSaved);
+  const [saving, setSaving] = useState(false);
+
+  const toggleSave = async () => {
+    if (!prescriptionId || saving) return;
+    setSaving(true);
+    const prevSaved = saved;
+    setSaved(!saved);
+
+    try {
+      const method = prevSaved ? 'DELETE' : 'POST';
+      const res = await fetch(`/api/prescriptions/${prescriptionId}/save`, { method });
+      if (!res.ok && res.status !== 409) {
+        setSaved(prevSaved);
+      }
+    } catch {
+      setSaved(prevSaved);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background">
@@ -51,8 +78,16 @@ export function PrescriptionDetail({ prescription }: PrescriptionDetailProps) {
                   {philosopher.school}, &lt;{philosopher.era}&gt;
                 </p>
               </div>
-              <button className="p-3 bg-background rounded-full hover:bg-stone-100 transition-colors">
-                <Bookmark className="w-5 h-5" strokeWidth={1.5} />
+              <button
+                onClick={toggleSave}
+                disabled={saving || !prescriptionId}
+                className="p-3 bg-background rounded-full hover:bg-stone-100 transition-colors disabled:opacity-50"
+              >
+                <Bookmark
+                  className="w-5 h-5"
+                  strokeWidth={1.5}
+                  fill={saved ? "currentColor" : "none"}
+                />
               </button>
             </div>
           </div>
@@ -90,9 +125,21 @@ export function PrescriptionDetail({ prescription }: PrescriptionDetailProps) {
             <Share2 className="w-4 h-4" strokeWidth={1.5} />
             공유하기
           </button>
-          <button className="flex items-center justify-center gap-2 bg-foreground text-background py-4 rounded-xl font-medium text-sm transition-all active:scale-95">
-            <Bookmark className="w-4 h-4" strokeWidth={1.5} />
-            저장하기
+          <button
+            onClick={toggleSave}
+            disabled={saving || !prescriptionId}
+            className={`flex items-center justify-center gap-2 py-4 rounded-xl font-medium text-sm transition-all active:scale-95 disabled:opacity-50 ${
+              saved
+                ? "bg-primary/10 text-primary border border-primary/20"
+                : "bg-foreground text-background"
+            }`}
+          >
+            <Bookmark
+              className="w-4 h-4"
+              strokeWidth={1.5}
+              fill={saved ? "currentColor" : "none"}
+            />
+            {saved ? "저장됨" : "저장하기"}
           </button>
         </footer>
       </main>
