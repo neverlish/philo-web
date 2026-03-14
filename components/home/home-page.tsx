@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { Mic } from "lucide-react";
 import { Header } from "@/components/navigation/header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { PhilosophersList } from "@/components/home/philosophers-list";
@@ -99,17 +100,21 @@ export function HomePage() {
       </main>
 
       {!hasConcern && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => router.push("/opening/input")}
-          className="fixed bottom-24 right-6 flex items-center gap-2 bg-primary text-primary-foreground px-4 py-3 rounded-2xl shadow-lg z-20"
-        >
-          <span className="material-symbols-outlined text-[18px]">mic</span>
-          <span className="text-sm font-medium">오늘 말하기</span>
-        </motion.button>
+        <div className="fixed bottom-16 left-0 right-0 pointer-events-none z-20">
+          <div className="max-w-md mx-auto px-6 flex justify-end">
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => router.push("/opening/input")}
+              className="pointer-events-auto flex items-center gap-2 bg-primary text-primary-foreground px-4 py-3 rounded-2xl shadow-lg"
+            >
+              <Mic className="w-4 h-4" strokeWidth={2} />
+              <span className="text-sm font-medium">오늘 말하기</span>
+            </motion.button>
+          </div>
+        </div>
       )}
 
       <BottomNav />
