@@ -22,7 +22,7 @@ export function STTInput() {
     const today = new Date().toISOString().split("T")[0];
     await supabase.from("check_ins").upsert(
       { user_id: user.id, check_in_date: today, checked_in_at: new Date().toISOString() },
-      { onConflict: "user_id,check_in_date" }
+      { onConflict: "user_id,check_in_date", ignoreDuplicates: true }
     );
     if (text) {
       await supabase.from("chat_conversations").insert({
