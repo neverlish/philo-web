@@ -3,8 +3,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { Mic, ArrowRight } from "lucide-react";
 import { Header } from "@/components/navigation/header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { PhilosophersList } from "@/components/home/philosophers-list";
@@ -30,7 +28,6 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   const { user, loading } = useAuth();
   const router = useRouter();
   const [checking, setChecking] = useState(true);
-  const [hasConcern, setHasConcern] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(0);
 
   useEffect(() => {
@@ -47,21 +44,11 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
       .eq("user_id", user.id)
       .eq("check_in_date", today)
       .maybeSingle()
-      .then(async ({ data: checkIn }) => {
+      .then(({ data: checkIn }) => {
         if (!checkIn) {
           router.push("/opening");
           return;
         }
-        // 오늘 concern이 있는 chat_conversations 확인
-        const { data: conv } = await supabase
-          .from("chat_conversations")
-          .select("id")
-          .eq("user_id", user.id)
-          .neq("initial_concern", "")
-          .gte("created_at", today + "T00:00:00")
-          .maybeSingle();
-
-        setHasConcern(!!conv);
         setChecking(false);
       });
   }, [user, loading, router]);
@@ -114,31 +101,8 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           filter={categories[selectedCategory].params}
         />
 
-        <div className="mt-12 mb-4 text-center">
-          <button className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors font-medium border-b border-transparent hover:border-foreground pb-0.5">
-            <span>더 많은 지혜 탐험하기</span>
-            <ArrowRight className="w-4 h-4" strokeWidth={1.5} />
-          </button>
-        </div>
       </main>
 
-      {!hasConcern && (
-        <div className="fixed bottom-16 left-0 right-0 pointer-events-none z-20">
-          <div className="max-w-md mx-auto px-6 flex justify-end">
-            <motion.button
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push("/opening/input")}
-              className="pointer-events-auto flex items-center gap-2 bg-primary text-primary-foreground px-4 py-3 rounded-2xl shadow-lg"
-            >
-              <Mic className="w-4 h-4" strokeWidth={2} />
-              <span className="text-sm font-medium">오늘 말하기</span>
-            </motion.button>
-          </div>
-        </div>
-      )}
 
       <BottomNav />
     </div>
