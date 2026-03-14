@@ -10,10 +10,16 @@ import { BottomNav } from "@/components/navigation/bottom-nav";
 import { PhilosophersList } from "@/components/home/philosophers-list";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase/client";
+import type { DbPhilosopher } from "@/types";
 
 const categories = ["전체 보기", "스토아 철학", "동양 사상", "현대 철학"];
 
-export function HomePage() {
+interface HomePageProps {
+  initialPhilosophers: DbPhilosopher[];
+  initialHasMore: boolean;
+}
+
+export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [checking, setChecking] = useState(true);
@@ -89,7 +95,7 @@ export function HomePage() {
         </div>
 
         {/* Content Cards */}
-        <PhilosophersList />
+        <PhilosophersList initialPhilosophers={initialPhilosophers} initialHasMore={initialHasMore} />
 
         <div className="mt-12 mb-4 text-center">
           <button className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors font-medium border-b border-transparent hover:border-foreground pb-0.5">

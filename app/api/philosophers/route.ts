@@ -12,10 +12,14 @@ export async function GET(request: Request) {
     const region = searchParams.get('region')
     const keyword = searchParams.get('keyword')
 
+    const limit = Math.min(Number(searchParams.get('limit') ?? 10), 50)
+    const offset = Math.max(Number(searchParams.get('offset') ?? 0), 0)
+
     let query = supabase
       .from('philosophers')
       .select('*')
       .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
 
     if (era) {
       query = query.eq('era', era)
