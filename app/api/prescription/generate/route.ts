@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     const anthropic = new Anthropic({ apiKey: anthropicApiKey })
 
     const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: `나의 고민: ${concern}` }],
