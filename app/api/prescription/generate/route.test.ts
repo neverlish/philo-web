@@ -1,0 +1,96 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+const mockCreate = vi.fn().mockResolvedValue({
+  content: [
+    {
+      type: 'text',
+      text: JSON.stringify({
+        philosopher: {
+          name: '마르쿠스 아우렐리우스',
+          school: '스토아 학파',
+          era: '고대 (121-180)',
+        },
+        quote: {
+          text: '테스트 명언',
+          meaning: '테스트 해석',
+          application: '테스트 실천',
+        },
+        title: '테스트 처방 제목',
+        subtitle: '테스트 부제',
+      }),
+    },
+  ],
+})
+
+vi.mock('@anthropic-ai/sdk', () => {
+  const MockAnthropic = vi.fn().mockImplementation(function () {
+    this.messages = { create: mockCreate }
+  })
+  return { default: MockAnthropic }
+})
+
+vi.mock('@/lib/supabase/server-auth', () => ({
+  createClient: vi.fn().mockResolvedValue({
+    auth: {
+      getSession: vi.fn().mockResolvedValue({
+        data: { session: { user: { id: 'user-123' } } },
+      }),
+    },
+    from: vi.fn().mockReturnValue({
+      insert: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: { id: 'prescription-abc' },
+            error: null,
+          }),
+        }),
+      }),
+    }),
+  }),
+}))
+
+describe('POST /api/prescription/generate', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should return 401 if not authenticated', async () => {
+    const { createClient } = await import('@/lib/supabase/server-auth')
+    vi.mocked(createClient).mockResolvedValueOnce({
+      auth: {
+        getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
+      },
+    } as any)
+
+    const { POST } = await import('./route')
+    const request = new Request('http://localhost:3000/api/prescription/generate', {
+      method: 'POST',
+      body: JSON.stringify({ concern: '테스트 고민', conversationId: 'conv-123' }),
+    })
+    const response = await POST(request)
+    expect(response.status).toBe(401)
+  })
+
+  it('should return 400 if concern is missing', async () => {
+    const { POST } = await import('./route')
+    const request = new Request('http://localhost:3000/api/prescription/generate', {
+      method: 'POST',
+      body: JSON.stringify({ conversationId: 'conv-123' }),
+    })
+    const response = await POST(request)
+    expect(response.status).toBe(400)
+  })
+
+  it('should return prescriptionId on success', async () => {
+    const { POST } = await import('./route')
+    const request = new Request('http://localhost:3000/api/prescription/generate', {
+      method: 'POST',
+      body: JSON.stringify({ concern: '인간관계가 너무 힘들어요', conversationId: 'conv-123' }),
+    })
+    const response = await POST(request)
+    expect(response.status).toBe(200)
+    const body = await response.json()
+    expect(body).toHaveProperty('prescriptionId')
+    expect(body.prescriptionId).toBe('prescription-abc')
+  })
+})
