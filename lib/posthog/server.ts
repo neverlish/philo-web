@@ -1,7 +1,6 @@
 // lib/posthog/server.ts
 import { PostHog } from 'posthog-node'
 
-// Server talks directly to PostHog, not through the browser reverse proxy
 const POSTHOG_HOST = 'https://us.i.posthog.com'
 
 export async function captureServerEvent({
@@ -13,7 +12,13 @@ export async function captureServerEvent({
   event: string
   properties?: Record<string, unknown>
 }) {
-  const client = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
+  if (!key) {
+    console.warn('[PostHog] NEXT_PUBLIC_POSTHOG_KEY is not set, skipping capture')
+    return
+  }
+
+  const client = new PostHog(key, {
     host: POSTHOG_HOST,
     flushAt: 1,
     flushInterval: 0,

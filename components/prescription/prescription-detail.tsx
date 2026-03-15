@@ -29,15 +29,14 @@ export function PrescriptionDetail({
     setSaving(true);
     const prevSaved = saved;
     setSaved(!saved);
-    if (!prevSaved) {
-      posthog?.capture('prescription_saved', { prescription_id: prescriptionId })
-    }
 
     try {
       const method = prevSaved ? 'DELETE' : 'POST';
       const res = await fetch(`/api/prescriptions/${prescriptionId}/save`, { method });
       if (!res.ok && res.status !== 409) {
         setSaved(prevSaved);
+      } else if (!prevSaved) {
+        posthog?.capture('prescription_saved', { prescription_id: prescriptionId })
       }
     } catch {
       setSaved(prevSaved);
@@ -65,7 +64,7 @@ export function PrescriptionDetail({
         await navigator.clipboard.writeText(text);
         shareMethod = 'clipboard'
       }
-      posthog?.capture('prescription_shared', { share_method: shareMethod })
+      posthog?.capture('prescription_shared', { share_method: shareMethod, prescription_id: prescriptionId })
       setShared(true);
       setTimeout(() => setShared(false), 1500);
     } catch {

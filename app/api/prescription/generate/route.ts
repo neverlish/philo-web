@@ -144,8 +144,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to save prescription' }, { status: 500 })
     }
 
-    // PostHog: fire-and-forget, does not block response
-    captureServerEvent({
+    await captureServerEvent({
       distinctId: session.user.id,
       event: 'prescription_generated',
       properties: {
@@ -153,7 +152,7 @@ export async function POST(request: Request) {
         school: parsed.philosopher.school,
         concern_length: concern.length,
       },
-    }).catch(console.error)
+    })
 
     return NextResponse.json({ prescriptionId: data.id })
   } catch (error) {
