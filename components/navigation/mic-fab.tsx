@@ -1,3 +1,4 @@
+// components/navigation/mic-fab.tsx
 "use client";
 
 import { Mic, Sparkles } from "lucide-react";
