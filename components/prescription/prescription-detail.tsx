@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Prescription } from "@/types";
 import { ArrowLeft, Bookmark, Share2, Clock } from "lucide-react";
 import Link from "next/link";
+import { usePostHog } from 'posthog-js/react'
 
 interface PrescriptionDetailProps {
   prescription: Prescription;
@@ -21,12 +22,16 @@ export function PrescriptionDetail({
   const [saving, setSaving] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [shared, setShared] = useState(false);
+  const posthog = usePostHog()
 
   const toggleSave = async () => {
     if (!prescriptionId || saving) return;
     setSaving(true);
     const prevSaved = saved;
     setSaved(!saved);
+    if (!prevSaved) {
+      posthog?.capture('prescription_saved', { prescription_id: prescriptionId })
+    }
 
     try {
       const method = prevSaved ? 'DELETE' : 'POST';
@@ -52,11 +57,15 @@ export function PrescriptionDetail({
     };
 
     try {
+      let shareMethod: 'native' | 'clipboard'
       if (navigator.share && navigator.canShare?.(shareData)) {
         await navigator.share(shareData);
+        shareMethod = 'native'
       } else {
         await navigator.clipboard.writeText(text);
+        shareMethod = 'clipboard'
       }
+      posthog?.capture('prescription_shared', { share_method: shareMethod })
       setShared(true);
       setTimeout(() => setShared(false), 1500);
     } catch {
