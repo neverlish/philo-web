@@ -1,17 +1,20 @@
 // components/navigation/header.tsx
 "use client";
 
-import { Search, User, LogOut } from "lucide-react";
+import { Search, User, LogOut, ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthProvider";
 import { LoginModal } from "@/components/auth/LoginModal";
 
 interface HeaderProps {
   title?: string;
   showSearch?: boolean;
+  showBack?: boolean;
 }
 
-export function Header({ title, showSearch = true }: HeaderProps) {
+export function Header({ title, showSearch = true, showBack }: HeaderProps) {
+  const router = useRouter();
   const { user, signOut } = useAuth();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -19,7 +22,16 @@ export function Header({ title, showSearch = true }: HeaderProps) {
   return (
     <>
       <header className="flex items-center justify-between p-6 sticky top-0 z-20 bg-background/95 backdrop-blur-sm">
-        <div className="w-10" />
+        {showBack ? (
+          <button
+            onClick={() => router.back()}
+            className="flex size-10 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" strokeWidth={1.5} />
+          </button>
+        ) : (
+          <div className="w-10" />
+        )}
         {title && (
           <h1 className="text-lg font-serif font-medium tracking-wide text-center flex-1">
             {title}

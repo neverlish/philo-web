@@ -5,7 +5,7 @@ import { BottomNav } from "@/components/navigation/bottom-nav";
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
-      <Header title="개인정보 처리방침" />
+      <Header title="개인정보 처리방침" showBack showSearch={false} />
 
       <main className="flex-1 px-6 pt-4 pb-32 overflow-y-auto">
         <p className="text-xs text-muted mb-6">최종 업데이트: 2026년 3월 15일</p>

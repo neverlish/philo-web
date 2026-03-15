@@ -29,7 +29,7 @@ const steps = [
 export default function HelpPage() {
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
-      <Header title="도움말" />
+      <Header title="도움말" showBack showSearch={false} />
 
       <main className="flex-1 px-6 pt-4 pb-32 overflow-y-auto">
         <p className="text-sm text-muted leading-relaxed mb-8">

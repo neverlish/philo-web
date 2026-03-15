@@ -21,7 +21,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
-      <Header title="설정" />
+      <Header title="설정" showBack showSearch={false} />
 
       <main className="flex-1 px-6 pt-4 pb-32 overflow-y-auto">
         {/* 계정 섹션 */}
