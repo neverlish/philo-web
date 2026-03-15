@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { createClient } from '@/lib/supabase/server-auth'
+import { captureServerEvent } from '@/lib/posthog/server'
 
 const PHILOSOPHER_CONTEXT = `
 당신이 선택할 수 있는 철학자 목록 (이 외에도 잘 알려진 철학자 선택 가능):
@@ -142,6 +143,17 @@ export async function POST(request: Request) {
       console.error('DB insert error:', error)
       return NextResponse.json({ error: 'Failed to save prescription' }, { status: 500 })
     }
+
+    // PostHog: fire-and-forget, does not block response
+    captureServerEvent({
+      distinctId: session.user.id,
+      event: 'prescription_generated',
+      properties: {
+        philosopher: parsed.philosopher.name,
+        school: parsed.philosopher.school,
+        concern_length: concern.length,
+      },
+    }).catch(console.error)
 
     return NextResponse.json({ prescriptionId: data.id })
   } catch (error) {
