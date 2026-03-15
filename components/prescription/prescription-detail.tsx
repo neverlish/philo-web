@@ -19,6 +19,8 @@ export function PrescriptionDetail({
   const { quote, philosopher, title, subtitle } = prescription;
   const [saved, setSaved] = useState(initialIsSaved);
   const [saving, setSaving] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shared, setShared] = useState(false);
 
   const toggleSave = async () => {
     if (!prescriptionId || saving) return;
@@ -36,6 +38,31 @@ export function PrescriptionDetail({
       setSaved(prevSaved);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (sharing) return;
+    setSharing(true);
+
+    const text = `"${quote.text}"\n— ${philosopher.name} (${philosopher.school})\n\n오늘의철학 앱에서 받은 처방입니다.`;
+    const shareData = {
+      title: `${philosopher.name}의 처방`,
+      text,
+    };
+
+    try {
+      if (navigator.share && navigator.canShare?.(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(text);
+      }
+      setShared(true);
+      setTimeout(() => setShared(false), 1500);
+    } catch {
+      // 사용자가 취소한 경우 무시
+    } finally {
+      setSharing(false);
     }
   };
 
@@ -121,9 +148,13 @@ export function PrescriptionDetail({
 
         {/* Footer Actions */}
         <footer className="grid grid-cols-2 gap-4">
-          <button className="flex items-center justify-center gap-2 bg-card border border-border py-4 rounded-xl font-medium text-sm transition-all active:scale-95 hover:bg-stone-50">
+          <button
+            onClick={handleShare}
+            disabled={sharing}
+            className="flex items-center justify-center gap-2 bg-card border border-border py-4 rounded-xl font-medium text-sm transition-all active:scale-95 hover:bg-stone-50 disabled:opacity-50"
+          >
             <Share2 className="w-4 h-4" strokeWidth={1.5} />
-            공유하기
+            {shared ? "공유됨" : "공유하기"}
           </button>
           <button
             onClick={toggleSave}
