@@ -7,6 +7,7 @@ import { Mic } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase/client";
+import { usePostHog } from 'posthog-js/react'
 
 type Status = "idle" | "listening" | "done" | "generating" | "noInput" | "error";
 
@@ -16,6 +17,7 @@ export function STTInput() {
   const transcriptRef = useRef("");
   const router = useRouter();
   const { user } = useAuth();
+  const posthog = usePostHog()
 
   const saveCheckIn = async (text: string): Promise<string | null> => {
     if (!user) return null;
@@ -73,6 +75,9 @@ export function STTInput() {
       }
       setStatus("done");
       saveCheckIn(transcriptRef.current).then(async (conversationId) => {
+        posthog?.capture('concern_submitted', {
+          concern_length: transcriptRef.current.length,
+        })
         setStatus("generating");
         try {
           const res = await fetch('/api/prescription/generate', {
