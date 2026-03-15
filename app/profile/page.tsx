@@ -3,7 +3,9 @@ import { BottomNav } from "@/components/navigation/bottom-nav";
 import { Header } from "@/components/navigation/header";
 import { LoginPrompt } from "@/components/auth/LoginPrompt";
 import { createClient } from "@/lib/supabase/server-auth";
-import { Settings, Bell, HelpCircle, Shield, ChevronRight, User } from "lucide-react";
+import { Settings, HelpCircle, Shield, ChevronRight, User } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
 
 function calculateStreak(dates: string[]): number {
   if (dates.length === 0) return 0;
@@ -58,11 +60,17 @@ export default async function ProfilePage() {
 
   const streak = calculateStreak((checkIns ?? []).map((c) => c.check_in_date));
 
-  const menuItems = [
-    { icon: Bell, label: "알림 설정", description: "푸시 알림 관리" },
-    { icon: HelpCircle, label: "도움말", description: "앱 사용 가이드" },
-    { icon: Shield, label: "개인정보 처리방침", description: "데이터 처리 정책" },
-    { icon: Settings, label: "설정", description: "앱 설정" },
+  type MenuItem = {
+    icon: LucideIcon;
+    label: string;
+    description: string;
+    href: string;
+  };
+
+  const menuItems: MenuItem[] = [
+    { icon: HelpCircle, label: "도움말", description: "앱 사용 가이드", href: "/profile/help" },
+    { icon: Shield, label: "개인정보 처리방침", description: "데이터 처리 정책", href: "/profile/privacy" },
+    { icon: Settings, label: "설정", description: "앱 설정", href: "/profile/settings" },
   ];
 
   return (
@@ -113,11 +121,12 @@ export default async function ProfilePage() {
 
         {/* Menu Items */}
         <div className="w-full space-y-2">
-          {menuItems.map((item, index) => {
+          {menuItems.map((item) => {
             const Icon = item.icon;
             return (
-              <button
-                key={index}
+              <Link
+                key={item.href}
+                href={item.href}
                 className="w-full flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:border-primary/30 transition-colors"
               >
                 <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center flex-shrink-0">
@@ -128,7 +137,7 @@ export default async function ProfilePage() {
                   <p className="text-xs text-muted">{item.description}</p>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted" />
-              </button>
+              </Link>
             );
           })}
         </div>
