@@ -78,6 +78,7 @@ export type Database = {
           title: string
           subtitle: string
           created_at: string | null
+          user_intention: string | null
         }
         Insert: {
           id?: string
@@ -93,6 +94,7 @@ export type Database = {
           title: string
           subtitle: string
           created_at?: string | null
+          user_intention?: string | null
         }
         Update: {
           id?: string
@@ -107,6 +109,31 @@ export type Database = {
           quote_application?: string
           title?: string
           subtitle?: string
+          created_at?: string | null
+          user_intention?: string | null
+        }
+        Relationships: []
+      }
+      prescription_reflections: {
+        Row: {
+          id: string
+          prescription_id: string
+          user_id: string
+          reflection_text: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          prescription_id: string
+          user_id: string
+          reflection_text: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          prescription_id?: string
+          user_id?: string
+          reflection_text?: string
           created_at?: string | null
         }
         Relationships: []
