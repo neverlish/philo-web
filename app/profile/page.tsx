@@ -39,10 +39,14 @@ export default async function ProfilePage() {
 
   const user = session.user;
 
+  const now = new Date();
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
   const [
     { count: savedCount },
     { count: prescriptionCount },
     { data: checkIns },
+    { data: monthlyPrescriptions },
   ] = await Promise.all([
     supabase
       .from("user_saved_prescriptions")
@@ -56,9 +60,34 @@ export default async function ProfilePage() {
       .from("check_ins")
       .select("check_in_date")
       .eq("user_id", user.id),
+    supabase
+      .from("ai_prescriptions")
+      .select("id, philosopher_name, title, created_at")
+      .eq("user_id", user.id)
+      .gte("created_at", firstDayOfMonth)
+      .order("created_at", { ascending: true }),
   ]);
 
   const streak = calculateStreak((checkIns ?? []).map((c) => c.check_in_date));
+
+  const monthName = `${now.getMonth() + 1}월`;
+  const monthlyCount = monthlyPrescriptions?.length ?? 0;
+
+  const philosopherCounts: Record<string, number> = {};
+  for (const p of (monthlyPrescriptions ?? [])) {
+    philosopherCounts[p.philosopher_name] = (philosopherCounts[p.philosopher_name] ?? 0) + 1;
+  }
+  const topPhilosopher = Object.entries(philosopherCounts)
+    .sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+
+  const { data: featuredSaved } = await supabase
+    .from("user_saved_prescriptions")
+    .select("prescription_id")
+    .eq("user_id", user.id)
+    .gte("created_at", firstDayOfMonth)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
 
   type MenuItem = {
     icon: LucideIcon;
@@ -118,6 +147,35 @@ export default async function ProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* Monthly Report */}
+        {monthlyCount > 0 && (
+          <div className="w-full mb-8">
+            <div className="bg-card border border-border rounded-xl p-5">
+              <p className="text-xs font-medium tracking-widest text-muted mb-4">{monthName}의 나</p>
+              <div className="flex items-center gap-4 mb-4 text-sm text-foreground">
+                <span>고민 <strong>{monthlyCount}회</strong></span>
+                <span className="text-muted">·</span>
+                <span>저장 <strong>{savedCount ?? 0}개</strong></span>
+                <span className="text-muted">·</span>
+                <span>연속 <strong>{streak}일</strong></span>
+              </div>
+              {topPhilosopher && (
+                <p className="text-sm text-foreground mb-2">
+                  가장 많이 만난 철학자: <strong>{topPhilosopher}</strong>
+                </p>
+              )}
+              {featuredSaved?.prescription_id && (
+                <Link
+                  href={`/prescription/ai/${featuredSaved.prescription_id}`}
+                  className="inline-flex items-center gap-1 text-sm text-primary mt-2 hover:underline"
+                >
+                  대표 처방 보기 →
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Menu Items */}
         <div className="w-full space-y-2">
