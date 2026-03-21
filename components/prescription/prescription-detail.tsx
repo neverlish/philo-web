@@ -10,12 +10,14 @@ interface PrescriptionDetailProps {
   prescription: Prescription;
   isSaved?: boolean;
   prescriptionId?: string;
+  userIntention?: string | null;
 }
 
 export function PrescriptionDetail({
   prescription,
   isSaved: initialIsSaved = false,
   prescriptionId,
+  userIntention,
 }: PrescriptionDetailProps) {
   const { quote, philosopher, title, subtitle } = prescription;
   const [saved, setSaved] = useState(initialIsSaved);
@@ -23,6 +25,24 @@ export function PrescriptionDetail({
   const [sharing, setSharing] = useState(false);
   const [shared, setShared] = useState(false);
   const posthog = usePostHog()
+  const [intention, setIntention] = useState(userIntention ?? '')
+  const [savingIntention, setSavingIntention] = useState(false)
+  const [intentionSaved, setIntentionSaved] = useState(!!userIntention)
+
+  const handleSaveIntention = async () => {
+    if (!prescriptionId || savingIntention || !intention.trim()) return
+    setSavingIntention(true)
+    try {
+      const res = await fetch(`/api/prescriptions/${prescriptionId}/intention`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intention }),
+      })
+      if (res.ok) setIntentionSaved(true)
+    } finally {
+      setSavingIntention(false)
+    }
+  }
 
   const toggleSave = async () => {
     if (!prescriptionId || saving) return;
@@ -151,6 +171,31 @@ export function PrescriptionDetail({
             <p className="text-[15px] leading-relaxed text-foreground/90">
               {quote.application}
             </p>
+          </div>
+        </section>
+
+        {/* Intention Section */}
+        <section className="mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="w-1 h-4 bg-foreground" />
+            <h2 className="text-sm font-bold tracking-widest">오늘의 다짐</h2>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={intention}
+              onChange={(e) => { setIntention(e.target.value); setIntentionSaved(false) }}
+              placeholder="이 처방을 실천한다면 어떤 한 가지를 해볼까요?"
+              className="flex-1 bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-primary/40"
+              maxLength={100}
+            />
+            <button
+              onClick={handleSaveIntention}
+              disabled={savingIntention || !intention.trim() || intentionSaved}
+              className="px-4 py-3 bg-foreground text-background rounded-xl text-sm font-medium disabled:opacity-40 transition-opacity"
+            >
+              {intentionSaved ? '저장됨' : '저장'}
+            </button>
           </div>
         </section>
 

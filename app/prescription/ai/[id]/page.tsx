@@ -63,6 +63,7 @@ export default async function AiPrescriptionPage({
       prescription={prescription}
       isSaved={!!savedData}
       prescriptionId={id}
+      userIntention={row.user_intention ?? null}
     />
   )
 }
