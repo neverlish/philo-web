@@ -84,8 +84,8 @@ export default async function ProfilePage() {
     .from("user_saved_prescriptions")
     .select("prescription_id")
     .eq("user_id", user.id)
-    .gte("created_at", firstDayOfMonth)
-    .order("created_at", { ascending: true })
+    .gte("saved_at", firstDayOfMonth)
+    .order("saved_at", { ascending: true })
     .limit(1)
     .maybeSingle();
 
