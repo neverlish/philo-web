@@ -1,7 +1,7 @@
 // components/navigation/bottom-nav.tsx
 "use client";
 
-import { Home, User, Bookmark } from "lucide-react";
+import { Home, User, Bookmark, Compass } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MicFab } from "@/components/navigation/mic-fab";
@@ -9,6 +9,7 @@ import { MicFab } from "@/components/navigation/mic-fab";
 const navItems = [
   { href: "/", label: "홈", icon: Home, filled: true },
   { href: "/saved", label: "저장", icon: Bookmark, filled: false },
+  { href: "/journey", label: "여정", icon: Compass, filled: false },
   { href: "/profile", label: "프로필", icon: User, filled: false },
 ];
 
