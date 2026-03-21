@@ -9,6 +9,15 @@ import { PhilosophersList } from "@/components/home/philosophers-list";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase/client";
 import type { DbPhilosopher } from "@/types";
+import { ReflectionCard } from "@/components/home/reflection-card";
+
+type ReflectionTarget = {
+  id: string
+  title: string
+  philosopher_name: string
+  user_intention: string | null
+  created_at: string
+}
 
 const categories = [
   { label: "전체 보기", params: {} },
@@ -29,6 +38,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(0);
+  const [reflectionTarget, setReflectionTarget] = useState<ReflectionTarget | null>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -53,6 +63,37 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
       });
   }, [user, loading, router]);
 
+  useEffect(() => {
+    if (!user) return
+
+    const now = new Date()
+    const sevenDaysAgo = new Date(now)
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    const threeDaysAgo = new Date(now)
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
+
+    supabase
+      .from('ai_prescriptions')
+      .select('id, title, philosopher_name, user_intention, created_at')
+      .eq('user_id', user.id)
+      .gte('created_at', sevenDaysAgo.toISOString())
+      .lte('created_at', threeDaysAgo.toISOString())
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle()
+      .then(async ({ data: prescription }) => {
+        if (!prescription) return
+        // Check if already reflected
+        const { data: existing } = await supabase
+          .from('prescription_reflections')
+          .select('id')
+          .eq('prescription_id', prescription.id)
+          .eq('user_id', user.id)
+          .maybeSingle()
+        if (!existing) setReflectionTarget(prescription as ReflectionTarget)
+      })
+  }, [user])
+
   if (checking) return null;
 
   return (
@@ -60,6 +101,16 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
       <Header title="지혜의 다리" />
 
       <main className="flex-1 flex flex-col px-6 pt-2 pb-32 overflow-y-auto">
+        {reflectionTarget && (
+          <ReflectionCard
+            prescriptionId={reflectionTarget.id}
+            prescriptionTitle={reflectionTarget.title}
+            philosopherName={reflectionTarget.philosopher_name}
+            userIntention={reflectionTarget.user_intention}
+            daysAgo={Math.floor((Date.now() - new Date(reflectionTarget.created_at).getTime()) / 86400000)}
+          />
+        )}
+
         {/* Today's Inspiration */}
         <div className="w-full mb-8 mt-2">
           <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
