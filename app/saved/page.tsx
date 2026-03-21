@@ -11,6 +11,7 @@ interface SavedRow {
     philosopher_name: string
     philosopher_school: string
     quote_text: string
+    user_intention: string | null
   } | null
 }
 
@@ -32,7 +33,8 @@ export default async function Page() {
         title,
         philosopher_name,
         philosopher_school,
-        quote_text
+        quote_text,
+        user_intention
       )
     `)
     .eq('user_id', session.user.id)
@@ -54,6 +56,7 @@ export default async function Page() {
         day: 'numeric',
       }),
       category: ap?.philosopher_school ?? '',
+      userIntention: ap?.user_intention ?? null,
     }
   })
 

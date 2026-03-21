@@ -14,6 +14,7 @@ export interface SavedPrescription {
   excerpt: string;
   savedAt: string;
   category: string;
+  userIntention?: string | null;
 }
 
 interface SavedCardProps {
@@ -51,9 +52,14 @@ export function SavedCard({ prescription, index, onDelete }: SavedCardProps) {
           </div>
 
           {/* Excerpt */}
-          <p className="text-sm text-muted leading-relaxed mb-4 line-clamp-2 break-keep">
+          <p className={`text-sm text-muted leading-relaxed line-clamp-2 break-keep ${prescription.userIntention ? 'mb-2' : 'mb-4'}`}>
             {prescription.excerpt}
           </p>
+
+          {/* Intention */}
+          {prescription.userIntention && (
+            <p className="text-xs text-primary mb-4">다짐: &ldquo;{prescription.userIntention}&rdquo;</p>
+          )}
 
           {/* Footer */}
           <div className="flex items-center justify-between pt-3 border-t border-border/50">
