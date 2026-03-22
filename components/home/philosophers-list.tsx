@@ -9,22 +9,12 @@ import type { CategoryFilter } from "./home-page";
 
 const PAGE_SIZE = 5;
 
-const descriptions = [
-  "내면의 요새를 지키는 법",
-  "물처럼 부드럽게 흐르는 삶",
-  "시간의 짧음에 대하여",
-  "무위자연의 지혜",
-  "덕으로 이루는 행복",
-  "자기 성찰의 용기",
-  "흐름에 몸을 맡기는 삶",
-  "통제할 수 없는 것을 놓아주기",
-];
-
 function buildQuery(filter: CategoryFilter, offset: number) {
   const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) });
   if (filter.keyword) params.set("keyword", filter.keyword);
   if (filter.region) params.set("region", filter.region);
   if (filter.era) params.set("era", filter.era);
+  if (filter.concerns) params.set("concerns", filter.concerns);
   return `/api/philosophers?${params.toString()}`;
 }
 
@@ -72,7 +62,10 @@ export function PhilosophersList({ initialPhilosophers, initialHasMore, filter }
       if (!res.ok) return;
       const data = await res.json();
       const next: DbPhilosopher[] = data.philosophers ?? [];
-      setPhilosophers((prev) => [...prev, ...next]);
+      setPhilosophers((prev) => {
+        const seen = new Set(prev.map((p) => p.id));
+        return [...prev, ...next.filter((p) => !seen.has(p.id))];
+      });
       offsetRef.current += next.length;
       setHasMore(next.length === PAGE_SIZE);
     } catch {
@@ -133,7 +126,7 @@ export function PhilosophersList({ initialPhilosophers, initialHasMore, filter }
             school: "",
             description: philosopher.description || "",
           }}
-          description={descriptions[index % descriptions.length]}
+          description={philosopher.core_idea}
         />
       ))}
 

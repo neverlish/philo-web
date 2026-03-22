@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     const era = searchParams.get('era')
     const region = searchParams.get('region')
     const keyword = searchParams.get('keyword')
+    const concerns = searchParams.get('concerns')
 
     const limit = Math.min(Number(searchParams.get('limit') ?? 10), 50)
     const offset = Math.max(Number(searchParams.get('offset') ?? 0), 0)
@@ -29,6 +30,9 @@ export async function GET(request: Request) {
     }
     if (keyword) {
       query = query.or(`name.ilike.%${keyword}%,name_en.ilike.%${keyword}%,core_idea.ilike.%${keyword}%`)
+    }
+    if (concerns) {
+      query = query.overlaps('keywords', concerns.split(','))
     }
 
     const { data, error } = await query

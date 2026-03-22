@@ -11,7 +11,7 @@ export function SavedPrescriptionsPage({ savedPrescriptions: initialPrescription
   const [savedPrescriptions, setSavedPrescriptions] = useState<SavedPrescription[]>(
     initialPrescriptions
   );
-  const [filter, setFilter] = useState<"all" | "stoic" | "eastern" | "modern">("all");
+  const [filter, setFilter] = useState<"all" | "anxiety" | "relationship" | "freedom" | "meaning">("all");
 
   const handleDelete = async (id: string) => {
     const prescription = savedPrescriptions.find((p) => p.id === id)
@@ -30,9 +30,10 @@ export function SavedPrescriptionsPage({ savedPrescriptions: initialPrescription
 
   const categories = [
     { id: "all" as const, label: "전체" },
-    { id: "stoic" as const, label: "스토아" },
-    { id: "eastern" as const, label: "동양" },
-    { id: "modern" as const, label: "현대" },
+    { id: "anxiety" as const, label: "불안·두려움" },
+    { id: "relationship" as const, label: "인간관계" },
+    { id: "freedom" as const, label: "자유·선택" },
+    { id: "meaning" as const, label: "삶의 의미" },
   ];
 
   const filteredPrescriptions =
@@ -40,9 +41,10 @@ export function SavedPrescriptionsPage({ savedPrescriptions: initialPrescription
       ? savedPrescriptions
       : savedPrescriptions.filter((p) => {
           const cat = p.category;
-          if (filter === "stoic") return cat.includes("스토아") || cat.includes("Stoic");
-          if (filter === "eastern") return cat.includes("도가") || cat.includes("유가") || cat.includes("불교") || cat.includes("동양") || cat.includes("동아시아");
-          if (filter === "modern") return cat.includes("현대") || cat.includes("근대") || cat.includes("실존");
+          if (filter === "anxiety") return cat.includes("스토아") || cat.includes("Stoic") || cat.includes("Epictetus") || cat.includes("에픽");
+          if (filter === "relationship") return cat.includes("유가") || cat.includes("유교") || cat.includes("공자") || cat.includes("Confucian");
+          if (filter === "freedom") return cat.includes("실존") || cat.includes("Existential") || cat.includes("사르트르") || cat.includes("카뮈");
+          if (filter === "meaning") return cat.includes("에피쿠로스") || cat.includes("불교") || cat.includes("도가") || cat.includes("Buddhist") || cat.includes("Taoist") || cat.includes("하이데거");
           return true;
         });
 

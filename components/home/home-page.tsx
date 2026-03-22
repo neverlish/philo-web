@@ -1,7 +1,7 @@
 // components/home/home-page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase/client";
 import type { DbPhilosopher } from "@/types";
 import { ReflectionCard } from "@/components/home/reflection-card";
+import { ConcernInput } from "@/components/home/concern-input";
 
 type ReflectionTarget = {
   id: string
@@ -20,13 +21,14 @@ type ReflectionTarget = {
 }
 
 const categories = [
-  { label: "전체 보기", params: {} },
-  { label: "스토아 철학", params: { keyword: "스토아" } },
-  { label: "동양 사상", params: { region: "동양" } },
-  { label: "현대 철학", params: { era: "현대" } },
+  { label: "전체", params: {} },
+  { label: "불안·두려움", params: { concerns: "통제,수용,의지,자기수양,고통" } },
+  { label: "인간관계", params: { concerns: "관계,사랑,인(仁),예(禮),자비" } },
+  { label: "자유·선택", params: { concerns: "자유,선택,책임,주체성" } },
+  { label: "삶의 의미", params: { concerns: "행복,삶의 가치,존재,부조리,에우다이모니아" } },
 ];
 
-export type CategoryFilter = { keyword?: string; region?: string; era?: string };
+export type CategoryFilter = { keyword?: string; region?: string; era?: string; concerns?: string };
 
 interface HomePageProps {
   initialPhilosophers: DbPhilosopher[];
@@ -39,6 +41,14 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   const [checking, setChecking] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(0);
   const [reflectionTarget, setReflectionTarget] = useState<ReflectionTarget | null>(null);
+  const philosophersRef = useRef<HTMLDivElement>(null);
+
+  const handleCategorySelect = (index: number) => {
+    setSelectedCategory(index);
+    setTimeout(() => {
+      philosophersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -111,23 +121,30 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           />
         )}
 
-        {/* Today's Inspiration */}
-        <div className="w-full mb-8 mt-2">
-          <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
-            오늘의 영감
-          </span>
-          <h2 className="text-3xl font-serif font-normal leading-tight text-foreground mb-4 break-keep">
-            복잡함 속에서<br />
-            단순함을 찾다
-          </h2>
-          <p className="text-muted text-sm leading-relaxed mb-6">
-            진정한 지혜는 더하는 것이 아니라 덜어내는 과정에서 발견됩니다.
-          </p>
-          <div className="h-px w-full bg-primary/20" />
-        </div>
+        {/* Today's Inspiration / Concern Input */}
+        {user ? (
+          <div className="w-full mb-8 mt-2">
+            <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
+              오늘의 영감
+            </span>
+            <h2 className="text-3xl font-serif font-normal leading-tight text-foreground mb-4 break-keep">
+              복잡함 속에서<br />
+              단순함을 찾다
+            </h2>
+            <p className="text-muted text-sm leading-relaxed mb-6">
+              진정한 지혜는 더하는 것이 아니라 덜어내는 과정에서 발견됩니다.
+            </p>
+            <div className="h-px w-full bg-primary/20" />
+          </div>
+        ) : (
+          <ConcernInput
+            onCategorySelect={handleCategorySelect}
+            selectedCategory={selectedCategory}
+          />
+        )}
 
         {/* Category Filters */}
-        <div className="w-full mb-10">
+        <div ref={philosophersRef} className="w-full mb-10">
           <div className="flex gap-3 overflow-x-auto pb-2">
             {categories.map((category, index) => (
               <button
