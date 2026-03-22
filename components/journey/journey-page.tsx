@@ -74,6 +74,15 @@ export function JourneyPage({ items }: JourneyPageProps) {
                         <p className="text-sm text-primary font-medium">
                           &ldquo;{item.userIntention}&rdquo;
                         </p>
+                        {item.reflection && (
+                          <>
+                            <div className="h-px bg-border my-3" />
+                            <p className="text-xs text-muted">
+                              <span className="text-foreground/60">회고: </span>
+                              {item.reflection}
+                            </p>
+                          </>
+                        )}
                         <p className="text-[11px] text-muted mt-3">
                           {new Date(item.createdAt).toLocaleDateString('ko-KR', {
                             month: 'long',
