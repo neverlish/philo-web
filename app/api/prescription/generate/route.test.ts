@@ -2,34 +2,31 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 process.env.ANTHROPIC_API_KEY = 'test-api-key'
 
-const mockCreate = vi.fn().mockResolvedValue({
-  content: [
-    {
-      type: 'text',
-      text: JSON.stringify({
-        philosopher: {
-          name: '마르쿠스 아우렐리우스',
-          school: '스토아 학파',
-          era: '고대 (121-180)',
-        },
-        quote: {
-          text: '테스트 명언',
-          meaning: '테스트 해석',
-          application: '테스트 실천',
-        },
-        title: '테스트 처방 제목',
-        subtitle: '테스트 부제',
-      }),
-    },
-  ],
+const MOCK_PARSED_OUTPUT = {
+  philosopher: { name: '마르쿠스 아우렐리우스', school: '스토아 학파', era: '고대 (121-180)' },
+  quote: { text: '테스트 명언', meaning: '테스트 해석', application: '테스트 실천' },
+  title: '테스트 처방 제목',
+  subtitle: '테스트 부제',
+}
+
+const mockParse = vi.fn().mockResolvedValue({
+  parsed_output: MOCK_PARSED_OUTPUT,
+  content: [{ type: 'text', text: JSON.stringify(MOCK_PARSED_OUTPUT) }],
 })
 
 vi.mock('@anthropic-ai/sdk', () => {
   const MockAnthropic = vi.fn().mockImplementation(function () {
-    this.messages = { create: mockCreate }
+    this.messages = { parse: mockParse }
   })
-  return { default: MockAnthropic }
+  return {
+    default: MockAnthropic,
+    __esModule: true,
+  }
 })
+
+vi.mock('@anthropic-ai/sdk/helpers/json-schema', () => ({
+  jsonSchemaOutputFormat: vi.fn((schema) => schema),
+}))
 
 vi.mock('@/lib/supabase/server-auth', () => ({
   createClient: vi.fn().mockResolvedValue({
@@ -54,6 +51,10 @@ vi.mock('@/lib/supabase/server-auth', () => ({
 describe('POST /api/prescription/generate', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockParse.mockResolvedValue({
+      parsed_output: MOCK_PARSED_OUTPUT,
+      content: [{ type: 'text', text: JSON.stringify(MOCK_PARSED_OUTPUT) }],
+    })
   })
 
   it('should return 401 if not authenticated', async () => {
