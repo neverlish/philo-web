@@ -4,6 +4,31 @@ import Link from 'next/link'
 import { ArrowLeft, Mic } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { DbPhilosopher, DbQuote } from '@/types'
+import type { Metadata } from 'next'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const { data } = await supabase
+    .from('philosophers')
+    .select('name, name_en, core_idea, era, region')
+    .eq('id', id)
+    .single()
+
+  if (!data) return { title: '철학자' }
+
+  return {
+    title: data.name,
+    description: data.core_idea,
+    openGraph: {
+      title: `${data.name} (${data.name_en})`,
+      description: data.core_idea,
+    },
+  }
+}
 
 export default async function PhilosopherPage({
   params,
