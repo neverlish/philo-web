@@ -3,6 +3,7 @@ import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthProvider";
 import { PostHogProvider } from "@/lib/posthog/client";
+import { ServiceWorkerRegister } from "@/components/notification/service-worker-register";
 
 const notoSans = Noto_Sans_KR({
   subsets: ["latin"],
@@ -19,6 +20,7 @@ const notoSerif = Noto_Serif_KR({
 export const metadata: Metadata = {
   title: "오늘의철학 - Today's Philosophy",
   description: "매일 1분, 철학과 친구되기",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -34,6 +36,7 @@ export default function RootLayout({
             {children}
           </AuthProvider>
         </PostHogProvider>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
