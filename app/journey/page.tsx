@@ -20,33 +20,30 @@ export default async function Page() {
     return <LoginPrompt message="여정을 보려면 로그인이 필요해요" />
   }
 
-  type PrescriptionRow = {
-    id: string
-    title: string
-    philosopher_name: string
-    philosopher_school: string
-    user_intention: string | null
-    created_at: string | null
-    prescription_reflections: { reflection_text: string }[]
-  }
+  const [{ data: prescriptions }, { data: reflections }] = await Promise.all([
+    supabase
+      .from('ai_prescriptions')
+      .select('id, title, philosopher_name, philosopher_school, user_intention, created_at')
+      .eq('user_id', session.user.id)
+      .not('user_intention', 'is', null)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('prescription_reflections')
+      .select('prescription_id, reflection_text')
+      .eq('user_id', session.user.id),
+  ])
 
-  const { data } = await supabase
-    .from('ai_prescriptions')
-    .select('id, title, philosopher_name, philosopher_school, user_intention, created_at, prescription_reflections(reflection_text)')
-    .eq('user_id', session.user.id)
-    .not('user_intention', 'is', null)
-    .order('created_at', { ascending: false })
+  const reflectionMap = new Map(
+    (reflections ?? []).map((r) => [r.prescription_id, r.reflection_text])
+  )
 
-  const rows = (data ?? []) as PrescriptionRow[]
-  const items: JourneyItem[] = rows.map((row) => ({
+  const items: JourneyItem[] = (prescriptions ?? []).map((row) => ({
     id: row.id,
     title: row.title,
     philosopherName: row.philosopher_name,
     philosopherSchool: row.philosopher_school,
     userIntention: row.user_intention!,
-    reflection: row.prescription_reflections.length > 0
-      ? row.prescription_reflections[0].reflection_text
-      : null,
+    reflection: reflectionMap.get(row.id) ?? null,
     createdAt: row.created_at ?? '',
   }))
 
