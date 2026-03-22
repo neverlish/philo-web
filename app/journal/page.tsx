@@ -1,5 +1,8 @@
 // app/journal/page.tsx
+import type { Metadata } from 'next'
 import { BottomNav } from "@/components/navigation/bottom-nav";
+
+export const metadata: Metadata = { robots: { index: false, follow: false } }
 import { Header } from "@/components/navigation/header";
 import { LoginPrompt } from "@/components/auth/LoginPrompt";
 import { createClient } from "@/lib/supabase/server-auth";

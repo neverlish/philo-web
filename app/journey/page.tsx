@@ -1,4 +1,7 @@
+import type { Metadata } from 'next'
 import { JourneyPage } from '@/components/journey/journey-page'
+
+export const metadata: Metadata = { robots: { index: false, follow: false } }
 import { LoginPrompt } from '@/components/auth/LoginPrompt'
 import { createClient } from '@/lib/supabase/server-auth'
 
