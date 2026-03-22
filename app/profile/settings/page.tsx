@@ -7,6 +7,7 @@ import { Header } from "@/components/navigation/header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { supabase } from "@/lib/supabase/client";
 import { LogOut } from "lucide-react";
+import { PushToggle } from "@/components/notification/push-toggle";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -24,6 +25,12 @@ export default function SettingsPage() {
       <Header title="설정" showBack showSearch={false} />
 
       <main className="flex-1 px-6 pt-4 pb-32 overflow-y-auto">
+        {/* 알림 섹션 */}
+        <section className="mb-8">
+          <h2 className="text-xs font-medium tracking-widest text-muted uppercase mb-3">알림</h2>
+          <PushToggle />
+        </section>
+
         {/* 계정 섹션 */}
         <section className="mb-8">
           <h2 className="text-xs font-medium tracking-widest text-muted uppercase mb-3">계정</h2>
