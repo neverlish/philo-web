@@ -1,5 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# oh-my-claudecode
+.omc/
+
 # dependencies
 /node_modules
 /.pnp
@@ -23,6 +26,7 @@
 # misc
 .DS_Store
 *.pem
+.mcp.json
 
 # debug
 npm-debug.log*
