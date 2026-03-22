@@ -17,10 +17,28 @@ const notoSerif = Noto_Serif_KR({
   weight: ["400", "500", "600", "700"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://philoapp.kr'
+
 export const metadata: Metadata = {
-  title: "오늘의철학 - Today's Philosophy",
-  description: "매일 1분, 철학과 친구되기",
-  manifest: "/manifest.json",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: '오늘의철학',
+    template: '%s | 오늘의철학',
+  },
+  description: '매일 1분, 철학과 친구되기. 나의 고민에 꼭 맞는 철학 처방을 받아보세요.',
+  manifest: '/manifest.json',
+  openGraph: {
+    type: 'website',
+    locale: 'ko_KR',
+    siteName: '오늘의철학',
+    title: '오늘의철학',
+    description: '매일 1분, 철학과 친구되기. 나의 고민에 꼭 맞는 철학 처방을 받아보세요.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '오늘의철학',
+    description: '매일 1분, 철학과 친구되기. 나의 고민에 꼭 맞는 철학 처방을 받아보세요.',
+  },
 };
 
 export default function RootLayout({
