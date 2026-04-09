@@ -43,7 +43,10 @@ export function OpeningQuestion() {
           무엇입니까?
         </h1>
 
-        <div className="relative flex items-center justify-center mb-10 cursor-pointer animate-pulse">
+        <div
+          className="relative flex items-center justify-center mb-10 cursor-pointer animate-pulse"
+          onClick={() => router.push("/opening/input")}
+        >
           <div className="relative w-24 h-24 bg-gradient-to-br from-stone-100 to-stone-200 dark:from-stone-800 dark:to-stone-900 rounded-full shadow-lg flex items-center justify-center border border-border">
             <Mic className="w-10 h-10 text-primary" strokeWidth={1.5} />
           </div>

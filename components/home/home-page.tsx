@@ -20,6 +20,13 @@ type ReflectionTarget = {
   created_at: string
 }
 
+type TodayPrescription = {
+  id: string
+  title: string
+  philosopher_name: string
+  quote_text: string
+}
+
 const categories = [
   { label: "전체", params: {} },
   { label: "불안·두려움", params: { concerns: "통제,수용,의지,자기수양,고통" } },
@@ -41,6 +48,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   const [checking, setChecking] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(0);
   const [reflectionTarget, setReflectionTarget] = useState<ReflectionTarget | null>(null);
+  const [todayPrescription, setTodayPrescription] = useState<TodayPrescription | null>(null);
   const philosophersRef = useRef<HTMLDivElement>(null);
 
   const handleCategorySelect = (index: number) => {
@@ -70,6 +78,18 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           return;
         }
         setChecking(false);
+        // 오늘 받은 처방 fetch
+        supabase
+          .from("ai_prescriptions")
+          .select("id, title, philosopher_name, quote_text")
+          .eq("user_id", user.id)
+          .gte("created_at", `${today}T00:00:00`)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+          .then(({ data }) => {
+            if (data) setTodayPrescription(data as TodayPrescription);
+          });
       });
   }, [user, loading, router]);
 
@@ -121,20 +141,37 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           />
         )}
 
-        {/* Today's Inspiration / Concern Input */}
+        {/* Today's Prescription / Concern Input */}
         {user ? (
           <div className="w-full mb-8 mt-2">
-            <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
-              오늘의 영감
-            </span>
-            <h2 className="text-3xl font-serif font-normal leading-tight text-foreground mb-4 break-keep">
-              복잡함 속에서<br />
-              단순함을 찾다
-            </h2>
-            <p className="text-muted text-sm leading-relaxed mb-6">
-              진정한 지혜는 더하는 것이 아니라 덜어내는 과정에서 발견됩니다.
-            </p>
-            <div className="h-px w-full bg-primary/20" />
+            {todayPrescription ? (
+              <a href={`/prescription/ai/${todayPrescription.id}`} className="block group">
+                <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
+                  오늘의 처방
+                </span>
+                <h2 className="text-2xl font-serif font-normal leading-tight text-foreground mb-3 break-keep group-hover:text-primary transition-colors">
+                  {todayPrescription.title}
+                </h2>
+                <p className="text-muted text-sm leading-relaxed mb-2 line-clamp-2">
+                  &ldquo;{todayPrescription.quote_text}&rdquo;
+                </p>
+                <p className="text-xs text-primary mb-6">— {todayPrescription.philosopher_name}</p>
+                <div className="h-px w-full bg-primary/20" />
+              </a>
+            ) : (
+              <>
+                <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
+                  오늘의 영감
+                </span>
+                <h2 className="text-3xl font-serif font-normal leading-tight text-foreground mb-4 break-keep">
+                  오늘 고민을<br />이야기해보세요
+                </h2>
+                <p className="text-muted text-sm leading-relaxed mb-6">
+                  마음을 어지럽히는 것을 말하면 철학자의 지혜로 처방해드려요.
+                </p>
+                <div className="h-px w-full bg-primary/20" />
+              </>
+            )}
           </div>
         ) : (
           <ConcernInput
