@@ -62,6 +62,12 @@ export function OpeningQuestion() {
 
       {/* Footer */}
       <footer className="w-full p-8 z-10 flex flex-col items-center gap-4 pb-12">
+        <button
+          onClick={() => router.push("/opening/input")}
+          className="text-xs text-muted hover:text-foreground transition-colors underline underline-offset-4"
+        >
+          오늘은 넘기기
+        </button>
         <div className="flex gap-2 mt-4">
           <div className="w-1.5 h-1.5 rounded-full bg-muted" />
           <div className="w-1.5 h-1.5 rounded-full bg-primary" />

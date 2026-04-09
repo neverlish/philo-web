@@ -200,7 +200,7 @@ export function PrescriptionDetail({
         </section>
 
         {/* Footer Actions */}
-        <footer className="grid grid-cols-2 gap-4">
+        <footer className="grid grid-cols-2 gap-4 mb-8">
           <button
             onClick={handleShare}
             disabled={sharing}
@@ -226,6 +226,17 @@ export function PrescriptionDetail({
             {saved ? "저장됨" : "저장하기"}
           </button>
         </footer>
+
+        {/* Next Action */}
+        <div className="text-center pb-8">
+          <p className="text-xs text-muted mb-3">다른 철학자들의 지혜도 탐색해보세요</p>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline underline-offset-4"
+          >
+            철학자 탐색하기 →
+          </Link>
+        </div>
       </main>
     </div>
   );
