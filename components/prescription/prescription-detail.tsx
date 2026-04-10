@@ -69,10 +69,14 @@ export function PrescriptionDetail({
     if (sharing) return;
     setSharing(true);
 
-    const text = `"${quote.text}"\n— ${philosopher.name} (${philosopher.school})\n\n오늘의철학 앱에서 받은 처방입니다.`;
+    const shareUrl = prescriptionId
+      ? `${window.location.origin}/share/${prescriptionId}`
+      : window.location.origin
+    const text = `"${quote.text}"\n— ${philosopher.name} (${philosopher.school})\n\n${shareUrl}`;
     const shareData = {
       title: `${philosopher.name}의 처방`,
       text,
+      url: shareUrl,
     };
 
     try {
