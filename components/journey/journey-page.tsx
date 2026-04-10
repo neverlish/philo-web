@@ -40,10 +40,23 @@ interface JourneyPageProps {
   todayPrescription: TodayPrescription | null
 }
 
+function getThemeInsights(items: JourneyItem[]) {
+  const count = new Map<string, number>()
+  for (const item of items) {
+    for (const tag of item.themeTags ?? []) {
+      count.set(tag, (count.get(tag) ?? 0) + 1)
+    }
+  }
+  return Array.from(count.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+}
+
 export function JourneyPage({ items, journalEntries, todayPrescription }: JourneyPageProps) {
   const groups = groupByMonth(items)
   const [tab, setTab] = useState<'journey' | 'journal'>('journey')
   const reflectionCount = items.filter((i) => i.reflection !== null).length
+  const themeInsights = getThemeInsights(items)
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
@@ -114,6 +127,24 @@ export function JourneyPage({ items, journalEntries, todayPrescription }: Journe
                 </div>
               </div>
 
+              {/* 테마 인사이트 */}
+              {themeInsights.length > 0 && (
+                <div className="px-6 py-4 border-b border-border">
+                  <p className="text-[11px] text-muted mb-2.5">자주 고민하는 것</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {themeInsights.map(([tag, count]) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] bg-primary/10 text-primary/80 border border-primary/15"
+                      >
+                        {tag}
+                        <span className="text-primary/50 text-[10px]">{count}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* 타임라인 */}
               <div className="px-6 pt-6 relative">
                 {/* 세로 라인 */}
@@ -157,6 +188,17 @@ export function JourneyPage({ items, journalEntries, todayPrescription }: Journe
                                     {item.reflection}
                                   </p>
                                 </>
+                              )}
+
+                              {/* 테마 태그 */}
+                              {item.themeTags && item.themeTags.length > 0 && (
+                                <div className="flex gap-1 mt-2.5">
+                                  {item.themeTags.map((tag) => (
+                                    <span key={tag} className="px-2 py-0.5 rounded-full text-[10px] bg-primary/10 text-primary/70 border border-primary/15">
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
                               )}
 
                               {/* 진행 단계 */}

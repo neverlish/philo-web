@@ -13,6 +13,7 @@ export interface JourneyItem {
   userIntention: string
   reflection: string | null
   createdAt: string
+  themeTags: string[]
 }
 
 export interface JournalEntry {
@@ -47,7 +48,7 @@ export default async function Page() {
   ] = await Promise.all([
     supabase
       .from('ai_prescriptions')
-      .select('id, title, philosopher_name, philosopher_school, user_intention, created_at')
+      .select('id, title, philosopher_name, philosopher_school, user_intention, created_at, theme_tags')
       .eq('user_id', session.user.id)
       .not('user_intention', 'is', null)
       .order('created_at', { ascending: false }),
@@ -82,6 +83,7 @@ export default async function Page() {
     userIntention: row.user_intention!,
     reflection: reflectionMap.get(row.id) ?? null,
     createdAt: row.created_at ?? '',
+    themeTags: (row.theme_tags as string[]) ?? [],
   }))
 
   return (
