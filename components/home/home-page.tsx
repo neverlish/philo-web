@@ -174,10 +174,40 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
             )}
           </div>
         ) : (
-          <ConcernInput
-            onCategorySelect={handleCategorySelect}
-            selectedCategory={selectedCategory}
-          />
+          <>
+            {/* Hero for non-logged-in users */}
+            <div className="w-full mb-8 mt-4">
+              <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
+                오늘의철학
+              </span>
+              <h2 className="text-3xl font-serif font-normal leading-tight text-foreground mb-4 break-keep">
+                고민을 말하면<br />
+                철학자가 처방합니다
+              </h2>
+              <p className="text-muted text-sm leading-relaxed mb-6">
+                소크라테스, 노자, 니체가 오늘 당신의 고민을 듣습니다.<br />
+                2천 년의 지혜가 지금 이 순간을 위해 준비돼 있어요.
+              </p>
+              <div className="flex gap-4 mb-8">
+                {[
+                  { step: "01", label: "고민 입력" },
+                  { step: "02", label: "처방 생성" },
+                  { step: "03", label: "실천하기" },
+                ].map(({ step, label }) => (
+                  <div key={step} className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-primary">{step}</span>
+                    <span className="text-xs text-muted">{label}</span>
+                    {step !== "03" && <span className="text-muted/40 text-xs">→</span>}
+                  </div>
+                ))}
+              </div>
+              <div className="h-px w-full bg-primary/20 mb-8" />
+            </div>
+            <ConcernInput
+              onCategorySelect={handleCategorySelect}
+              selectedCategory={selectedCategory}
+            />
+          </>
         )}
 
         {/* Category Filters */}
