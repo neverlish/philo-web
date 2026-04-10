@@ -58,6 +58,11 @@ export default function PreviewPrescriptionPage() {
       <main className="flex-1 px-6 py-4">
         {/* Title */}
         <header className="mb-10 text-center">
+          {data.concern && (
+            <p className="text-xs text-muted mb-3 italic break-keep">
+              &ldquo;{data.concern}&rdquo;
+            </p>
+          )}
           <h2 className="font-serif text-2xl font-bold leading-tight mb-2 text-foreground">
             {title}
           </h2>

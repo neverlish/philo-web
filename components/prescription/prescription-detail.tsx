@@ -128,6 +128,11 @@ export function PrescriptionDetail({
       <main className="flex-1 px-6 py-4">
         {/* Header Section */}
         <header className="mb-10 text-center">
+          {concern && (
+            <p className="text-xs text-muted mb-3 italic break-keep">
+              &ldquo;{concern}&rdquo;
+            </p>
+          )}
           <h2 className="font-serif text-2xl font-bold leading-tight mb-2 text-foreground">
             {title}
           </h2>

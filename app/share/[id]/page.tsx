@@ -61,6 +61,11 @@ export default async function SharePage({
       <main className="flex-1 px-6 pb-12">
         {/* Title */}
         <div className="mb-8 text-center">
+          {row.concern && (
+            <p className="text-xs text-muted mb-3 italic break-keep">
+              &ldquo;{row.concern}&rdquo;
+            </p>
+          )}
           <h1 className="font-serif text-2xl font-bold leading-tight mb-2 text-foreground">
             {row.title}
           </h1>
