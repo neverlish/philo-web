@@ -26,22 +26,29 @@ export default async function Page() {
     return <LoginPrompt message="저장된 처방을 보려면 로그인이 필요해요" />;
   }
 
-  const { data } = await supabase
-    .from('user_saved_prescriptions')
-    .select(`
-      id,
-      saved_at,
-      prescription_id,
-      ai_prescriptions (
-        title,
-        philosopher_name,
-        philosopher_school,
-        quote_text,
-        user_intention
-      )
-    `)
-    .eq('user_id', session.user.id)
-    .order('saved_at', { ascending: false })
+  const [{ data }, { data: historyData }] = await Promise.all([
+    supabase
+      .from('user_saved_prescriptions')
+      .select(`
+        id,
+        saved_at,
+        prescription_id,
+        ai_prescriptions (
+          title,
+          philosopher_name,
+          philosopher_school,
+          quote_text,
+          user_intention
+        )
+      `)
+      .eq('user_id', session.user.id)
+      .order('saved_at', { ascending: false }),
+    supabase
+      .from('ai_prescriptions')
+      .select('id, title, philosopher_name, philosopher_school, quote_text, user_intention, created_at')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false }),
+  ])
 
   const rows = (data ?? []) as SavedRow[]
   const savedPrescriptions = rows.map((row) => {
@@ -63,5 +70,21 @@ export default async function Page() {
     }
   })
 
-  return <SavedPrescriptionsPage savedPrescriptions={savedPrescriptions} />;
+  const savedIds = new Set(rows.map((r) => r.prescription_id))
+  const history = (historyData ?? []).map((row) => ({
+    id: row.id,
+    prescriptionId: row.id,
+    philosopher: row.philosopher_name,
+    philosopherId: '',
+    title: row.title,
+    excerpt: row.quote_text,
+    savedAt: row.created_at
+      ? new Date(row.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+      : '',
+    category: row.philosopher_school,
+    userIntention: row.user_intention ?? null,
+    isSaved: savedIds.has(row.id),
+  }))
+
+  return <SavedPrescriptionsPage savedPrescriptions={savedPrescriptions} history={history} />;
 }

@@ -7,7 +7,18 @@ import { BottomNav } from "@/components/navigation/bottom-nav";
 import { SavedCard, SavedPrescription } from "@/components/saved/saved-card";
 import { Header } from "@/components/navigation/header";
 
-export function SavedPrescriptionsPage({ savedPrescriptions: initialPrescriptions }: { savedPrescriptions: SavedPrescription[] }) {
+interface HistoryItem extends SavedPrescription {
+  isSaved?: boolean
+}
+
+export function SavedPrescriptionsPage({
+  savedPrescriptions: initialPrescriptions,
+  history = [],
+}: {
+  savedPrescriptions: SavedPrescription[]
+  history?: HistoryItem[]
+}) {
+  const [tab, setTab] = useState<"saved" | "history">("saved")
   const [savedPrescriptions, setSavedPrescriptions] = useState<SavedPrescription[]>(
     initialPrescriptions
   );
@@ -50,65 +61,97 @@ export function SavedPrescriptionsPage({ savedPrescriptions: initialPrescription
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
-      <Header title="저장된 처방" />
+      <Header title="처방함" />
 
-      <main className="flex-1 flex flex-col px-6 pt-2 pb-32 overflow-y-auto">
-        {/* Info Text */}
-        <div className="w-full mb-6 mt-2">
-          <p className="text-sm text-muted leading-relaxed">
-            마음에 드는 철학적 처방을 저장해두고 언제든 다시 찾아볼 수 있습니다.
-          </p>
-        </div>
+      {/* Tabs */}
+      <div className="flex border-b border-border px-6">
+        <button
+          onClick={() => setTab("saved")}
+          className={`flex-1 py-3 text-sm font-medium transition-colors ${
+            tab === "saved"
+              ? "text-foreground border-b-2 border-foreground"
+              : "text-muted hover:text-foreground"
+          }`}
+        >
+          저장됨 {savedPrescriptions.length > 0 && <span className="ml-1 text-xs text-primary">{savedPrescriptions.length}</span>}
+        </button>
+        <button
+          onClick={() => setTab("history")}
+          className={`flex-1 py-3 text-sm font-medium transition-colors ${
+            tab === "history"
+              ? "text-foreground border-b-2 border-foreground"
+              : "text-muted hover:text-foreground"
+          }`}
+        >
+          전체 기록 {history.length > 0 && <span className="ml-1 text-xs text-primary">{history.length}</span>}
+        </button>
+      </div>
 
-        {/* Category Filters */}
-        <div className="w-full mb-6">
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setFilter(category.id)}
-                className={`flex-none px-5 py-2.5 rounded-full border font-serif text-sm whitespace-nowrap transition-colors ${
-                  filter === category.id
-                    ? "border-primary/20 bg-stone-100 text-foreground"
-                    : "border-primary/20 bg-transparent text-muted hover:bg-stone-50 hover:text-foreground"
-                }`}
-              >
-                {category.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Results Count */}
-        <div className="w-full mb-4">
-          <p className="text-xs text-muted">
-            총 <span className="font-medium text-foreground">{filteredPrescriptions.length}</span>개의
-            처방
-          </p>
-        </div>
-
-        {/* Saved Prescriptions List */}
-        {filteredPrescriptions.length > 0 ? (
-          <div className="w-full space-y-4">
-            {filteredPrescriptions.map((prescription, index) => (
-              <SavedCard
-                key={prescription.id}
-                prescription={prescription}
-                index={index}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mb-4">
-              <Bookmark className="w-8 h-8 text-muted" strokeWidth={1.5} />
+      <main className="flex-1 flex flex-col px-6 pt-4 pb-32 overflow-y-auto">
+        {tab === "saved" ? (
+          <>
+            {/* Category Filters */}
+            <div className="w-full mb-6">
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => setFilter(category.id)}
+                    className={`flex-none px-5 py-2.5 rounded-full border font-serif text-sm whitespace-nowrap transition-colors ${
+                      filter === category.id
+                        ? "border-primary/20 bg-stone-100 text-foreground"
+                        : "border-primary/20 bg-transparent text-muted hover:bg-stone-50 hover:text-foreground"
+                    }`}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <p className="text-sm text-muted mb-2">저장된 처방이 없습니다</p>
-            <p className="text-xs text-muted">
-              철학자 카드에서 마음에 드는 처방을 저장해보세요
-            </p>
-          </div>
+
+            {filteredPrescriptions.length > 0 ? (
+              <div className="w-full space-y-4">
+                {filteredPrescriptions.map((prescription, index) => (
+                  <SavedCard
+                    key={prescription.id}
+                    prescription={prescription}
+                    index={index}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center py-20">
+                <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mb-4">
+                  <Bookmark className="w-8 h-8 text-muted" strokeWidth={1.5} />
+                </div>
+                <p className="text-sm text-muted mb-2">저장된 처방이 없습니다</p>
+                <p className="text-xs text-muted">처방 페이지에서 북마크를 눌러보세요</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            {history.length > 0 ? (
+              <div className="w-full space-y-3">
+                {history.map((item, index) => (
+                  <SavedCard
+                    key={item.id}
+                    prescription={item}
+                    index={index}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center py-20">
+                <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mb-4">
+                  <Bookmark className="w-8 h-8 text-muted" strokeWidth={1.5} />
+                </div>
+                <p className="text-sm text-muted mb-2">아직 받은 처방이 없어요</p>
+                <p className="text-xs text-muted">오늘의 고민을 말해보세요</p>
+              </div>
+            )}
+          </>
         )}
       </main>
 
