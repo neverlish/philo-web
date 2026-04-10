@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { Mic } from "lucide-react"
 import { Header } from "@/components/navigation/header"
 import { BottomNav } from "@/components/navigation/bottom-nav"
 import { JournalTab } from "@/components/journey/journal-tab"
@@ -74,10 +75,21 @@ export function JourneyPage({ items, journalEntries, todayPrescription }: Journe
       <main className="flex-1 px-6 pt-4 pb-32 overflow-y-auto">
         {tab === 'journey' ? (
           items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-center">
-              <p className="text-muted text-sm leading-relaxed">
-                처방을 받고 다짐을 남기면<br />여기에 쌓여요
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mb-4">
+                <Mic className="w-8 h-8 text-muted" strokeWidth={1.5} />
+              </div>
+              <p className="text-sm text-foreground font-medium mb-2">아직 다짐이 없어요</p>
+              <p className="text-xs text-muted mb-6 leading-relaxed">
+                처방을 받고 오늘의 다짐을 남기면<br />여기에 여정이 쌓여요
               </p>
+              <Link
+                href="/opening/input"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-foreground text-background rounded-xl text-sm font-medium transition-all active:scale-95"
+              >
+                <Mic className="w-4 h-4" strokeWidth={1.5} />
+                첫 처방 받기
+              </Link>
             </div>
           ) : (
             <div className="space-y-10">

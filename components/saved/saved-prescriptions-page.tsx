@@ -2,7 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import { Bookmark } from "lucide-react";
+import { Bookmark, Mic } from "lucide-react";
+import Link from "next/link";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { SavedCard, SavedPrescription } from "@/components/saved/saved-card";
 import { Header } from "@/components/navigation/header";
@@ -121,12 +122,21 @@ export function SavedPrescriptionsPage({
                 ))}
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center py-20">
+              <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mb-4">
                   <Bookmark className="w-8 h-8 text-muted" strokeWidth={1.5} />
                 </div>
-                <p className="text-sm text-muted mb-2">저장된 처방이 없습니다</p>
-                <p className="text-xs text-muted">처방 페이지에서 북마크를 눌러보세요</p>
+                <p className="text-sm text-foreground font-medium mb-2">저장된 처방이 없어요</p>
+                <p className="text-xs text-muted mb-6 leading-relaxed">
+                  마음에 닿는 처방을 받으면<br />북마크로 저장해두세요
+                </p>
+                <Link
+                  href="/opening/input"
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-foreground text-background rounded-xl text-sm font-medium transition-all active:scale-95"
+                >
+                  <Mic className="w-4 h-4" strokeWidth={1.5} />
+                  처방 받으러 가기
+                </Link>
               </div>
             )}
           </>
@@ -143,12 +153,21 @@ export function SavedPrescriptionsPage({
                 ))}
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center py-20">
+              <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mb-4">
-                  <Bookmark className="w-8 h-8 text-muted" strokeWidth={1.5} />
+                  <Mic className="w-8 h-8 text-muted" strokeWidth={1.5} />
                 </div>
-                <p className="text-sm text-muted mb-2">아직 받은 처방이 없어요</p>
-                <p className="text-xs text-muted">오늘의 고민을 말해보세요</p>
+                <p className="text-sm text-foreground font-medium mb-2">첫 처방을 받아보세요</p>
+                <p className="text-xs text-muted mb-6 leading-relaxed">
+                  오늘의 고민을 말하면<br />소크라테스, 노자, 니체가 처방해드려요
+                </p>
+                <Link
+                  href="/opening/input"
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-foreground text-background rounded-xl text-sm font-medium transition-all active:scale-95"
+                >
+                  <Mic className="w-4 h-4" strokeWidth={1.5} />
+                  지금 고민 말하기
+                </Link>
               </div>
             )}
           </>
