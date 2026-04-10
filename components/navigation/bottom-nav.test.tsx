@@ -6,10 +6,6 @@ vi.mock('next/navigation', () => ({
   usePathname: vi.fn(() => '/'),
 }))
 
-vi.mock('@/components/navigation/mic-fab', () => ({
-  MicFab: () => null,
-}))
-
 vi.mock('next/link', () => ({
   default: ({ href, children, ...props }: any) => (
     <a href={href} {...props}>{children}</a>

@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase/client";
 import type { DbPhilosopher } from "@/types";
 import { ReflectionCard } from "@/components/home/reflection-card";
-import { ConcernInput } from "@/components/home/concern-input";
+import { ConcernSheet } from "@/components/home/concern-sheet";
 
 type ReflectionTarget = {
   id: string
@@ -49,6 +49,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   const [selectedCategory, setSelectedCategory] = useState(0);
   const [reflectionTarget, setReflectionTarget] = useState<ReflectionTarget | null>(null);
   const [todayPrescription, setTodayPrescription] = useState<TodayPrescription | null>(null);
+  const [showSheet, setShowSheet] = useState(false);
   const philosophersRef = useRef<HTMLDivElement>(null);
 
   const handleCategorySelect = (index: number) => {
@@ -141,7 +142,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           />
         )}
 
-        {/* Today's Prescription / Concern Input */}
+        {/* Today's Prescription / CTA */}
         {user ? (
           <div className="w-full mb-8 mt-2">
             {todayPrescription ? (
@@ -159,7 +160,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
                 <div className="h-px w-full bg-primary/20" />
               </a>
             ) : (
-              <>
+              <div className="w-full mb-8">
                 <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
                   오늘의 영감
                 </span>
@@ -169,8 +170,14 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
                 <p className="text-muted text-sm leading-relaxed mb-6">
                   마음을 어지럽히는 것을 말하면 철학자의 지혜로 처방해드려요.
                 </p>
+                <button
+                  onClick={() => setShowSheet(true)}
+                  className="w-full py-3.5 rounded-xl bg-foreground text-background text-sm font-medium transition-all active:scale-95 mb-8"
+                >
+                  오늘 고민 말하기
+                </button>
                 <div className="h-px w-full bg-primary/20" />
-              </>
+              </div>
             )}
           </div>
         ) : (
@@ -201,12 +208,14 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
                   </div>
                 ))}
               </div>
+              <button
+                onClick={() => setShowSheet(true)}
+                className="w-full py-3.5 rounded-xl bg-foreground text-background text-sm font-medium transition-all active:scale-95 mb-8"
+              >
+                지금 고민 말하기
+              </button>
               <div className="h-px w-full bg-primary/20 mb-8" />
             </div>
-            <ConcernInput
-              onCategorySelect={handleCategorySelect}
-              selectedCategory={selectedCategory}
-            />
           </>
         )}
 
@@ -240,6 +249,12 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
 
 
       <BottomNav />
+
+      <ConcernSheet
+        isOpen={showSheet}
+        onClose={() => setShowSheet(false)}
+        isLoggedIn={!!user}
+      />
     </div>
   );
 }
