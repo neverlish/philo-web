@@ -38,13 +38,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setUser({
           id: session.user.id,
           email: session.user.email,
           user_metadata: session.user.user_metadata,
         })
+
+        // 로그인 직후 대기 중인 고민이 있으면 실제 처방 생성
+        if (event === 'SIGNED_IN') {
+          const pendingConcern = localStorage.getItem('pendingConcern')
+          if (pendingConcern) {
+            localStorage.removeItem('pendingConcern')
+            fetch('/api/prescription/generate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ concern: pendingConcern }),
+            })
+              .then((res) => res.ok ? res.json() : null)
+              .then((data) => {
+                if (data?.prescriptionId) {
+                  window.location.href = `/prescription/ai/${data.prescriptionId}`
+                }
+              })
+              .catch(() => {})
+          }
+        }
       } else {
         setUser(null)
       }

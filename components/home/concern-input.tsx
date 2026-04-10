@@ -76,10 +76,12 @@ export function ConcernInput({ onCategorySelect, selectedCategory }: ConcernInpu
       if (!res.ok) throw new Error("처방 생성에 실패했어요");
 
       const data = await res.json();
+      const concern = text.trim()
       sessionStorage.setItem("previewPrescription", JSON.stringify({
-        concern: text.trim(),
+        concern,
         ...data.prescription,
       }));
+      localStorage.setItem("pendingConcern", concern)
       router.push("/preview/prescription");
     } catch {
       setError("잠시 후 다시 시도해주세요");
