@@ -126,9 +126,15 @@ export function PrescriptionDetail({
             </blockquote>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-bold text-base font-serif text-foreground">
-                  {philosopher.name}
-                </p>
+                {philosopher.id !== 'ai-generated' ? (
+                  <Link href={`/philosopher/${philosopher.id}`} className="font-bold text-base font-serif text-foreground hover:text-primary transition-colors underline underline-offset-2">
+                    {philosopher.name}
+                  </Link>
+                ) : (
+                  <p className="font-bold text-base font-serif text-foreground">
+                    {philosopher.name}
+                  </p>
+                )}
                 <p className="text-xs text-muted uppercase tracking-wider mt-1">
                   {philosopher.school}, &lt;{philosopher.era}&gt;
                 </p>
