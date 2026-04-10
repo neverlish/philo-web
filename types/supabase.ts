@@ -63,6 +63,33 @@ export type Database = {
         }
         Relationships: []
       }
+      journal_entries: {
+        Row: {
+          id: string
+          user_id: string
+          content: string
+          prescription_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          content: string
+          prescription_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          content?: string
+          prescription_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_prescriptions: {
         Row: {
           id: string
