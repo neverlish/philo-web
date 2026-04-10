@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Prescription } from "@/types";
-import { ArrowLeft, Bookmark, Share2, Clock } from "lucide-react";
+import { ArrowLeft, Bookmark, Share2, Clock, Link2 } from "lucide-react";
 import Link from "next/link";
 import { usePostHog } from 'posthog-js/react'
 
@@ -11,6 +11,7 @@ interface PrescriptionDetailProps {
   isSaved?: boolean;
   prescriptionId?: string;
   userIntention?: string | null;
+  concern?: string | null;
 }
 
 export function PrescriptionDetail({
@@ -18,12 +19,14 @@ export function PrescriptionDetail({
   isSaved: initialIsSaved = false,
   prescriptionId,
   userIntention,
+  concern,
 }: PrescriptionDetailProps) {
   const { quote, philosopher, title, subtitle } = prescription;
   const [saved, setSaved] = useState(initialIsSaved);
   const [saving, setSaving] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [shared, setShared] = useState(false);
+  const [copied, setCopied] = useState(false);
   const posthog = usePostHog()
   const [intention, setIntention] = useState(userIntention ?? '')
   const [savingIntention, setSavingIntention] = useState(false)
@@ -65,6 +68,18 @@ export function PrescriptionDetail({
     }
   };
 
+  const handleCopyUrl = async () => {
+    if (!prescriptionId) return;
+    const url = `${window.location.origin}/share/${prescriptionId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // ignore
+    }
+  };
+
   const handleShare = async () => {
     if (sharing) return;
     setSharing(true);
@@ -72,7 +87,8 @@ export function PrescriptionDetail({
     const shareUrl = prescriptionId
       ? `${window.location.origin}/share/${prescriptionId}`
       : window.location.origin
-    const text = `"${quote.text}"\n— ${philosopher.name} (${philosopher.school})\n\n${shareUrl}`;
+    const concernLine = concern ? `고민: ${concern}\n\n` : "";
+    const text = `${concernLine}"${quote.text}"\n— ${philosopher.name} (${philosopher.school})\n\n${shareUrl}`;
     const shareData = {
       title: `${philosopher.name}의 처방`,
       text,
@@ -210,15 +226,25 @@ export function PrescriptionDetail({
         </section>
 
         {/* Footer Actions */}
-        <footer className="grid grid-cols-2 gap-4 mb-8">
-          <button
-            onClick={handleShare}
-            disabled={sharing}
-            className="flex items-center justify-center gap-2 bg-card border border-border py-4 rounded-xl font-medium text-sm transition-all active:scale-95 hover:bg-stone-50 disabled:opacity-50"
-          >
-            <Share2 className="w-4 h-4" strokeWidth={1.5} />
-            {shared ? "공유됨" : "공유하기"}
-          </button>
+        <footer className="flex flex-col gap-3 mb-8">
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handleShare}
+              disabled={sharing}
+              className="flex items-center justify-center gap-2 bg-card border border-border py-4 rounded-xl font-medium text-sm transition-all active:scale-95 hover:bg-stone-50 disabled:opacity-50"
+            >
+              <Share2 className="w-4 h-4" strokeWidth={1.5} />
+              {shared ? "공유됨" : "공유하기"}
+            </button>
+            <button
+              onClick={handleCopyUrl}
+              disabled={!prescriptionId}
+              className="flex items-center justify-center gap-2 bg-card border border-border py-4 rounded-xl font-medium text-sm transition-all active:scale-95 hover:bg-stone-50 disabled:opacity-50"
+            >
+              <Link2 className="w-4 h-4" strokeWidth={1.5} />
+              {copied ? "복사됨" : "URL 복사"}
+            </button>
+          </div>
           <button
             onClick={toggleSave}
             disabled={saving || !prescriptionId}
