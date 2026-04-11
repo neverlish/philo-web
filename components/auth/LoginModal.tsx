@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthProvider'
+import { usePostHog } from 'posthog-js/react'
 
 interface LoginModalProps {
   isOpen: boolean
@@ -10,12 +11,14 @@ interface LoginModalProps {
 
 export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const { signInWithGoogle } = useAuth()
+  const posthog = usePostHog()
   const [isSigningIn, setIsSigningIn] = useState(false)
 
   if (!isOpen) return null
 
   const handleSignIn = async () => {
     setIsSigningIn(true)
+    posthog?.capture('login_attempted')
     try {
       await signInWithGoogle()
     } catch (error) {

@@ -41,7 +41,10 @@ export function PrescriptionDetail({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ intention }),
       })
-      if (res.ok) setIntentionSaved(true)
+      if (res.ok) {
+        posthog?.capture('intention_saved', { prescription_id: prescriptionId, intention_length: intention.trim().length })
+        setIntentionSaved(true)
+      }
     } finally {
       setSavingIntention(false)
     }
@@ -73,6 +76,7 @@ export function PrescriptionDetail({
     const url = `${window.location.origin}/share/${prescriptionId}`;
     try {
       await navigator.clipboard.writeText(url);
+      posthog?.capture('prescription_url_copied', { prescription_id: prescriptionId })
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {

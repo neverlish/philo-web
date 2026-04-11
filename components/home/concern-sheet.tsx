@@ -1,10 +1,11 @@
 // components/home/concern-sheet.tsx
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Mic, MicOff, X, Loader2 } from "lucide-react";
+import { usePostHog } from 'posthog-js/react';
 
 type SttStatus = "idle" | "listening" | "error";
 
@@ -16,11 +17,16 @@ interface ConcernSheetProps {
 
 export function ConcernSheet({ isOpen, onClose, isLoggedIn = false }: ConcernSheetProps) {
   const router = useRouter();
+  const posthog = usePostHog();
   const [text, setText] = useState("");
   const [sttStatus, setSttStatus] = useState<SttStatus>("idle");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (isOpen) posthog?.capture('concern_sheet_opened', { is_logged_in: isLoggedIn })
+  }, [isOpen, isLoggedIn, posthog])
 
   const startListening = () => {
     if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) return;

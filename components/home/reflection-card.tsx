@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { BookOpen } from "lucide-react"
+import { usePostHog } from 'posthog-js/react'
 
 interface ReflectionCardProps {
   prescriptionId: string
@@ -22,6 +23,7 @@ export function ReflectionCard({
   const [reflection, setReflection] = useState("")
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
+  const posthog = usePostHog()
 
   const handleSave = async () => {
     if (!reflection.trim() || saving) return
@@ -32,7 +34,14 @@ export function ReflectionCard({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reflection }),
       })
-      if (res.ok) setDone(true)
+      if (res.ok) {
+        posthog?.capture('reflection_submitted', {
+          prescription_id: prescriptionId,
+          days_ago: daysAgo,
+          reflection_length: reflection.trim().length,
+        })
+        setDone(true)
+      }
     } finally {
       setSaving(false)
     }
