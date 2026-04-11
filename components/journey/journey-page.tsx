@@ -40,6 +40,26 @@ interface JourneyPageProps {
   todayPrescription: TodayPrescription | null
 }
 
+function getUniquePhilosophers(items: JourneyItem[]) {
+  const countMap = new Map<string, number>()
+  for (const item of items) {
+    countMap.set(item.philosopherName, (countMap.get(item.philosopherName) ?? 0) + 1)
+  }
+  const seen = new Set<string>()
+  return items
+    .filter((item) => {
+      if (seen.has(item.philosopherName)) return false
+      seen.add(item.philosopherName)
+      return true
+    })
+    .map((item) => ({
+      name: item.philosopherName,
+      school: item.philosopherSchool,
+      count: countMap.get(item.philosopherName) ?? 1,
+      initials: item.philosopherName.slice(0, 2),
+    }))
+}
+
 function getThemeInsights(items: JourneyItem[]) {
   const count = new Map<string, number>()
   for (const item of items) {
@@ -57,6 +77,7 @@ export function JourneyPage({ items, journalEntries, todayPrescription }: Journe
   const [tab, setTab] = useState<'journey' | 'journal'>('journey')
   const reflectionCount = items.filter((i) => i.reflection !== null).length
   const themeInsights = getThemeInsights(items)
+  const uniquePhilosophers = getUniquePhilosophers(items)
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
@@ -140,6 +161,28 @@ export function JourneyPage({ items, journalEntries, todayPrescription }: Journe
                         {tag}
                         <span className="text-primary/50 text-[10px]">{count}</span>
                       </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 철학자 컬렉션 */}
+              {uniquePhilosophers.length > 0 && (
+                <div className="px-6 py-4 border-b border-border">
+                  <p className="text-[11px] text-muted mb-2.5">
+                    만난 철학자 <span className="text-primary font-medium">{uniquePhilosophers.length}명</span>
+                  </p>
+                  <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
+                    {uniquePhilosophers.map((p) => (
+                      <div key={p.name} className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                          <span className="text-xs font-serif font-bold text-primary">{p.initials}</span>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-[11px] font-medium text-foreground">{p.name}</p>
+                          <p className="text-[10px] text-muted">{p.count}회</p>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
