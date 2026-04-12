@@ -5,6 +5,7 @@ import { Prescription } from "@/types";
 import { ArrowLeft, Bookmark, Share2, Clock, Link2 } from "lucide-react";
 import Link from "next/link";
 import { usePostHog } from 'posthog-js/react'
+import { PushPromptBanner } from "@/components/notification/push-prompt-banner"
 
 interface PrescriptionDetailProps {
   prescription: Prescription;
@@ -100,7 +101,7 @@ export function PrescriptionDetail({
     setSharing(true);
 
     const shareUrl = prescriptionId
-      ? `${window.location.origin}/share/${prescriptionId}`
+      ? `${window.location.origin}/share/${prescriptionId}?utm_source=share&utm_medium=prescription&utm_campaign=wom`
       : window.location.origin
     const concernLine = concern ? `고민: ${concern}\n\n` : "";
     const text = `${concernLine}"${quote.text}"\n— ${philosopher.name} (${philosopher.school})\n\n${shareUrl}`;
@@ -245,6 +246,21 @@ export function PrescriptionDetail({
           </div>
         </section>
 
+        {/* Share CTA */}
+        {!shared && (
+          <div className="mb-6 text-center">
+            <p className="text-xs text-muted mb-2">이 처방이 도움이 됐다면</p>
+            <button
+              onClick={handleShare}
+              disabled={sharing}
+              className="inline-flex items-center gap-1.5 text-sm text-primary font-medium hover:underline underline-offset-4 disabled:opacity-50"
+            >
+              <Share2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+              친구에게 전해보세요 →
+            </button>
+          </div>
+        )}
+
         {/* Footer Actions */}
         <footer className="flex flex-col gap-3 mb-8">
           <div className="grid grid-cols-2 gap-3">
@@ -294,6 +310,7 @@ export function PrescriptionDetail({
           </Link>
         </div>
       </main>
+      <PushPromptBanner />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { JourneyPage } from '@/components/journey/journey-page'
 export const metadata: Metadata = { robots: { index: false, follow: false } }
 import { LoginPrompt } from '@/components/auth/LoginPrompt'
 import { createClient } from '@/lib/supabase/server-auth'
+import { getCachedPhilosophers } from '@/lib/cache/philosophers'
 
 export interface JourneyItem {
   id: string
@@ -37,7 +38,7 @@ export default async function Page() {
   const [
     { data: prescriptions },
     { data: reflections },
-    { data: philosophersData },
+    philosophers,
   ] = await Promise.all([
     supabase
       .from('ai_prescriptions')
@@ -49,11 +50,7 @@ export default async function Page() {
       .from('prescription_reflections')
       .select('prescription_id, reflection_text')
       .eq('user_id', session.user.id),
-    supabase
-      .from('philosophers')
-      .select('id, name, era, region, years, keywords, core_idea')
-      .order('era')
-      .order('name'),
+    getCachedPhilosophers(),
   ])
 
   const reflectionMap = new Map(
@@ -69,16 +66,6 @@ export default async function Page() {
     reflection: reflectionMap.get(row.id) ?? null,
     createdAt: row.created_at ?? '',
     themeTags: (row.theme_tags as string[]) ?? [],
-  }))
-
-  const philosophers: PhilosopherItem[] = (philosophersData ?? []).map((p) => ({
-    id: p.id,
-    name: p.name,
-    era: p.era,
-    region: p.region,
-    years: p.years,
-    keywords: p.keywords as string[] | null,
-    coreIdea: p.core_idea,
   }))
 
   const encounteredNames = [...new Set((prescriptions ?? []).map((p) => p.philosopher_name))]

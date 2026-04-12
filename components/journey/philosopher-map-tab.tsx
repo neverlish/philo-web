@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Link from "next/link"
-import { BookLock } from "lucide-react"
+import { BookLock, X } from "lucide-react"
 import type { PhilosopherItem } from "@/app/journey/page"
 
 interface PhilosopherMapTabProps {
@@ -18,11 +18,74 @@ const ERA_LABEL: Record<string, string> = {
 }
 const REGION_FILTERS = ['전체', '동양', '서양'] as const
 
+function PhilosopherCard({ p, met }: { p: PhilosopherItem; met: boolean }) {
+  if (met) {
+    return (
+      <Link href={`/philosopher/${p.id}`}>
+        <div className="rounded-2xl p-4 border border-primary/25 bg-primary/5 hover:border-primary/40 transition-colors h-full">
+          <div className="flex items-start justify-between gap-1 mb-0.5">
+            <p className="text-sm font-serif font-bold text-foreground leading-snug">{p.name}</p>
+            <span className="text-primary text-[10px] mt-0.5 flex-shrink-0">✦</span>
+          </div>
+          {p.years && <p className="text-[10px] text-muted mb-2 font-mono">{p.years}</p>}
+          <p className="text-[11px] text-foreground/70 leading-relaxed italic line-clamp-2 mb-2.5">
+            {p.coreIdea}
+          </p>
+          {p.keywords && (
+            <div className="flex flex-wrap gap-1">
+              {p.keywords.slice(0, 3).map((k) => (
+                <span key={k} className="px-1.5 py-0.5 rounded-full text-[10px] bg-primary/10 text-primary/80 border border-primary/15">
+                  {k}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </Link>
+    )
+  }
+  return (
+    <div className="rounded-2xl p-4 border border-border bg-card/50 h-full">
+      <div className="flex items-start justify-between gap-1 mb-0.5">
+        <p className="text-sm font-serif font-bold text-muted/60 leading-snug">{p.name}</p>
+        <BookLock className="w-3 h-3 text-muted/40 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+      </div>
+      {p.years && <p className="text-[10px] text-muted/40 mb-2 font-mono">{p.years}</p>}
+      <div className="space-y-1.5 mb-2.5">
+        <div className="h-1.5 bg-border/60 rounded-full w-full" />
+        <div className="h-1.5 bg-border/60 rounded-full w-4/5" />
+        <div className="h-1.5 bg-border/60 rounded-full w-3/5" />
+      </div>
+      <p className="text-[10px] text-muted/40 italic">처방을 통해 만남</p>
+    </div>
+  )
+}
+
 export function PhilosopherMapTab({ philosophers, encounteredNames }: PhilosopherMapTabProps) {
   const [regionFilter, setRegionFilter] = useState<string>('전체')
+  const [activeKeyword, setActiveKeyword] = useState<string | null>(null)
   const encountered = new Set(encounteredNames)
 
-  const filtered = regionFilter === '전체' ? philosophers : philosophers.filter((p) => p.region === regionFilter)
+  const allKeywords = useMemo(() => {
+    const count = new Map<string, number>()
+    for (const p of philosophers) {
+      for (const k of p.keywords ?? []) {
+        count.set(k, (count.get(k) ?? 0) + 1)
+      }
+    }
+    return Array.from(count.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([k]) => k)
+  }, [philosophers])
+
+  const filtered = useMemo(() => {
+    return philosophers.filter((p) => {
+      const regionOk = regionFilter === '전체' || p.region === regionFilter
+      const keywordOk = !activeKeyword || (p.keywords ?? []).includes(activeKeyword)
+      return regionOk && keywordOk
+    })
+  }, [philosophers, regionFilter, activeKeyword])
+
   const byEra = ERA_ORDER
     .map((era) => ({ era, items: filtered.filter((p) => p.era === era) }))
     .filter((g) => g.items.length > 0)
@@ -58,8 +121,8 @@ export function PhilosopherMapTab({ philosophers, encounteredNames }: Philosophe
         </p>
       </div>
 
-      {/* 필터 */}
-      <div className="flex gap-2 mb-6">
+      {/* 지역 필터 */}
+      <div className="flex gap-2 mb-3">
         {REGION_FILTERS.map((r) => (
           <button
             key={r}
@@ -75,9 +138,42 @@ export function PhilosopherMapTab({ philosophers, encounteredNames }: Philosophe
         ))}
       </div>
 
+      {/* 키워드 필터 */}
+      <div className="flex gap-1.5 overflow-x-auto pb-3 mb-3 scrollbar-none">
+        {allKeywords.map((k) => (
+          <button
+            key={k}
+            onClick={() => setActiveKeyword(activeKeyword === k ? null : k)}
+            className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+              activeKeyword === k
+                ? 'bg-primary text-white'
+                : 'bg-card border border-border text-muted hover:text-foreground'
+            }`}
+          >
+            {k}
+          </button>
+        ))}
+      </div>
+
+      {/* 활성 키워드 표시 */}
+      {activeKeyword && (
+        <div className="flex items-center gap-2 mb-4 px-1">
+          <span className="text-xs text-muted italic">"{activeKeyword}" 관련 철학자</span>
+          <button
+            onClick={() => setActiveKeyword(null)}
+            className="flex items-center gap-1 text-[11px] text-muted hover:text-foreground transition-colors"
+          >
+            <X className="w-3 h-3" />
+            초기화
+          </button>
+        </div>
+      )}
+
       {/* 시대별 그룹 */}
       <div className="space-y-7 pb-4">
-        {byEra.map(({ era, items }) => (
+        {byEra.length === 0 ? (
+          <p className="text-center text-sm text-muted py-8 italic">해당하는 철학자가 없어요</p>
+        ) : byEra.map(({ era, items }) => (
           <section key={era}>
             <div className="flex items-center gap-3 mb-3">
               <div className="text-center flex-shrink-0">
@@ -89,52 +185,10 @@ export function PhilosopherMapTab({ philosophers, encounteredNames }: Philosophe
                 {items.filter((p) => encountered.has(p.name)).length}/{items.length}
               </span>
             </div>
-
             <div className="grid grid-cols-2 gap-2">
-              {items.map((p) => {
-                const met = encountered.has(p.name)
-                return met ? (
-                  <Link key={p.id} href={`/philosopher/${p.id}`}>
-                    <div className="rounded-2xl p-4 border border-primary/25 bg-primary/5 hover:border-primary/40 transition-colors h-full">
-                      <div className="flex items-start justify-between gap-1 mb-0.5">
-                        <p className="text-sm font-serif font-bold text-foreground leading-snug">{p.name}</p>
-                        <span className="text-primary text-[10px] mt-0.5 flex-shrink-0">✦</span>
-                      </div>
-                      {p.years && (
-                        <p className="text-[10px] text-muted mb-2 font-mono">{p.years}</p>
-                      )}
-                      <p className="text-[11px] text-foreground/70 leading-relaxed italic line-clamp-2 mb-2.5">
-                        {p.coreIdea}
-                      </p>
-                      {p.keywords && (
-                        <div className="flex flex-wrap gap-1">
-                          {p.keywords.slice(0, 3).map((k) => (
-                            <span key={k} className="px-1.5 py-0.5 rounded-full text-[10px] bg-primary/10 text-primary/80 border border-primary/15">
-                              {k}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-                ) : (
-                  <div key={p.id} className="rounded-2xl p-4 border border-border bg-card/50 h-full">
-                    <div className="flex items-start justify-between gap-1 mb-0.5">
-                      <p className="text-sm font-serif font-bold text-muted/60 leading-snug">{p.name}</p>
-                      <BookLock className="w-3 h-3 text-muted/40 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
-                    </div>
-                    {p.years && (
-                      <p className="text-[10px] text-muted/40 mb-2 font-mono">{p.years}</p>
-                    )}
-                    <div className="space-y-1.5 mb-2.5">
-                      <div className="h-1.5 bg-border/60 rounded-full w-full" />
-                      <div className="h-1.5 bg-border/60 rounded-full w-4/5" />
-                      <div className="h-1.5 bg-border/60 rounded-full w-3/5" />
-                    </div>
-                    <p className="text-[10px] text-muted/40 italic">처방을 통해 만남</p>
-                  </div>
-                )
-              })}
+              {items.map((p) => (
+                <PhilosopherCard key={p.id} p={p} met={encountered.has(p.name)} />
+              ))}
             </div>
           </section>
         ))}
