@@ -142,7 +142,7 @@ export async function POST(request: Request) {
       .limit(1)
       .maybeSingle()
 
-    const daysAgo = recentPrescription
+    const daysAgo = recentPrescription?.created_at
       ? Math.floor((Date.now() - new Date(recentPrescription.created_at).getTime()) / 86400000)
       : null
 

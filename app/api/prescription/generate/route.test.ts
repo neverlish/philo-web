@@ -15,7 +15,7 @@ const mockParse = vi.fn().mockResolvedValue({
 })
 
 vi.mock('@anthropic-ai/sdk', () => {
-  const MockAnthropic = vi.fn().mockImplementation(function () {
+  const MockAnthropic = vi.fn().mockImplementation(function (this: Record<string, unknown>) {
     this.messages = { parse: mockParse }
   })
   return {

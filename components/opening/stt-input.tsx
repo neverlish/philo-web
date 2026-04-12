@@ -19,30 +19,18 @@ export function STTInput() {
   const { user } = useAuth();
   const posthog = usePostHog()
 
-  const saveCheckIn = async (text: string): Promise<string | null> => {
+  const saveCheckIn = async (): Promise<null> => {
     if (!user) return null;
     const today = new Date().toISOString().split("T")[0];
     await supabase.from("check_ins").upsert(
       { user_id: user.id, check_in_date: today, checked_in_at: new Date().toISOString() },
       { onConflict: "user_id,check_in_date", ignoreDuplicates: true }
     );
-    if (text) {
-      const { data } = await supabase
-        .from("chat_conversations")
-        .insert({
-          user_id: user.id,
-          initial_concern: text,
-          messages: [],
-        })
-        .select('id')
-        .single();
-      return data?.id ?? null;
-    }
     return null;
   };
 
   const skip = () => {
-    saveCheckIn("").finally(() => {
+    saveCheckIn().finally(() => {
       router.push("/");
     });
   };
@@ -74,7 +62,7 @@ export function STTInput() {
         return;
       }
       setStatus("done");
-      saveCheckIn(transcriptRef.current).then(async (conversationId) => {
+      saveCheckIn().then(async (conversationId) => {
         posthog?.capture('concern_submitted', {
           concern_length: transcriptRef.current.length,
         })
