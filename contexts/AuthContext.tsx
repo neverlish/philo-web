@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import type { AuthUser, AuthContextValue } from '@/lib/auth/types'
+import posthog from 'posthog-js'
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
@@ -48,6 +49,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         // 로그인 직후 대기 중인 고민이 있으면 실제 처방 생성
         if (event === 'SIGNED_IN') {
+          posthog.capture('login_completed', {
+            user_id: session.user.id,
+            provider: session.user.app_metadata?.provider,
+          })
           const pendingConcern = localStorage.getItem('pendingConcern')
           if (pendingConcern) {
             localStorage.removeItem('pendingConcern')

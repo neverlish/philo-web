@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Prescription } from "@/types";
 import { ArrowLeft, Bookmark, Share2, Clock, Link2 } from "lucide-react";
 import Link from "next/link";
@@ -29,6 +29,17 @@ export function PrescriptionDetail({
   const [copied, setCopied] = useState(false);
   const posthog = usePostHog()
   const [intention, setIntention] = useState(userIntention ?? '')
+
+  useEffect(() => {
+    if (prescriptionId) {
+      posthog?.capture('prescription_viewed', {
+        prescription_id: prescriptionId,
+        philosopher: philosopher.name,
+        is_saved: initialIsSaved,
+      })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prescriptionId])
   const [savingIntention, setSavingIntention] = useState(false)
   const [intentionSaved, setIntentionSaved] = useState(!!userIntention)
 

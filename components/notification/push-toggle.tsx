@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Bell, BellOff } from "lucide-react"
+import { usePostHog } from 'posthog-js/react'
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4)
@@ -16,6 +17,7 @@ export function PushToggle() {
   const [permission, setPermission] = useState<NotifPermission>("default")
   const [loading, setLoading] = useState(false)
   const [subscribed, setSubscribed] = useState(false)
+  const posthog = usePostHog()
 
   useEffect(() => {
     if (!("Notification" in window) || !("serviceWorker" in navigator)) {
@@ -58,6 +60,7 @@ export function PushToggle() {
         }),
       })
 
+      posthog?.capture('push_subscribed')
       setSubscribed(true)
     } catch (err) {
       console.error("Subscribe failed:", err)
@@ -79,6 +82,7 @@ export function PushToggle() {
         })
         await sub.unsubscribe()
       }
+      posthog?.capture('push_unsubscribed')
       setSubscribed(false)
     } catch (err) {
       console.error("Unsubscribe failed:", err)
