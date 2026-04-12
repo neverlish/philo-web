@@ -12,7 +12,6 @@ export default function robots(): MetadataRoute.Robots {
           '/saved',
           '/profile/',
           '/journey',
-          '/journal',
           '/collective',
         ],
       },
