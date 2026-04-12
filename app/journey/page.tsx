@@ -23,6 +23,7 @@ export interface PhilosopherItem {
   region: string
   years: string | null
   keywords: string[] | null
+  coreIdea: string
 }
 
 export default async function Page() {
@@ -50,7 +51,7 @@ export default async function Page() {
       .eq('user_id', session.user.id),
     supabase
       .from('philosophers')
-      .select('id, name, era, region, years, keywords')
+      .select('id, name, era, region, years, keywords, core_idea')
       .order('era')
       .order('name'),
   ])
@@ -77,6 +78,7 @@ export default async function Page() {
     region: p.region,
     years: p.years,
     keywords: p.keywords as string[] | null,
+    coreIdea: p.core_idea,
   }))
 
   const encounteredNames = [...new Set((prescriptions ?? []).map((p) => p.philosopher_name))]

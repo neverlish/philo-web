@@ -73,18 +73,20 @@ export function PhilosopherMapTab({ philosophers, encounteredNames }: Philosophe
                     <div className={`rounded-2xl p-4 border transition-colors hover:border-primary/30 ${
                       met ? 'bg-primary/5 border-primary/20' : 'bg-card border-border'
                     }`}>
-                      {met && (
-                        <div className="flex items-center gap-1 mb-1.5">
-                          <Sparkles className="w-3 h-3 text-primary" strokeWidth={1.5} />
-                          <span className="text-[10px] text-primary font-medium">만남</span>
-                        </div>
-                      )}
-                      <p className="text-sm font-serif font-medium text-foreground mb-0.5 leading-snug">{p.name}</p>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <p className="text-sm font-serif font-semibold text-foreground leading-snug">{p.name}</p>
+                        {met && <Sparkles className="w-3 h-3 text-primary flex-shrink-0" strokeWidth={1.5} />}
+                      </div>
                       {p.years && <p className="text-[10px] text-muted mb-2">{p.years}</p>}
+                      <p className="text-[11px] text-foreground/70 leading-relaxed line-clamp-2 mb-2.5">
+                        {p.coreIdea}
+                      </p>
                       {p.keywords && (
                         <div className="flex flex-wrap gap-1">
-                          {p.keywords.slice(0, 2).map((k) => (
-                            <span key={k} className="text-[10px] text-muted/70">#{k}</span>
+                          {p.keywords.slice(0, 3).map((k) => (
+                            <span key={k} className="px-1.5 py-0.5 rounded-full text-[10px] bg-border/60 text-muted">
+                              {k}
+                            </span>
                           ))}
                         </div>
                       )}
