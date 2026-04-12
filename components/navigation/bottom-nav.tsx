@@ -1,14 +1,14 @@
 // components/navigation/bottom-nav.tsx
 "use client";
 
-import { Home, User, ScrollText, TrendingUp } from "lucide-react";
+import { Home, User, ScrollText, Compass } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/", label: "홈", icon: Home },
   { href: "/saved", label: "처방함", icon: ScrollText },
-  { href: "/journey", label: "여정", icon: TrendingUp },
+  { href: "/journey", label: "탐색", icon: Compass },
   { href: "/profile", label: "프로필", icon: User },
 ];
 

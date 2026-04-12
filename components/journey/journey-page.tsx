@@ -5,7 +5,8 @@ import Link from "next/link"
 import { Mic, CheckCircle2, Circle } from "lucide-react"
 import { Header } from "@/components/navigation/header"
 import { BottomNav } from "@/components/navigation/bottom-nav"
-import type { JourneyItem } from "@/app/journey/page"
+import { PhilosopherMapTab } from "@/components/journey/philosopher-map-tab"
+import type { JourneyItem, PhilosopherItem } from "@/app/journey/page"
 
 interface MonthGroup {
   label: string
@@ -35,6 +36,8 @@ function groupByMonth(items: JourneyItem[]): MonthGroup[] {
 
 interface JourneyPageProps {
   items: JourneyItem[]
+  philosophers: PhilosopherItem[]
+  encounteredNames: string[]
 }
 
 function getUniquePhilosophers(items: JourneyItem[]) {
@@ -69,18 +72,40 @@ function getThemeInsights(items: JourneyItem[]) {
     .slice(0, 5)
 }
 
-export function JourneyPage({ items }: JourneyPageProps) {
+export function JourneyPage({ items, philosophers, encounteredNames }: JourneyPageProps) {
   const groups = groupByMonth(items)
+  const [tab, setTab] = useState<'지도' | '여정'>('지도')
   const reflectionCount = items.filter((i) => i.reflection !== null).length
   const themeInsights = getThemeInsights(items)
   const uniquePhilosophers = getUniquePhilosophers(items)
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
-      <Header title="나의 여정" />
+      <Header title="탐색" />
+
+      {/* Tabs */}
+      <div className="flex border-b border-border px-6">
+        {(['지도', '여정'] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`flex-1 py-3 text-sm font-medium transition-colors ${
+              tab === t
+                ? 'text-foreground border-b-2 border-foreground'
+                : 'text-muted hover:text-foreground'
+            }`}
+          >
+            {t === '지도' ? '철학자 지도' : '나의 여정'}
+          </button>
+        ))}
+      </div>
 
       <main className="flex-1 pb-32 overflow-y-auto">
-        {items.length === 0 ? (
+        {tab === '지도' ? (
+          <div className="px-6 pt-5">
+            <PhilosopherMapTab philosophers={philosophers} encounteredNames={encounteredNames} />
+          </div>
+        ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center px-6">
               <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mb-4">
                 <Mic className="w-8 h-8 text-muted" strokeWidth={1.5} />

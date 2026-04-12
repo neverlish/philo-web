@@ -16,6 +16,15 @@ export interface JourneyItem {
   themeTags: string[]
 }
 
+export interface PhilosopherItem {
+  id: string
+  name: string
+  era: string
+  region: string
+  years: string | null
+  keywords: string[] | null
+}
+
 export default async function Page() {
   const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
@@ -27,6 +36,7 @@ export default async function Page() {
   const [
     { data: prescriptions },
     { data: reflections },
+    { data: philosophersData },
   ] = await Promise.all([
     supabase
       .from('ai_prescriptions')
@@ -38,6 +48,11 @@ export default async function Page() {
       .from('prescription_reflections')
       .select('prescription_id, reflection_text')
       .eq('user_id', session.user.id),
+    supabase
+      .from('philosophers')
+      .select('id, name, era, region, years, keywords')
+      .order('era')
+      .order('name'),
   ])
 
   const reflectionMap = new Map(
@@ -55,5 +70,16 @@ export default async function Page() {
     themeTags: (row.theme_tags as string[]) ?? [],
   }))
 
-  return <JourneyPage items={items} />
+  const philosophers: PhilosopherItem[] = (philosophersData ?? []).map((p) => ({
+    id: p.id,
+    name: p.name,
+    era: p.era,
+    region: p.region,
+    years: p.years,
+    keywords: p.keywords as string[] | null,
+  }))
+
+  const encounteredNames = [...new Set((prescriptions ?? []).map((p) => p.philosopher_name))]
+
+  return <JourneyPage items={items} philosophers={philosophers} encounteredNames={encounteredNames} />
 }
