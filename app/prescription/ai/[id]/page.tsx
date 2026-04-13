@@ -74,6 +74,7 @@ export default async function AiPrescriptionPage({
       prescriptionId={id}
       userIntention={row.user_intention ?? null}
       concern={row.concern ?? null}
+      intentionSuggestions={(row as any).intention_suggestions ?? []}
     />
   )
 }

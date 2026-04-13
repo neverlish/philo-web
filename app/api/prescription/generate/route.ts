@@ -56,7 +56,8 @@ ${PHILOSOPHER_POOL}
 3. **quote.application**: 오늘 하루 중 구체적으로 "언제", "어디서", "무엇을" 할지 명시한 행동 하나 (80-120자)
 4. **title**: 사용자의 고민을 철학적으로 재정의하는 문장, 처방의 핵심을 담아 (15자 이내)
 5. **subtitle**: 이 처방이 제시하는 관점이나 태도 변화 (15자 이내)
-6. **theme_tags**: 이 고민의 핵심 테마 1~2개. 반드시 다음 목록에서만 선택: 불안/두려움, 관계/사랑, 자유/선택, 의미/목적, 변화/성장, 고통/역경, 정체성/자아, 시간/현재, 일/성취, 외로움/고독`
+6. **theme_tags**: 이 고민의 핵심 테마 1~2개. 반드시 다음 목록에서만 선택: 불안/두려움, 관계/사랑, 자유/선택, 의미/목적, 변화/성장, 고통/역경, 정체성/자아, 시간/현재, 일/성취, 외로움/고독
+7. **intention_suggestions**: 이 처방을 바탕으로 사용자가 오늘 다짐할 수 있는 구체적 행동 정확히 3가지. 각 15자 이내, 이 철학자의 사상과 고민에 특화된 실천 행동으로 작성`
 
 const THEME_TAGS = ['불안/두려움', '관계/사랑', '자유/선택', '의미/목적', '변화/성장', '고통/역경', '정체성/자아', '시간/현재', '일/성취', '외로움/고독'] as const
 
@@ -89,8 +90,14 @@ const ClaudeResponseSchema = {
       minItems: 1,
       maxItems: 2,
     },
+    intention_suggestions: {
+      type: 'array',
+      items: { type: 'string' },
+      minItems: 3,
+      maxItems: 3,
+    },
   },
-  required: ['philosopher', 'quote', 'title', 'subtitle', 'theme_tags'],
+  required: ['philosopher', 'quote', 'title', 'subtitle', 'theme_tags', 'intention_suggestions'],
 } as const
 
 interface ClaudeResponse {
@@ -99,6 +106,7 @@ interface ClaudeResponse {
   title: string
   subtitle: string
   theme_tags: string[]
+  intention_suggestions: string[]
 }
 
 export async function POST(request: Request) {
@@ -187,6 +195,7 @@ export async function POST(request: Request) {
         title: parsed.title,
         subtitle: parsed.subtitle,
         theme_tags: parsed.theme_tags ?? [],
+        intention_suggestions: parsed.intention_suggestions ?? [],
       })
       .select('id')
       .single()
