@@ -28,6 +28,23 @@ vi.mock('@anthropic-ai/sdk/helpers/json-schema', () => ({
   jsonSchemaOutputFormat: vi.fn((schema) => schema),
 }))
 
+vi.mock('@/lib/posthog/server', () => ({
+  captureServerEvent: vi.fn().mockResolvedValue(undefined),
+}))
+
+function makeQueryBuilder(overrides: Record<string, unknown> = {}) {
+  const builder: Record<string, unknown> = {}
+  const chainMethods = ['select', 'eq', 'gte', 'lt', 'not', 'order', 'limit']
+  for (const method of chainMethods) {
+    builder[method] = vi.fn().mockReturnValue(builder)
+  }
+  builder['maybeSingle'] = vi.fn().mockResolvedValue({ data: null, error: null })
+  builder['single'] = vi.fn().mockResolvedValue({ data: { id: 'prescription-abc' }, error: null })
+  builder['insert'] = vi.fn().mockReturnValue(builder)
+  Object.assign(builder, overrides)
+  return builder
+}
+
 vi.mock('@/lib/supabase/server-auth', () => ({
   createClient: vi.fn().mockResolvedValue({
     auth: {
@@ -35,16 +52,7 @@ vi.mock('@/lib/supabase/server-auth', () => ({
         data: { session: { user: { id: 'user-123' } } },
       }),
     },
-    from: vi.fn().mockReturnValue({
-      insert: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
-            data: { id: 'prescription-abc' },
-            error: null,
-          }),
-        }),
-      }),
-    }),
+    from: vi.fn().mockReturnValue(makeQueryBuilder()),
   }),
 }))
 
