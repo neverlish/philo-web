@@ -114,9 +114,15 @@ export default function PreviewPrescriptionPage() {
         <section className="pb-12">
           <button
             onClick={() => setShowLogin(true)}
-            className="flex items-center justify-center w-full bg-foreground text-background py-4 rounded-xl font-medium text-sm transition-all active:scale-95"
+            className="relative flex items-center justify-center w-full py-4 rounded-xl font-serif font-medium text-sm tracking-wide transition-all active:scale-[0.98] overflow-hidden group"
+            style={{
+              background: "linear-gradient(135deg, #6b3a1f 0%, #c9872a 50%, #7c4f1a 100%)",
+              boxShadow: "0 4px 24px rgba(180, 100, 20, 0.4)",
+              color: "white",
+            }}
           >
-            구글로 회원가입하고 저장하기
+            <span className="relative z-10">✦ 구글로 회원가입하고 저장하기</span>
+            <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
           </button>
         </section>
       </main>

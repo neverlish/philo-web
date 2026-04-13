@@ -171,7 +171,16 @@ export function ConcernSheet({ isOpen, onClose, isLoggedIn = false }: ConcernShe
             <button
               onClick={handleSubmit}
               disabled={!text.trim() || submitting}
-              className="w-full py-3 rounded-xl bg-foreground text-background text-sm font-medium transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-2"
+              className="relative w-full py-3 rounded-xl text-sm font-serif font-medium tracking-wide transition-all active:scale-[0.98] disabled:opacity-40 flex items-center justify-center gap-2 overflow-hidden group"
+              style={
+                !text.trim() || submitting
+                  ? { background: "var(--foreground)", color: "var(--background)" }
+                  : {
+                      background: "linear-gradient(135deg, #6b3a1f 0%, #c9872a 50%, #7c4f1a 100%)",
+                      boxShadow: "0 4px 20px rgba(180, 100, 20, 0.4)",
+                      color: "white",
+                    }
+              }
             >
               {submitting ? (
                 <>
@@ -179,7 +188,10 @@ export function ConcernSheet({ isOpen, onClose, isLoggedIn = false }: ConcernShe
                   처방 만드는 중...
                 </>
               ) : (
-                "철학적 처방 받기"
+                <>
+                  <span className="relative z-10">✦ 철학적 처방 받기</span>
+                  <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
+                </>
               )}
             </button>
           </motion.div>

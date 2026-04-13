@@ -210,9 +210,15 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
               </div>
               <button
                 onClick={() => setShowSheet(true)}
-                className="w-full py-3.5 rounded-xl bg-foreground text-background text-sm font-medium transition-all active:scale-95 mb-8"
+                className="relative w-full py-4 rounded-xl text-sm font-serif tracking-wide transition-all active:scale-[0.98] mb-8 overflow-hidden group"
+                style={{
+                  background: "linear-gradient(135deg, #6b3a1f 0%, #c9872a 50%, #7c4f1a 100%)",
+                  boxShadow: "0 4px 24px rgba(180, 100, 20, 0.4)",
+                  color: "white",
+                }}
               >
-                지금 고민 말하기
+                <span className="relative z-10">✦ 지금 고민 말하기</span>
+                <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
               </button>
               <div className="h-px w-full bg-primary/20 mb-8" />
             </div>
