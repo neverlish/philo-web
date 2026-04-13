@@ -73,6 +73,13 @@ export default async function ProfilePage() {
 
   const streak = calculateStreak((checkIns ?? []).map((c) => c.check_in_date));
 
+  const checkInSet = new Set((checkIns ?? []).map((c) => c.check_in_date));
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - (6 - i));
+    return d.toISOString().split("T")[0];
+  });
+
   const monthName = `${now.getMonth() + 1}월`;
   const monthlyCount = monthlyPrescriptions?.length ?? 0;
 
@@ -146,7 +153,15 @@ export default async function ProfilePage() {
             </div>
             <div className="bg-card border border-border rounded-xl p-4 text-center">
               <p className="text-2xl font-serif font-normal text-primary mb-1">{streak}</p>
-              <p className="text-xs text-muted">연속 일수</p>
+              <p className="text-xs text-muted mb-2">연속 일수</p>
+              <div className="flex justify-center gap-1">
+                {last7Days.map((date) => (
+                  <div
+                    key={date}
+                    className={`w-2 h-2 rounded-full ${checkInSet.has(date) ? "bg-primary" : "bg-border"}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
