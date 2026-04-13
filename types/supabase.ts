@@ -20,6 +20,7 @@ export type Database = {
           conversation_id: string | null
           created_at: string | null
           id: string
+          intention_suggestions: string[] | null
           philosopher_era: string
           philosopher_name: string
           philosopher_school: string
@@ -37,6 +38,7 @@ export type Database = {
           conversation_id?: string | null
           created_at?: string | null
           id?: string
+          intention_suggestions?: string[] | null
           philosopher_era: string
           philosopher_name: string
           philosopher_school: string
@@ -54,6 +56,7 @@ export type Database = {
           conversation_id?: string | null
           created_at?: string | null
           id?: string
+          intention_suggestions?: string[] | null
           philosopher_era?: string
           philosopher_name?: string
           philosopher_school?: string
@@ -386,6 +389,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_feedbacks: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          message: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       user_read_quotes: {
         Row: {
