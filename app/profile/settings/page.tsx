@@ -8,6 +8,7 @@ import { BottomNav } from "@/components/navigation/bottom-nav";
 import { supabase } from "@/lib/supabase/client";
 import { LogOut } from "lucide-react";
 import { PushToggle } from "@/components/notification/push-toggle";
+import { IosInstallGuide } from "@/components/notification/ios-install-guide";
 import { FeedbackSection } from "@/components/settings/feedback-section";
 
 export default function SettingsPage() {
@@ -26,6 +27,8 @@ export default function SettingsPage() {
       <Header title="설정" showBack showSearch={false} />
 
       <main className="flex-1 px-6 pt-4 pb-32 overflow-y-auto">
+        <IosInstallGuide />
+
         <section className="mb-8">
           <h2 className="text-xs font-medium tracking-widest text-muted uppercase mb-3">알림</h2>
           <PushToggle />
