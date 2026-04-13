@@ -31,7 +31,7 @@ describe('BottomNav', () => {
   it('marks saved tab as active when pathname is /saved', () => {
     vi.mocked(usePathname).mockReturnValue('/saved')
     render(<BottomNav />)
-    const savedLink = screen.getByRole('link', { name: '저장' })
+    const savedLink = screen.getByRole('link', { name: '처방함' })
     expect(savedLink).toHaveClass('text-primary')
   })
 
@@ -45,7 +45,7 @@ describe('BottomNav', () => {
   it('inactive tabs do not have text-primary class', () => {
     vi.mocked(usePathname).mockReturnValue('/')
     render(<BottomNav />)
-    const savedLink = screen.getByRole('link', { name: '저장' })
+    const savedLink = screen.getByRole('link', { name: '처방함' })
     expect(savedLink).not.toHaveClass('text-primary')
   })
 })

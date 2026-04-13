@@ -103,6 +103,6 @@ describe('PrescriptionDetail', () => {
     render(
       <PrescriptionDetail prescription={MOCK_PRESCRIPTION} prescriptionId="prescription-abc" />
     )
-    expect(screen.getByPlaceholderText(/이 처방을 실천한다면/)).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/직접 입력하거나 위에서 선택하세요/)).toBeInTheDocument()
   })
 })
