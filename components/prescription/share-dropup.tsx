@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Share2, Link2, ChevronUp } from "lucide-react";
+import { Share2, Link2, ChevronUp, ImageDown } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 
 interface ShareDropupProps {
@@ -21,6 +21,7 @@ export function ShareDropup({
 }: ShareDropupProps) {
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [downloadingImage, setDownloadingImage] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const posthog = usePostHog();
 
@@ -34,6 +35,48 @@ export function ShareDropup({
       setTimeout(() => setCopied(false), 1500);
     } catch {
       // ignore
+    }
+  };
+
+  const handleDownloadImage = async () => {
+    if (!prescriptionId || downloadingImage) return;
+    setDownloadingImage(true);
+
+    try {
+      const res = await fetch(`/api/prescriptions/${prescriptionId}/image`);
+      if (!res.ok) throw new Error('Image generation failed');
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+
+      // 모바일에서 네이티브 공유가 파일을 지원하면 사용
+      if (navigator.share && navigator.canShare) {
+        const file = new File([blob], `오늘의처방_${philosopherName}.png`, { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: `${philosopherName}의 처방` });
+          posthog?.capture('prescription_image_shared', {
+            share_method: 'native',
+            prescription_id: prescriptionId,
+          });
+          URL.revokeObjectURL(url);
+          return;
+        }
+      }
+
+      // 폴백: 다운로드
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `오늘의처방_${philosopherName}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+      posthog?.capture('prescription_image_shared', {
+        share_method: 'download',
+        prescription_id: prescriptionId,
+      });
+    } catch {
+      // ignore
+    } finally {
+      setDownloadingImage(false);
     }
   };
 
@@ -81,6 +124,15 @@ export function ShareDropup({
             >
               <Share2 className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
               앱으로 공유
+            </button>
+            <div className="border-t border-border" />
+            <button
+              onClick={() => { handleDownloadImage(); setShowShareMenu(false); }}
+              disabled={!prescriptionId || downloadingImage}
+              className="flex w-full items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-stone-50 transition-colors disabled:opacity-50"
+            >
+              <ImageDown className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+              {downloadingImage ? "이미지 생성 중..." : "이미지 카드 저장"}
             </button>
             <div className="border-t border-border" />
             <button
