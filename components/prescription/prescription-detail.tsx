@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Prescription } from "@/types";
-import { ArrowLeft, Bookmark, Share2, Clock, Link2 } from "lucide-react";
+import { ArrowLeft, Bookmark, Share2, Clock, Link2, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { usePostHog } from 'posthog-js/react'
 import { PushPromptBanner } from "@/components/notification/push-prompt-banner"
@@ -13,6 +13,7 @@ interface PrescriptionDetailProps {
   prescriptionId?: string;
   userIntention?: string | null;
   concern?: string | null;
+  intentionSuggestions?: string[];
 }
 
 export function PrescriptionDetail({
@@ -21,6 +22,7 @@ export function PrescriptionDetail({
   prescriptionId,
   userIntention,
   concern,
+  intentionSuggestions = [],
 }: PrescriptionDetailProps) {
   const { quote, philosopher, title, subtitle } = prescription;
   const [saved, setSaved] = useState(initialIsSaved);
@@ -30,6 +32,7 @@ export function PrescriptionDetail({
   const [copied, setCopied] = useState(false);
   const posthog = usePostHog()
   const [intention, setIntention] = useState(userIntention ?? '')
+  const [showShareMenu, setShowShareMenu] = useState(false)
 
   useEffect(() => {
     if (prescriptionId) {
@@ -227,12 +230,30 @@ export function PrescriptionDetail({
             <span className="w-1 h-4 bg-foreground" />
             <h2 className="text-sm font-bold tracking-widest">오늘의 다짐</h2>
           </div>
+          {/* Quick-select chips */}
+          {!intentionSaved && intentionSuggestions.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {intentionSuggestions.map((chip) => (
+                <button
+                  key={chip}
+                  onClick={() => { setIntention(chip); setIntentionSaved(false); }}
+                  className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
+                    intention === chip
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-border bg-card text-muted hover:border-primary/30 hover:text-foreground"
+                  }`}
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="flex gap-2">
             <input
               type="text"
               value={intention}
               onChange={(e) => { setIntention(e.target.value); setIntentionSaved(false) }}
-              placeholder="이 처방을 실천한다면 어떤 한 가지를 해볼까요?"
+              placeholder="직접 입력하거나 위에서 선택하세요"
               className="flex-1 bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-primary/40"
               maxLength={100}
             />
@@ -263,22 +284,41 @@ export function PrescriptionDetail({
 
         {/* Footer Actions */}
         <footer className="flex flex-col gap-3 mb-8">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="relative">
+            {showShareMenu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowShareMenu(false)} />
+                <div className="absolute bottom-full mb-2 left-0 right-0 z-20 bg-card border border-border rounded-xl overflow-hidden shadow-lg">
+                  <button
+                    onClick={() => { handleShare(); setShowShareMenu(false); }}
+                    disabled={sharing}
+                    className="flex w-full items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-stone-50 transition-colors disabled:opacity-50"
+                  >
+                    <Share2 className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                    앱으로 공유
+                  </button>
+                  <div className="border-t border-border" />
+                  <button
+                    onClick={() => { handleCopyUrl(); setShowShareMenu(false); }}
+                    disabled={!prescriptionId}
+                    className="flex w-full items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-stone-50 transition-colors disabled:opacity-50"
+                  >
+                    <Link2 className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                    {copied ? "복사됨" : "링크 복사"}
+                  </button>
+                </div>
+              </>
+            )}
             <button
-              onClick={handleShare}
-              disabled={sharing}
-              className="flex items-center justify-center gap-2 bg-card border border-border py-4 rounded-xl font-medium text-sm transition-all active:scale-95 hover:bg-stone-50 disabled:opacity-50"
+              onClick={() => setShowShareMenu(v => !v)}
+              className="flex w-full items-center justify-center gap-2 bg-card border border-border py-4 rounded-xl font-medium text-sm transition-all active:scale-95 hover:bg-stone-50"
             >
               <Share2 className="w-4 h-4" strokeWidth={1.5} />
-              {shared ? "공유됨" : "공유하기"}
-            </button>
-            <button
-              onClick={handleCopyUrl}
-              disabled={!prescriptionId}
-              className="flex items-center justify-center gap-2 bg-card border border-border py-4 rounded-xl font-medium text-sm transition-all active:scale-95 hover:bg-stone-50 disabled:opacity-50"
-            >
-              <Link2 className="w-4 h-4" strokeWidth={1.5} />
-              {copied ? "복사됨" : "URL 복사"}
+              공유하기
+              <ChevronUp
+                className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${showShareMenu ? "" : "rotate-180"}`}
+                strokeWidth={1.5}
+              />
             </button>
           </div>
           <button
