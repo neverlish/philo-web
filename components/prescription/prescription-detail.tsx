@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Prescription } from "@/types";
-import { ArrowLeft, Bookmark, Share2, Clock, Link2, ChevronUp } from "lucide-react";
+import { ArrowLeft, Bookmark, Clock } from "lucide-react";
 import Link from "next/link";
 import { usePostHog } from 'posthog-js/react'
 import { PushPromptBanner } from "@/components/notification/push-prompt-banner"
+import { ShareDropup } from "./share-dropup"
+import { IntentionSection } from "./intention-section"
 
 interface PrescriptionDetailProps {
   prescription: Prescription;
@@ -27,12 +29,7 @@ export function PrescriptionDetail({
   const { quote, philosopher, title, subtitle } = prescription;
   const [saved, setSaved] = useState(initialIsSaved);
   const [saving, setSaving] = useState(false);
-  const [sharing, setSharing] = useState(false);
-  const [shared, setShared] = useState(false);
-  const [copied, setCopied] = useState(false);
   const posthog = usePostHog()
-  const [intention, setIntention] = useState(userIntention ?? '')
-  const [showShareMenu, setShowShareMenu] = useState(false)
 
   useEffect(() => {
     if (prescriptionId) {
@@ -44,27 +41,6 @@ export function PrescriptionDetail({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prescriptionId])
-  const [savingIntention, setSavingIntention] = useState(false)
-  const [intentionSaved, setIntentionSaved] = useState(!!userIntention)
-
-  const handleSaveIntention = async () => {
-    if (!prescriptionId || savingIntention || !intention.trim()) return
-    setSavingIntention(true)
-    try {
-      const res = await fetch(`/api/prescriptions/${prescriptionId}/intention`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ intention }),
-      })
-      if (res.ok) {
-        posthog?.capture('intention_saved', { prescription_id: prescriptionId, intention_length: intention.trim().length })
-        setIntentionSaved(true)
-      }
-    } finally {
-      setSavingIntention(false)
-    }
-  }
-
   const toggleSave = async () => {
     if (!prescriptionId || saving) return;
     setSaving(true);
@@ -83,53 +59,6 @@ export function PrescriptionDetail({
       setSaved(prevSaved);
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleCopyUrl = async () => {
-    if (!prescriptionId) return;
-    const url = `${window.location.origin}/share/${prescriptionId}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      posthog?.capture('prescription_url_copied', { prescription_id: prescriptionId })
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // ignore
-    }
-  };
-
-  const handleShare = async () => {
-    if (sharing) return;
-    setSharing(true);
-
-    const shareUrl = prescriptionId
-      ? `${window.location.origin}/share/${prescriptionId}?utm_source=share&utm_medium=prescription&utm_campaign=wom`
-      : window.location.origin
-    const concernLine = concern ? `고민: ${concern}\n\n` : "";
-    const text = `${concernLine}"${quote.text}"\n— ${philosopher.name} (${philosopher.school})\n\n${shareUrl}`;
-    const shareData = {
-      title: `${philosopher.name}의 처방`,
-      text,
-      url: shareUrl,
-    };
-
-    try {
-      let shareMethod: 'native' | 'clipboard'
-      if (navigator.share && navigator.canShare?.(shareData)) {
-        await navigator.share(shareData);
-        shareMethod = 'native'
-      } else {
-        await navigator.clipboard.writeText(text);
-        shareMethod = 'clipboard'
-      }
-      posthog?.capture('prescription_shared', { share_method: shareMethod, prescription_id: prescriptionId })
-      setShared(true);
-      setTimeout(() => setShared(false), 1500);
-    } catch {
-      // 사용자가 취소한 경우 무시
-    } finally {
-      setSharing(false);
     }
   };
 
@@ -224,103 +153,21 @@ export function PrescriptionDetail({
           </div>
         </section>
 
-        {/* Intention Section */}
-        <section className="mb-8">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="w-1 h-4 bg-foreground" />
-            <h2 className="text-sm font-bold tracking-widest">오늘의 다짐</h2>
-          </div>
-          {/* Quick-select chips */}
-          {!intentionSaved && intentionSuggestions.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
-              {intentionSuggestions.map((chip) => (
-                <button
-                  key={chip}
-                  onClick={() => { setIntention(chip); setIntentionSaved(false); }}
-                  className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-                    intention === chip
-                      ? "border-primary/40 bg-primary/10 text-primary"
-                      : "border-border bg-card text-muted hover:border-primary/30 hover:text-foreground"
-                  }`}
-                >
-                  {chip}
-                </button>
-              ))}
-            </div>
-          )}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={intention}
-              onChange={(e) => { setIntention(e.target.value); setIntentionSaved(false) }}
-              placeholder="직접 입력하거나 위에서 선택하세요"
-              className="flex-1 bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-primary/40"
-              maxLength={100}
-            />
-            <button
-              onClick={handleSaveIntention}
-              disabled={savingIntention || !intention.trim() || intentionSaved}
-              className="px-4 py-3 bg-foreground text-background rounded-xl text-sm font-medium disabled:opacity-40 transition-opacity"
-            >
-              {intentionSaved ? '저장됨' : '저장'}
-            </button>
-          </div>
-        </section>
-
-        {/* Share CTA */}
-        {!shared && (
-          <div className="mb-6 text-center">
-            <p className="text-xs text-muted mb-2">이 처방이 도움이 됐다면</p>
-            <button
-              onClick={handleShare}
-              disabled={sharing}
-              className="inline-flex items-center gap-1.5 text-sm text-primary font-medium hover:underline underline-offset-4 disabled:opacity-50"
-            >
-              <Share2 className="w-3.5 h-3.5" strokeWidth={1.5} />
-              친구에게 전해보세요 →
-            </button>
-          </div>
-        )}
+        <IntentionSection
+          prescriptionId={prescriptionId}
+          initialIntention={userIntention}
+          intentionSuggestions={intentionSuggestions}
+        />
 
         {/* Footer Actions */}
         <footer className="flex flex-col gap-3 mb-8">
-          <div className="relative">
-            {showShareMenu && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setShowShareMenu(false)} />
-                <div className="absolute bottom-full mb-2 left-0 right-0 z-20 bg-card border border-border rounded-xl overflow-hidden shadow-lg">
-                  <button
-                    onClick={() => { handleShare(); setShowShareMenu(false); }}
-                    disabled={sharing}
-                    className="flex w-full items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-stone-50 transition-colors disabled:opacity-50"
-                  >
-                    <Share2 className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
-                    앱으로 공유
-                  </button>
-                  <div className="border-t border-border" />
-                  <button
-                    onClick={() => { handleCopyUrl(); setShowShareMenu(false); }}
-                    disabled={!prescriptionId}
-                    className="flex w-full items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-stone-50 transition-colors disabled:opacity-50"
-                  >
-                    <Link2 className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
-                    {copied ? "복사됨" : "링크 복사"}
-                  </button>
-                </div>
-              </>
-            )}
-            <button
-              onClick={() => setShowShareMenu(v => !v)}
-              className="flex w-full items-center justify-center gap-2 bg-card border border-border py-4 rounded-xl font-medium text-sm transition-all active:scale-95 hover:bg-stone-50"
-            >
-              <Share2 className="w-4 h-4" strokeWidth={1.5} />
-              공유하기
-              <ChevronUp
-                className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${showShareMenu ? "" : "rotate-180"}`}
-                strokeWidth={1.5}
-              />
-            </button>
-          </div>
+          <ShareDropup
+            prescriptionId={prescriptionId}
+            concern={concern}
+            quote={quote.text}
+            philosopherName={philosopher.name}
+            philosopherSchool={philosopher.school}
+          />
           <button
             onClick={toggleSave}
             disabled={saving || !prescriptionId}
