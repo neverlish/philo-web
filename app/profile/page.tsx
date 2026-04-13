@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server-auth";
 import { Settings, HelpCircle, Shield, ChevronRight, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
+import { StreakCard } from "@/components/profile/streak-card";
 
 function calculateStreak(dates: string[]): number {
   if (dates.length === 0) return 0;
@@ -143,26 +144,19 @@ export default async function ProfilePage() {
         {/* Stats */}
         <div className="w-full mb-8">
           <div className="grid grid-cols-3 gap-4">
-            <div className="bg-card border border-border rounded-xl p-4 text-center">
+            <Link href="/saved" className="bg-card border border-border rounded-xl p-4 text-center hover:border-primary/30 transition-colors">
               <p className="text-2xl font-serif font-normal text-primary mb-1">{savedCount ?? 0}</p>
               <p className="text-xs text-muted">저장한 처방</p>
-            </div>
-            <div className="bg-card border border-border rounded-xl p-4 text-center">
+            </Link>
+            <Link href="/saved" className="bg-card border border-border rounded-xl p-4 text-center hover:border-primary/30 transition-colors">
               <p className="text-2xl font-serif font-normal text-primary mb-1">{prescriptionCount ?? 0}</p>
               <p className="text-xs text-muted">받은 처방</p>
-            </div>
-            <div className="bg-card border border-border rounded-xl p-4 text-center">
-              <p className="text-2xl font-serif font-normal text-primary mb-1">{streak}</p>
-              <p className="text-xs text-muted mb-2">연속 일수</p>
-              <div className="flex justify-center gap-1">
-                {last7Days.map((date) => (
-                  <div
-                    key={date}
-                    className={`w-2 h-2 rounded-full ${checkInSet.has(date) ? "bg-primary" : "bg-border"}`}
-                  />
-                ))}
-              </div>
-            </div>
+            </Link>
+            <StreakCard
+              streak={streak}
+              checkInDates={(checkIns ?? []).map((c) => c.check_in_date)}
+              last7Days={last7Days}
+            />
           </div>
         </div>
 
