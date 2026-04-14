@@ -21,39 +21,39 @@ export function Header({ title, showSearch = true, showBack }: HeaderProps) {
 
   return (
     <>
-      <header className="flex items-center justify-between p-6 sticky top-0 z-20 bg-background/95 backdrop-blur-sm">
+      <header className="flex items-center justify-between px-5 py-3 sticky top-0 z-20 bg-background/95 backdrop-blur-sm">
         {showBack ? (
           <button
             onClick={() => router.back()}
-            className="flex size-10 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+            className="flex size-9 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" strokeWidth={1.5} />
           </button>
         ) : (
-          <div className="w-10" />
+          <div className="w-9" />
         )}
         {title && (
-          <h1 className="text-lg font-serif font-medium tracking-wide text-center flex-1">
+          <h1 className="text-base font-serif font-medium tracking-wide text-center flex-1">
             {title}
           </h1>
         )}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {showSearch && (
-            <button className="flex size-10 items-center justify-center rounded-full hover:bg-black/5 transition-colors">
-              <Search className="w-6 h-6" strokeWidth={1.5} />
+            <button className="flex size-9 items-center justify-center rounded-full hover:bg-black/5 transition-colors">
+              <Search className="w-5 h-5" strokeWidth={1.5} />
             </button>
           )}
           {user ? (
             <div className="relative">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex size-10 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+                className="flex size-9 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
               >
                 {user.user_metadata?.avatar_url ? (
                   <img
                     src={user.user_metadata.avatar_url}
                     alt="Avatar"
-                    className="w-8 h-8 rounded-full"
+                    className="w-7 h-7 rounded-full"
                   />
                 ) : (
                   <User className="w-5 h-5" strokeWidth={1.5} />
@@ -84,9 +84,9 @@ export function Header({ title, showSearch = true, showBack }: HeaderProps) {
           ) : (
             <button
               onClick={() => setIsLoginModalOpen(true)}
-              className="flex size-10 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+              className="flex size-9 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
             >
-              <User className="w-6 h-6" strokeWidth={1.5} />
+              <User className="w-5 h-5" strokeWidth={1.5} />
             </button>
           )}
         </div>
