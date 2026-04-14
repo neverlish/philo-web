@@ -23,13 +23,13 @@ export function EmotionPicker({ onSelectEmotion }: EmotionPickerProps) {
       <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
         지금 이런 마음인가요?
       </span>
-      <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+      <div className="grid grid-cols-4 gap-2">
         {EMOTIONS.map(({ label, concern }) => (
           <motion.button
             key={label}
-            whileTap={{ scale: 0.92 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => onSelectEmotion(concern)}
-            className="flex-none px-4 py-2 rounded-full border border-primary/20 bg-stone-50 text-sm text-muted hover:bg-stone-100 hover:border-primary/40 hover:text-foreground transition-colors whitespace-nowrap"
+            className="py-2.5 rounded-xl bg-stone-100 text-xs text-foreground font-medium hover:bg-stone-200 transition-colors text-center"
           >
             {label}
           </motion.button>
