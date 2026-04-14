@@ -127,6 +127,9 @@ export function PhilosophersList({ initialPhilosophers, initialHasMore, filter }
             description: philosopher.description || "",
           }}
           description={philosopher.core_idea}
+          keywords={philosopher.keywords}
+          years={philosopher.years}
+          region={philosopher.region}
         />
       ))}
 
