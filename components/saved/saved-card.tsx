@@ -4,6 +4,7 @@
 import { motion } from "framer-motion";
 import { Bookmark, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { getPhilosopherSymbol } from "@/lib/philosopher-symbols";
 
 export interface SavedPrescription {
   id: string;
@@ -24,6 +25,8 @@ interface SavedCardProps {
 }
 
 export function SavedCard({ prescription, index, onDelete }: SavedCardProps) {
+  const symbol = getPhilosopherSymbol(prescription.philosopher);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -34,7 +37,15 @@ export function SavedCard({ prescription, index, onDelete }: SavedCardProps) {
         href={`/prescription/ai/${prescription.prescriptionId}`}
         className="block group"
       >
-        <div className="bg-card border border-border rounded-2xl p-5 hover:border-primary/30 transition-all hover:shadow-lg">
+        <div className="bg-card border border-border rounded-2xl p-5 hover:border-primary/30 transition-all hover:shadow-lg relative overflow-hidden">
+          {/* 철학자 심볼 워터마크 */}
+          <span
+            className="absolute -right-2 -bottom-3 text-[72px] font-light text-foreground pointer-events-none select-none leading-none"
+            style={{ opacity: 0.05 }}
+            aria-hidden
+          >
+            {symbol}
+          </span>
           {/* Header */}
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">

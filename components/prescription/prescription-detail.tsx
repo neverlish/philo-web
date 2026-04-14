@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Prescription } from "@/types";
 import { ArrowLeft, Bookmark, Clock } from "lucide-react";
+import { getPhilosopherSymbol } from "@/lib/philosopher-symbols";
 import Link from "next/link";
 import { usePostHog } from 'posthog-js/react'
 import { PushPromptBanner } from "@/components/notification/push-prompt-banner"
@@ -27,6 +28,7 @@ export function PrescriptionDetail({
   intentionSuggestions = [],
 }: PrescriptionDetailProps) {
   const { quote, philosopher, title, subtitle } = prescription;
+  const philosopherSymbol = getPhilosopherSymbol(philosopher.name);
   const [saved, setSaved] = useState(initialIsSaved);
   const [saving, setSaving] = useState(false);
   const posthog = usePostHog()
@@ -89,7 +91,13 @@ export function PrescriptionDetail({
 
         {/* Quote Card */}
         <section className="bg-card rounded-3xl p-8 mb-8 shadow-sm relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-background rounded-full opacity-50" />
+          <span
+            className="absolute -top-3 -right-2 text-[88px] font-light text-foreground pointer-events-none select-none leading-none"
+            style={{ opacity: 0.07 }}
+            aria-hidden
+          >
+            {philosopherSymbol}
+          </span>
           <div className="relative z-10">
             <span className="inline-block border border-foreground rounded-full px-4 py-1 text-xs mb-6 font-serif">
               오늘의 처방
