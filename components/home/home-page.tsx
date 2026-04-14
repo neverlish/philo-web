@@ -290,8 +290,10 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           </>
         )}
 
-        {/* Daily Question Card — A */}
-        <DailyQuestionCard onWriteThought={() => { setSheetInitialText(""); setShowSheet(true); }} />
+        {/* Daily Question Card — A: 처방이 없거나 비로그인일 때만 표시 */}
+        {(!user || !todayPrescription) && (
+          <DailyQuestionCard onWriteThought={() => { setSheetInitialText(""); setShowSheet(true); }} />
+        )}
 
         {/* Emotion Picker — B */}
         <EmotionPicker onSelectEmotion={handleEmotionSelect} />
