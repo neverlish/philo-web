@@ -78,8 +78,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           router.push("/opening");
           return;
         }
-        setChecking(false);
-        // 오늘 받은 처방 fetch
+        // 처방 fetch 완료 후 checking 해제 — 그 전에 렌더하면 빈 버튼이 순간 표시됨
         supabase
           .from("ai_prescriptions")
           .select("id, title, philosopher_name, quote_text")
@@ -90,6 +89,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           .maybeSingle()
           .then(({ data }) => {
             if (data) setTodayPrescription(data as TodayPrescription);
+            setChecking(false);
           });
       });
   }, [user, loading, router]);
