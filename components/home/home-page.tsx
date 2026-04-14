@@ -3,6 +3,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import { X } from "lucide-react";
 import { Header } from "@/components/navigation/header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { PhilosophersList } from "@/components/home/philosophers-list";
@@ -69,6 +71,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   const [todayPrescription, setTodayPrescription] = useState<TodayPrescription | null>(null);
   const [showSheet, setShowSheet] = useState(false);
   const [sheetInitialText, setSheetInitialText] = useState("");
+  const [prescriptionDismissed, setPrescriptionDismissed] = useState(false);
   const [streak, setStreak] = useState(0);
   const [streakDates, setStreakDates] = useState<string[]>([]);
   const philosophersRef = useRef<HTMLDivElement>(null);
@@ -211,19 +214,53 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
         {user ? (
           <div className="w-full mb-8 mt-2">
             {todayPrescription ? (
-              <a href={`/prescription/ai/${todayPrescription.id}`} className="block group">
-                <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
-                  오늘의 처방
-                </span>
-                <h2 className="text-2xl font-serif font-normal leading-tight text-foreground mb-3 break-keep group-hover:text-primary transition-colors">
-                  {todayPrescription.title}
-                </h2>
-                <p className="text-muted text-sm leading-relaxed mb-2 line-clamp-2">
-                  &ldquo;{todayPrescription.quote_text}&rdquo;
-                </p>
-                <p className="text-xs text-primary mb-6">— {todayPrescription.philosopher_name}</p>
-                <div className="h-px w-full bg-primary/20" />
-              </a>
+              <AnimatePresence mode="wait">
+                {!prescriptionDismissed ? (
+                  <motion.div
+                    key="card"
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.2 }}
+                    className="relative"
+                  >
+                    <a href={`/prescription/ai/${todayPrescription.id}`} className="block group">
+                      <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
+                        오늘의 처방
+                      </span>
+                      <h2 className="text-2xl font-serif font-normal leading-tight text-foreground mb-3 break-keep group-hover:text-primary transition-colors pr-6">
+                        {todayPrescription.title}
+                      </h2>
+                      <p className="text-muted text-sm leading-relaxed mb-2 line-clamp-2">
+                        &ldquo;{todayPrescription.quote_text}&rdquo;
+                      </p>
+                      <p className="text-xs text-primary mb-6">— {todayPrescription.philosopher_name}</p>
+                      <div className="h-px w-full bg-primary/20" />
+                    </a>
+                    <button
+                      onClick={() => setPrescriptionDismissed(true)}
+                      aria-label="처방 숨기기"
+                      className="absolute top-0 right-0 p-1 text-muted/40 hover:text-muted transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="dismissed"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                    className="mb-6"
+                  >
+                    <a
+                      href={`/prescription/ai/${todayPrescription.id}`}
+                      className="text-xs text-muted hover:text-foreground transition-colors"
+                    >
+                      오늘의 처방 보기 →
+                    </a>
+                    <div className="h-px w-full bg-primary/20 mt-4" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             ) : (
               <div className="w-full mb-8">
                 <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
