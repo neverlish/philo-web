@@ -11,6 +11,8 @@ import { supabase } from "@/lib/supabase/client";
 import type { DbPhilosopher } from "@/types";
 import { ReflectionCard } from "@/components/home/reflection-card";
 import { ConcernSheet } from "@/components/home/concern-sheet";
+import { DailyQuestionCard } from "@/components/home/daily-question-card";
+import { EmotionPicker } from "@/components/home/emotion-picker";
 
 type ReflectionTarget = {
   id: string
@@ -37,6 +39,22 @@ const categories = [
 
 export type CategoryFilter = { keyword?: string; region?: string; era?: string; concerns?: string };
 
+function calculateStreak(dates: string[]): number {
+  if (dates.length === 0) return 0;
+  const sorted = [...dates].sort().reverse();
+  const today = new Date().toISOString().split("T")[0];
+  if (sorted[0] !== today) return 0;
+  let count = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = new Date(sorted[i - 1]);
+    const curr = new Date(sorted[i]);
+    const diff = Math.round((prev.getTime() - curr.getTime()) / 86400000);
+    if (diff === 1) count++;
+    else break;
+  }
+  return count;
+}
+
 interface HomePageProps {
   initialPhilosophers: DbPhilosopher[];
   initialHasMore: boolean;
@@ -50,7 +68,21 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   const [reflectionTarget, setReflectionTarget] = useState<ReflectionTarget | null>(null);
   const [todayPrescription, setTodayPrescription] = useState<TodayPrescription | null>(null);
   const [showSheet, setShowSheet] = useState(false);
+  const [sheetInitialText, setSheetInitialText] = useState("");
+  const [streak, setStreak] = useState(0);
+  const [streakDates, setStreakDates] = useState<string[]>([]);
   const philosophersRef = useRef<HTMLDivElement>(null);
+
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return d.toISOString().split("T")[0];
+  });
+
+  const handleEmotionSelect = (concern: string) => {
+    setSheetInitialText(concern);
+    setShowSheet(true);
+  };
 
   const handleCategorySelect = (index: number) => {
     setSelectedCategory(index);
@@ -58,6 +90,20 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
       philosophersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 50);
   };
+
+  useEffect(() => {
+    if (loading || !user) return;
+    supabase
+      .from("check_ins")
+      .select("check_in_date")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        if (!data) return;
+        const dates = data.map((d) => d.check_in_date);
+        setStreakDates(dates);
+        setStreak(calculateStreak(dates));
+      });
+  }, [user, loading]);
 
   useEffect(() => {
     if (loading) return;
@@ -132,6 +178,25 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
       <Header title="지혜의 다리" />
 
       <main className="flex-1 flex flex-col px-6 pt-2 pb-32 overflow-y-auto">
+        {/* Streak mini widget — D */}
+        {user && streak > 0 && (
+          <div className="flex items-center gap-2.5 py-3 mb-1">
+            <div className="flex gap-1">
+              {last7Days.map((date) => (
+                <div
+                  key={date}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    streakDates.includes(date) ? "bg-primary" : "bg-border"
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-xs text-muted">
+              {streak > 1 ? `${streak}일 연속` : "오늘 시작"}
+            </span>
+          </div>
+        )}
+
         {reflectionTarget && (
           <ReflectionCard
             prescriptionId={reflectionTarget.id}
@@ -225,6 +290,12 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           </>
         )}
 
+        {/* Daily Question Card — A */}
+        <DailyQuestionCard onWriteThought={() => { setSheetInitialText(""); setShowSheet(true); }} />
+
+        {/* Emotion Picker — B */}
+        <EmotionPicker onSelectEmotion={handleEmotionSelect} />
+
         {/* Category Filters */}
         <div ref={philosophersRef} className="w-full mb-10">
           <div className="flex gap-3 overflow-x-auto pb-2">
@@ -258,8 +329,9 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
 
       <ConcernSheet
         isOpen={showSheet}
-        onClose={() => setShowSheet(false)}
+        onClose={() => { setShowSheet(false); setSheetInitialText(""); }}
         isLoggedIn={!!user}
+        initialText={sheetInitialText}
       />
     </div>
   );
