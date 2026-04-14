@@ -1,22 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ImageResponse } from 'next/og'
 import { createClient } from '@/lib/supabase/server-auth'
+import fs from 'fs'
+import path from 'path'
 
-async function loadFont(text: string): Promise<ArrayBuffer> {
-  const params = new URLSearchParams({ family: 'Noto Serif KR', text })
-  const css = await fetch(
-    `https://fonts.googleapis.com/css2?${params}`,
-    {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      },
-    }
-  ).then((r) => r.text())
-
-  const match = css.match(/src: url\((.+?)\) format/)
-  if (!match) throw new Error('Font URL not found in Google Fonts response')
-  return fetch(match[1]).then((r) => r.arrayBuffer())
+function loadFont(): ArrayBuffer {
+  const fontPath = path.join(process.cwd(), 'public/fonts/NotoSerifKR-Regular.ttf')
+  const buffer = fs.readFileSync(fontPath)
+  return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer
 }
 
 export async function GET(
@@ -40,11 +31,9 @@ export async function GET(
 
   if (error || !data) return new NextResponse('Not Found', { status: 404 })
 
-  const allText = `오늘의 처방${data.quote_text}${data.philosopher_name}${data.philosopher_school}${data.philosopher_era}오늘의철학philoapp.kr`
-
   let fontData: ArrayBuffer
   try {
-    fontData = await loadFont(allText)
+    fontData = loadFont()
   } catch {
     return new NextResponse('Failed to load font', { status: 500 })
   }
