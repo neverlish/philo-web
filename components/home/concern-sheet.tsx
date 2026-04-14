@@ -13,9 +13,10 @@ interface ConcernSheetProps {
   isOpen: boolean;
   onClose: () => void;
   isLoggedIn?: boolean;
+  initialText?: string;
 }
 
-export function ConcernSheet({ isOpen, onClose, isLoggedIn = false }: ConcernSheetProps) {
+export function ConcernSheet({ isOpen, onClose, isLoggedIn = false, initialText }: ConcernSheetProps) {
   const router = useRouter();
   const posthog = usePostHog();
   const [text, setText] = useState("");
@@ -25,8 +26,12 @@ export function ConcernSheet({ isOpen, onClose, isLoggedIn = false }: ConcernShe
   const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
-    if (isOpen) posthog?.capture('concern_sheet_opened', { is_logged_in: isLoggedIn })
-  }, [isOpen, isLoggedIn, posthog])
+    if (isOpen) {
+      setText(initialText ?? "");
+      posthog?.capture('concern_sheet_opened', { is_logged_in: isLoggedIn })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen])
 
   const startListening = () => {
     if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) return;
