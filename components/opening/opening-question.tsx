@@ -4,9 +4,24 @@
 import { useRouter } from "next/navigation";
 import { Leaf, Menu, UserCircle, Mic } from "lucide-react";
 import { useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase/client";
 
 export function OpeningQuestion() {
   const router = useRouter();
+  const { user } = useAuth();
+
+  const skip = () => {
+    if (!user) { router.push("/"); return; }
+    const today = new Date().toISOString().split("T")[0];
+    supabase
+      .from("check_ins")
+      .upsert(
+        { user_id: user.id, check_in_date: today, checked_in_at: new Date().toISOString() },
+        { onConflict: "user_id,check_in_date", ignoreDuplicates: true }
+      )
+      .finally(() => router.push("/"));
+  };
 
   useEffect(() => {
     // Auto transition after 3 seconds
@@ -63,7 +78,7 @@ export function OpeningQuestion() {
       {/* Footer */}
       <footer className="w-full p-8 z-10 flex flex-col items-center gap-4 pb-12">
         <button
-          onClick={() => router.push("/")}
+          onClick={skip}
           className="text-xs text-muted hover:text-foreground transition-colors underline underline-offset-4"
         >
           오늘은 넘기기
