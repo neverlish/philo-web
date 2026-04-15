@@ -27,6 +27,12 @@ export async function generateMetadata({
     openGraph: {
       title: `${data.philosopher_name}의 처방`,
       description: data.quote_text,
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${data.philosopher_name}의 처방`,
+      description: data.quote_text,
     },
   }
 }

@@ -77,6 +77,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   const [streak, setStreak] = useState(0);
   const [streakDates, setStreakDates] = useState<string[]>([]);
   const philosophersRef = useRef<HTMLDivElement>(null);
+  const homeTrackedRef = useRef(false);
 
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
@@ -144,6 +145,17 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           });
       });
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (checking || homeTrackedRef.current) return
+    homeTrackedRef.current = true
+    posthog?.capture('home_viewed', {
+      is_logged_in: !!user,
+      streak,
+      has_today_prescription: !!todayPrescription,
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checking])
 
   useEffect(() => {
     if (!user) return
