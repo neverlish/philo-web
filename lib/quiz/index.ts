@@ -1,0 +1,3 @@
+export { QUESTIONS, PHILOSOPHER_TYPES } from './data'
+export type { PhilosopherKey, PhilosopherType, Question, AnswerChoice } from './data'
+export { calculateResult } from './score'
