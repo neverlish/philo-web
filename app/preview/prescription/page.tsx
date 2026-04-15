@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Clock, Sparkles, Lock } from "lucide-react";
+import { ArrowLeft, Clock, Sparkles, Lock, Flame, Bell } from "lucide-react";
 import Link from "next/link";
 import { LoginModal } from "@/components/auth/LoginModal";
 
@@ -18,6 +18,11 @@ export default function PreviewPrescriptionPage() {
   const router = useRouter();
   const [data, setData] = useState<PreviewPrescription | null>(null);
   const [showLogin, setShowLogin] = useState(false);
+
+  const openLoginWithSaveIntent = () => {
+    sessionStorage.setItem('pendingPreviewSave', 'true');
+    setShowLogin(true);
+  };
 
   useEffect(() => {
     const stored = sessionStorage.getItem("previewPrescription");
@@ -114,7 +119,7 @@ export default function PreviewPrescriptionPage() {
               <p className="text-sm font-medium">실천 방법은 회원만 볼 수 있어요</p>
             </div>
             <button
-              onClick={() => setShowLogin(true)}
+              onClick={() => openLoginWithSaveIntent()}
               className="px-5 py-2 rounded-full bg-foreground text-background text-xs font-medium transition-all active:scale-95"
             >
               회원가입하고 확인하기
@@ -122,10 +127,55 @@ export default function PreviewPrescriptionPage() {
           </div>
         </section>
 
+        {/* Streak Teaser */}
+        <section className="mb-8">
+          <div className="border border-foreground/10 rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Flame className="w-4 h-4 text-orange-400" strokeWidth={1.5} />
+              <h3 className="text-sm font-bold">오늘이 1일차!</h3>
+            </div>
+            <div className="flex items-center gap-2 mb-4">
+              {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+                <div
+                  key={day}
+                  className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl text-xs font-medium transition-all ${
+                    day === 1
+                      ? "bg-orange-400/20 text-orange-400 border border-orange-400/30"
+                      : "bg-foreground/5 text-foreground/20"
+                  }`}
+                >
+                  <span>{day}</span>
+                  <span className="text-[9px] opacity-70">일</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted leading-relaxed">
+              회원가입하면 오늘부터 연속 기록이 시작돼요. 매일 처방을 받으며 철학적 사유의 습관을 만들어보세요.
+            </p>
+          </div>
+        </section>
+
+        {/* Notification Hook */}
+        <section className="mb-8">
+          <button
+            onClick={() => openLoginWithSaveIntent()}
+            className="w-full flex items-center gap-4 bg-foreground/5 hover:bg-foreground/10 rounded-2xl p-5 text-left transition-colors active:scale-[0.98]"
+          >
+            <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+              <Bell className="w-4 h-4 text-primary" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground">내일도 처방 받기</p>
+              <p className="text-xs text-muted mt-0.5">회원가입하면 매일 오전 알림을 보내드려요</p>
+            </div>
+            <ArrowLeft className="w-4 h-4 text-muted rotate-180 flex-shrink-0" />
+          </button>
+        </section>
+
         {/* CTA */}
         <section className="pb-12">
           <button
-            onClick={() => setShowLogin(true)}
+            onClick={() => openLoginWithSaveIntent()}
             className="relative flex items-center justify-center w-full py-4 rounded-xl font-serif font-medium text-sm tracking-wide transition-all active:scale-[0.98] overflow-hidden group"
             style={{
               background: "linear-gradient(135deg, #6b3a1f 0%, #c9872a 50%, #7c4f1a 100%)",
