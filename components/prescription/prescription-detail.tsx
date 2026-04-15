@@ -195,13 +195,13 @@ export function PrescriptionDetail({
         </footer>
 
         {/* Next Action */}
-        <div className="text-center pb-8">
-          <p className="text-xs text-muted mb-3">다른 철학자들의 지혜도 탐색해보세요</p>
+        <div className="pb-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline underline-offset-4"
+            className="flex items-center justify-center w-full py-3.5 rounded-xl text-sm text-muted font-sans transition-all active:scale-[0.98]"
+            style={{ background: '#fff' }}
           >
-            철학자 탐색하기 →
+            홈으로 가기
           </Link>
         </div>
       </main>

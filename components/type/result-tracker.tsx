@@ -32,7 +32,7 @@ export function ResultCta({ philosopherKey, philosopherName }: ResultCtaProps) {
   return (
     <div className="flex flex-col gap-3">
       <Link
-        href="/opening?from=quiz"
+        href="/opening"
         onClick={() => posthog?.capture("quiz_result_cta_clicked", { philosopher: philosopherKey })}
         className="flex items-center justify-center w-full py-4 rounded-xl font-serif font-medium text-sm tracking-wide transition-all active:scale-[0.98] text-white"
         style={{
