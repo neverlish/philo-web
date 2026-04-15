@@ -335,23 +335,27 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
         {/* Emotion Picker — B */}
         <EmotionPicker onSelectEmotion={handleEmotionSelect} />
 
-        {/* Category Filters */}
-        <div ref={philosophersRef} className="w-full mb-10">
-          <div className="flex gap-3 overflow-x-auto pb-2">
+        {/* Philosophers Section */}
+        <div ref={philosophersRef} className="w-full mb-5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-medium tracking-[0.2em] uppercase text-muted">철학자 탐색</span>
+          </div>
+          <div className="flex gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden">
             {categories.map((category, index) => (
               <button
                 key={category.label}
-                onClick={() => setSelectedCategory(index)}
-                className={`flex-none px-5 py-2.5 rounded-full border font-serif text-sm whitespace-nowrap transition-colors ${
+                onClick={() => handleCategorySelect(index)}
+                className={`flex-none px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors ${
                   selectedCategory === index
-                    ? "border-primary/30 bg-stone-100 text-foreground"
-                    : "border-primary/20 bg-transparent text-muted hover:bg-stone-50 hover:text-foreground"
+                    ? "bg-stone-100 text-foreground font-medium"
+                    : "text-muted hover:text-foreground"
                 }`}
               >
                 {category.label}
               </button>
             ))}
           </div>
+          <div className="h-px w-full bg-primary/10 mt-3" />
         </div>
 
         {/* Content Cards */}
