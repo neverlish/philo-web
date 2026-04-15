@@ -49,6 +49,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         // 로그인 직후 대기 중인 고민이 있으면 실제 처방 생성
         if (event === 'SIGNED_IN') {
+          posthog.identify(session.user.id, {
+            email: session.user.email,
+            provider: session.user.app_metadata?.provider,
+          })
           posthog.capture('login_completed', {
             user_id: session.user.id,
             provider: session.user.app_metadata?.provider,

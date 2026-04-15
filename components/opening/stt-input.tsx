@@ -55,6 +55,7 @@ export function STTInput() {
   };
 
   const skip = () => {
+    posthog?.capture('checkin_skipped', { step: 'input' });
     saveCheckIn().finally(() => {
       router.push("/");
     });
@@ -76,7 +77,10 @@ export function STTInput() {
     recognition.continuous = false;
     recognition.interimResults = true;
 
-    recognition.onstart = () => setStatus("listening");
+    recognition.onstart = () => {
+      setStatus("listening");
+      posthog?.capture('stt_started');
+    };
 
     recognition.onresult = (event: any) => {
       const result = event.results[0][0].transcript;
@@ -227,7 +231,7 @@ export function STTInput() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-                onClick={() => setTextMode(true)}
+                onClick={() => { setTextMode(true); posthog?.capture('text_mode_selected'); }}
                 className="flex items-center gap-1.5 text-xs text-muted hover:text-foreground transition-colors"
               >
                 <PenLine className="w-3.5 h-3.5" />

@@ -15,6 +15,7 @@ import { ReflectionCard } from "@/components/home/reflection-card";
 import { ConcernSheet } from "@/components/home/concern-sheet";
 import { DailyQuestionCard } from "@/components/home/daily-question-card";
 import { EmotionPicker } from "@/components/home/emotion-picker";
+import { usePostHog } from 'posthog-js/react';
 
 type ReflectionTarget = {
   id: string
@@ -65,6 +66,7 @@ interface HomePageProps {
 export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const posthog = usePostHog();
   const [checking, setChecking] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(0);
   const [reflectionTarget, setReflectionTarget] = useState<ReflectionTarget | null>(null);
@@ -273,7 +275,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
                   마음을 어지럽히는 것을 말하면 철학자의 지혜로 처방해드려요.
                 </p>
                 <button
-                  onClick={() => setShowSheet(true)}
+                  onClick={() => { posthog?.capture('concern_cta_clicked', { is_logged_in: true }); setShowSheet(true); }}
                   className="w-full py-3.5 rounded-xl bg-foreground text-background text-sm font-medium transition-all active:scale-95 mb-8"
                 >
                   오늘 고민 말하기
@@ -311,7 +313,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
                 ))}
               </div>
               <button
-                onClick={() => setShowSheet(true)}
+                onClick={() => { posthog?.capture('concern_cta_clicked', { is_logged_in: false }); setShowSheet(true); }}
                 className="relative w-full py-4 rounded-xl text-sm font-serif tracking-wide transition-all active:scale-[0.98] mb-8 overflow-hidden group"
                 style={{
                   background: "linear-gradient(135deg, #6b3a1f 0%, #c9872a 50%, #7c4f1a 100%)",

@@ -6,12 +6,15 @@ import { Leaf, Menu, UserCircle, Mic } from "lucide-react";
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase/client";
+import { usePostHog } from 'posthog-js/react';
 
 export function OpeningQuestion() {
   const router = useRouter();
   const { user } = useAuth();
+  const posthog = usePostHog();
 
   const skip = async () => {
+    posthog?.capture('checkin_skipped', { step: 'opening' });
     if (user) {
       const today = new Date().toISOString().split("T")[0];
       await supabase
