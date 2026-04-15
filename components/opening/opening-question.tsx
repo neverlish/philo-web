@@ -11,16 +11,17 @@ export function OpeningQuestion() {
   const router = useRouter();
   const { user } = useAuth();
 
-  const skip = () => {
-    if (!user) { router.push("/"); return; }
-    const today = new Date().toISOString().split("T")[0];
-    supabase
-      .from("check_ins")
-      .upsert(
-        { user_id: user.id, check_in_date: today, checked_in_at: new Date().toISOString() },
-        { onConflict: "user_id,check_in_date", ignoreDuplicates: true }
-      )
-      .finally(() => router.push("/"));
+  const skip = async () => {
+    if (user) {
+      const today = new Date().toISOString().split("T")[0];
+      await supabase
+        .from("check_ins")
+        .upsert(
+          { user_id: user.id, check_in_date: today, checked_in_at: new Date().toISOString() },
+          { onConflict: "user_id,check_in_date", ignoreDuplicates: true }
+        );
+    }
+    router.push("/");
   };
 
   useEffect(() => {
