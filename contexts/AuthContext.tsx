@@ -53,6 +53,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
             user_id: session.user.id,
             provider: session.user.app_metadata?.provider,
           })
+
+          // 미리보기 처방 저장 대기 중인 경우
+          const pendingPreviewSave = sessionStorage.getItem('pendingPreviewSave')
+          const previewPrescription = sessionStorage.getItem('previewPrescription')
+          if (pendingPreviewSave && previewPrescription) {
+            sessionStorage.removeItem('pendingPreviewSave')
+            sessionStorage.removeItem('previewPrescription')
+            try {
+              const prescriptionData = JSON.parse(previewPrescription)
+              fetch('/api/prescription/save-preview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(prescriptionData),
+              })
+                .then((res) => res.ok ? res.json() : null)
+                .then((data) => {
+                  if (data?.prescriptionId) {
+                    window.location.href = `/prescription/ai/${data.prescriptionId}`
+                  }
+                })
+                .catch(() => {})
+            } catch {}
+            return
+          }
+
+          // 일반 고민 처방 생성 대기 중인 경우
           const pendingConcern = localStorage.getItem('pendingConcern')
           if (pendingConcern) {
             localStorage.removeItem('pendingConcern')
