@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { X, ArrowRight } from "lucide-react";
 import { Header } from "@/components/navigation/header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { PhilosophersList } from "@/components/home/philosophers-list";
@@ -13,9 +13,8 @@ import { supabase } from "@/lib/supabase/client";
 import type { DbPhilosopher } from "@/types";
 import { ReflectionCard } from "@/components/home/reflection-card";
 import { ConcernSheet } from "@/components/home/concern-sheet";
-import { DailyQuestionCard } from "@/components/home/daily-question-card";
-import { EmotionPicker } from "@/components/home/emotion-picker";
 import { usePostHog } from 'posthog-js/react';
+import Link from 'next/link';
 
 type ReflectionTarget = {
   id: string
@@ -72,7 +71,6 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   const [reflectionTarget, setReflectionTarget] = useState<ReflectionTarget | null>(null);
   const [todayPrescription, setTodayPrescription] = useState<TodayPrescription | null>(null);
   const [showSheet, setShowSheet] = useState(false);
-  const [sheetInitialText, setSheetInitialText] = useState("");
   const [prescriptionDismissed, setPrescriptionDismissed] = useState(false);
   const [streak, setStreak] = useState(0);
   const [streakDates, setStreakDates] = useState<string[]>([]);
@@ -84,11 +82,6 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
     d.setDate(d.getDate() - (6 - i));
     return d.toISOString().split("T")[0];
   });
-
-  const handleEmotionSelect = (concern: string) => {
-    setSheetInitialText(concern);
-    setShowSheet(true);
-  };
 
   const handleCategorySelect = (index: number) => {
     setSelectedCategory(index);
@@ -311,16 +304,20 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
                 소크라테스, 노자, 니체가 오늘 당신의 고민을 듣습니다.<br />
                 2천 년의 지혜가 지금 이 순간을 위해 준비돼 있어요.
               </p>
-              <div className="flex gap-4 mb-8">
+              <div className="flex justify-center items-center gap-2 mb-8">
                 {[
                   { step: "01", label: "고민 입력" },
                   { step: "02", label: "처방 생성" },
                   { step: "03", label: "실천하기" },
-                ].map(({ step, label }) => (
+                ].map(({ step, label }, i, arr) => (
                   <div key={step} className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-primary">{step}</span>
-                    <span className="text-xs text-muted">{label}</span>
-                    {step !== "03" && <span className="text-muted/40 text-xs">→</span>}
+                    <div className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-full bg-card" style={{ boxShadow: '0 2px 8px rgba(44,36,32,0.06)' }}>
+                      <span className="text-[11px] font-mono font-bold text-primary">{step}</span>
+                      <span className="text-[11px] text-foreground font-medium whitespace-nowrap">{label}</span>
+                    </div>
+                    {i < arr.length - 1 && (
+                      <span className="text-muted/40 text-sm">→</span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -336,18 +333,31 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
                 <span className="relative z-10">✦ 지금 고민 말하기</span>
                 <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
               </button>
-              <div className="h-px w-full bg-primary/20 mb-8" />
+              <div className="h-px w-full bg-primary/20 mb-2" />
             </div>
           </>
         )}
 
-        {/* Daily Question Card — A: 처방이 없거나 비로그인일 때만 표시 */}
-        {(!user || !todayPrescription) && (
-          <DailyQuestionCard onWriteThought={() => { setSheetInitialText(""); setShowSheet(true); }} />
-        )}
-
-        {/* Emotion Picker — B */}
-        <EmotionPicker onSelectEmotion={handleEmotionSelect} />
+        {/* 철학자 유형 테스트 배너 */}
+        <Link
+          href="/type"
+          onClick={() => posthog?.capture('quiz_banner_clicked')}
+          className="flex items-center justify-between gap-3 mb-6 px-4 py-3 rounded-xl active:scale-[0.98] transition-transform"
+          style={{
+            background: 'linear-gradient(135deg, #2C2420 0%, #5a3820 60%, #ec5b13 100%)',
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.12)' }}>
+              <span className="text-white text-xs">✦</span>
+            </div>
+            <div>
+              <p className="font-serif text-white text-sm font-bold leading-snug">나의 철학자 유형은?</p>
+              <p className="text-white/60 text-[11px]">7가지 질문 · 약 2분</p>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-white/70 flex-shrink-0" />
+        </Link>
 
         {/* Philosophers Section */}
         <div ref={philosophersRef} className="w-full mb-5">
@@ -386,9 +396,8 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
 
       <ConcernSheet
         isOpen={showSheet}
-        onClose={() => { setShowSheet(false); setSheetInitialText(""); }}
+        onClose={() => setShowSheet(false)}
         isLoggedIn={!!user}
-        initialText={sheetInitialText}
       />
     </div>
   );

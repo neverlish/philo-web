@@ -7,6 +7,17 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Mic, MicOff, X, Loader2 } from "lucide-react";
 import { usePostHog } from 'posthog-js/react';
 
+const EMOTION_CHIPS = [
+  { label: "인간관계", concern: "소중한 사람과의 관계가 힘들고 어떻게 해야 할지 모르겠어요." },
+  { label: "직장·일", concern: "일이 너무 힘들고 지쳐있어요. 의욕이 생기지 않아요." },
+  { label: "진로·미래", concern: "앞으로 어떻게 살아야 할지, 방향을 모르겠어요." },
+  { label: "자존감", concern: "자신이 부족하게 느껴지고 자존감이 낮아진 것 같아요." },
+  { label: "불안", concern: "이유 모를 불안함과 두려움이 자꾸 찾아와요." },
+  { label: "외로움", concern: "외롭고 고립된 느낌이 들어요." },
+  { label: "삶의 의미", concern: "삶의 의미를 잃은 것 같은 허무감이 있어요." },
+  { label: "변화·선택", concern: "중요한 선택 앞에서 결정을 못 하고 계속 망설이고 있어요." },
+]
+
 type SttStatus = "idle" | "listening" | "error";
 
 interface ConcernSheetProps {
@@ -130,6 +141,20 @@ export function ConcernSheet({ isOpen, onClose, isLoggedIn = false, initialText 
               <button onClick={handleClose} className="p-1.5 rounded-full hover:bg-stone-100 transition-colors">
                 <X className="w-4 h-4 text-muted" />
               </button>
+            </div>
+
+            {/* 감정 칩 */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {EMOTION_CHIPS.map(({ label, concern }) => (
+                <button
+                  key={label}
+                  onClick={() => { setText(concern); posthog?.capture('concern_chip_selected', { chip: label }); }}
+                  disabled={submitting}
+                  className="px-3 py-1.5 rounded-full bg-stone-100 text-xs text-foreground font-medium hover:bg-stone-200 transition-colors disabled:opacity-40"
+                >
+                  {label}
+                </button>
+              ))}
             </div>
 
             {/* Textarea + Mic */}
