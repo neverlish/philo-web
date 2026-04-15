@@ -1,7 +1,7 @@
 // components/opening/opening-question.tsx
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Leaf, Menu, UserCircle, Mic } from "lucide-react";
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,11 +10,13 @@ import { usePostHog } from 'posthog-js/react';
 
 export function OpeningQuestion() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const posthog = usePostHog();
+  const fromQuiz = searchParams.get('from') === 'quiz';
 
   const skip = async () => {
-    posthog?.capture('checkin_skipped', { step: 'opening' });
+    posthog?.capture('checkin_skipped', { step: 'opening', from: fromQuiz ? 'quiz' : 'default' });
     if (user) {
       const today = new Date().toISOString().split("T")[0];
       await supabase
@@ -24,7 +26,11 @@ export function OpeningQuestion() {
           { onConflict: "user_id,check_in_date", ignoreDuplicates: true }
         );
     }
-    router.push("/");
+    if (fromQuiz) {
+      router.back();
+    } else {
+      router.push("/");
+    }
   };
 
   useEffect(() => {
