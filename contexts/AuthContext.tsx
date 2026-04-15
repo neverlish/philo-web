@@ -49,14 +49,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         // 로그인 직후 대기 중인 고민이 있으면 실제 처방 생성
         if (event === 'SIGNED_IN') {
-          posthog.identify(session.user.id, {
-            email: session.user.email,
-            provider: session.user.app_metadata?.provider,
-          })
-          posthog.capture('login_completed', {
-            user_id: session.user.id,
-            provider: session.user.app_metadata?.provider,
-          })
+          const trackKey = `login_tracked_${session.user.id}`
+          if (!sessionStorage.getItem(trackKey)) {
+            sessionStorage.setItem(trackKey, '1')
+            posthog.identify(session.user.id, {
+              email: session.user.email,
+              provider: session.user.app_metadata?.provider,
+            })
+            posthog.capture('login_completed', {
+              user_id: session.user.id,
+              provider: session.user.app_metadata?.provider,
+            })
+          }
 
           // 미리보기 처방 저장 대기 중인 경우
           const pendingPreviewSave = sessionStorage.getItem('pendingPreviewSave')

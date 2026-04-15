@@ -4,10 +4,14 @@ import { createClient } from '@/lib/supabase/server-auth'
 import fs from 'fs'
 import path from 'path'
 
+let fontCache: ArrayBuffer | null = null
+
 function loadFont(): ArrayBuffer {
+  if (fontCache) return fontCache
   const fontPath = path.join(process.cwd(), 'public/fonts/NotoSerifKR-Regular.ttf')
   const buffer = fs.readFileSync(fontPath)
-  return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer
+  fontCache = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer
+  return fontCache
 }
 
 export async function GET(
@@ -39,7 +43,7 @@ export async function GET(
   }
 
   const quoteLength = data.quote_text.length
-  const quoteFontSize = quoteLength > 80 ? 32 : quoteLength > 50 ? 38 : 44
+  const quoteFontSize = quoteLength > 100 ? 30 : quoteLength > 70 ? 36 : quoteLength > 40 ? 42 : 48
 
   return new ImageResponse(
     (
@@ -49,21 +53,39 @@ export async function GET(
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          backgroundColor: '#F9F7F2',
+          backgroundColor: '#1C1917',
           padding: '80px',
           fontFamily: 'Noto Serif KR',
+          position: 'relative',
         }}
       >
+        {/* 배경 장식 따옴표 */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '48px',
+            right: '60px',
+            fontSize: '320px',
+            color: '#ffffff',
+            opacity: 0.04,
+            fontFamily: 'Georgia, serif',
+            lineHeight: 1,
+            display: 'flex',
+          }}
+        >
+          &ldquo;
+        </div>
+
         {/* 상단 레이블 */}
-        <div style={{ display: 'flex', marginBottom: '48px' }}>
+        <div style={{ display: 'flex', marginBottom: '64px' }}>
           <span
             style={{
-              border: '1.5px solid #2C2420',
+              border: '1px solid rgba(236, 91, 19, 0.6)',
               borderRadius: '9999px',
               padding: '8px 24px',
-              fontSize: '16px',
-              color: '#2C2420',
-              letterSpacing: '0.12em',
+              fontSize: '15px',
+              color: '#ec5b13',
+              letterSpacing: '0.15em',
             }}
           >
             오늘의 처방
@@ -82,10 +104,11 @@ export async function GET(
           <p
             style={{
               fontSize: quoteFontSize,
-              lineHeight: 1.75,
-              color: '#2C2420',
+              lineHeight: 1.8,
+              color: '#F5F0E8',
               margin: 0,
               wordBreak: 'keep-all',
+              letterSpacing: '0.02em',
             }}
           >
             {data.quote_text}
@@ -97,25 +120,25 @@ export async function GET(
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '6px',
-            marginTop: '48px',
-            marginBottom: '40px',
+            gap: '8px',
+            marginTop: '56px',
+            marginBottom: '44px',
           }}
         >
           <p
             style={{
-              fontSize: '24px',
-              fontWeight: 700,
-              color: '#2C2420',
+              fontSize: '22px',
+              color: '#F5F0E8',
               margin: 0,
+              letterSpacing: '0.06em',
             }}
           >
-            {data.philosopher_name}
+            — {data.philosopher_name}
           </p>
           <p
             style={{
               fontSize: '14px',
-              color: '#6B5F56',
+              color: '#78716c',
               margin: 0,
               letterSpacing: '0.1em',
             }}
@@ -128,8 +151,8 @@ export async function GET(
         <div
           style={{
             height: '1px',
-            backgroundColor: '#e7e5e4',
-            marginBottom: '28px',
+            backgroundColor: '#292524',
+            marginBottom: '32px',
           }}
         />
 
@@ -143,19 +166,20 @@ export async function GET(
         >
           <p
             style={{
-              fontSize: '18px',
-              fontWeight: 700,
+              fontSize: '17px',
               color: '#ec5b13',
               margin: 0,
+              letterSpacing: '0.05em',
             }}
           >
             오늘의철학
           </p>
           <p
             style={{
-              fontSize: '14px',
-              color: '#6B5F56',
+              fontSize: '13px',
+              color: '#57534e',
               margin: 0,
+              letterSpacing: '0.05em',
             }}
           >
             philoapp.kr
