@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase/client";
 import type { DbPhilosopher } from "@/types";
 import { ReflectionCard } from "@/components/home/reflection-card";
 import { ConcernSheet } from "@/components/home/concern-sheet";
+import { OnboardingSlides, useOnboarding } from "@/components/onboarding/onboarding-slides";
 import { usePostHog } from 'posthog-js/react';
 import Link from 'next/link';
 import { getTodayKST, getRecentDaysKST } from "@/lib/date";
@@ -67,6 +68,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   const { user, loading } = useAuth();
   const router = useRouter();
   const posthog = usePostHog();
+  const { show: showOnboarding, done: doneOnboarding } = useOnboarding();
   const [checking, setChecking] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(0);
   const [reflectionTarget, setReflectionTarget] = useState<ReflectionTarget | null>(null);
@@ -181,6 +183,8 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   if (checking) return null;
 
   return (
+    <>
+    {showOnboarding && <OnboardingSlides onDone={doneOnboarding} />}
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
       <Header title="지혜의 다리" />
 
@@ -397,5 +401,6 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
         isLoggedIn={!!user}
       />
     </div>
+    </>
   );
 }
