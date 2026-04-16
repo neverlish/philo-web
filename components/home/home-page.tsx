@@ -15,6 +15,7 @@ import { ReflectionCard } from "@/components/home/reflection-card";
 import { ConcernSheet } from "@/components/home/concern-sheet";
 import { usePostHog } from 'posthog-js/react';
 import Link from 'next/link';
+import { getTodayKST, getRecentDaysKST } from "@/lib/date";
 
 type ReflectionTarget = {
   id: string
@@ -44,7 +45,7 @@ export type CategoryFilter = { keyword?: string; region?: string; era?: string; 
 function calculateStreak(dates: string[]): number {
   if (dates.length === 0) return 0;
   const sorted = [...dates].sort().reverse();
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayKST();
   if (sorted[0] !== today) return 0;
   let count = 1;
   for (let i = 1; i < sorted.length; i++) {
@@ -77,11 +78,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   const philosophersRef = useRef<HTMLDivElement>(null);
   const homeTrackedRef = useRef(false);
 
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    return d.toISOString().split("T")[0];
-  });
+  const last7Days = getRecentDaysKST(7);
 
   const handleCategorySelect = (index: number) => {
     setSelectedCategory(index);
@@ -111,7 +108,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
       return;
     }
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayKST();
     supabase
       .from("check_ins")
       .select("id")

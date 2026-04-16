@@ -10,12 +10,13 @@ import { Settings, HelpCircle, Shield, ChevronRight, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { StreakCard } from "@/components/profile/streak-card";
+import { getTodayKST, getRecentDaysKST } from "@/lib/date";
 
 function calculateStreak(dates: string[]): number {
   if (dates.length === 0) return 0;
 
   const sorted = [...dates].sort().reverse();
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayKST();
 
   if (sorted[0] !== today) return 0;
 
@@ -75,11 +76,7 @@ export default async function ProfilePage() {
   const streak = calculateStreak((checkIns ?? []).map((c) => c.check_in_date));
 
   const checkInSet = new Set((checkIns ?? []).map((c) => c.check_in_date));
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(now);
-    d.setDate(d.getDate() - (6 - i));
-    return d.toISOString().split("T")[0];
-  });
+  const last7Days = getRecentDaysKST(7);
 
   const monthName = `${now.getMonth() + 1}월`;
   const monthlyCount = monthlyPrescriptions?.length ?? 0;

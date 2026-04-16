@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase/client";
 import { usePostHog } from 'posthog-js/react'
+import { getTodayKST } from "@/lib/date"
 
 type Status = "idle" | "listening" | "done" | "generating" | "noInput" | "error";
 
@@ -23,7 +24,7 @@ export function STTInput() {
 
   const saveCheckIn = async (): Promise<null> => {
     if (!user) return null;
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayKST();
     await supabase.from("check_ins").upsert(
       { user_id: user.id, check_in_date: today, checked_in_at: new Date().toISOString() },
       { onConflict: "user_id,check_in_date", ignoreDuplicates: true }

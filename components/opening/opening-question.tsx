@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase/client";
 import { usePostHog } from 'posthog-js/react';
+import { getTodayKST } from "@/lib/date";
 
 export function OpeningQuestion() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export function OpeningQuestion() {
   const skip = async () => {
     posthog?.capture('checkin_skipped', { step: 'opening' });
     if (user) {
-      const today = new Date().toISOString().split("T")[0];
+      const today = getTodayKST();
       await supabase
         .from("check_ins")
         .upsert(
