@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePostHog } from "posthog-js/react";
 import Link from "next/link";
-import { Share2, Check } from "lucide-react";
+import { Share2, Link2, ChevronUp } from "lucide-react";
 import { type PhilosopherKey } from "@/lib/quiz";
 
 interface ResultTrackerProps {
@@ -29,19 +29,36 @@ interface ResultCtaProps {
 
 export function ResultCta({ philosopherKey, philosopherName }: ResultCtaProps) {
   const posthog = usePostHog();
+  const [showShareMenu, setShowShareMenu] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
-  const handleShare = async () => {
-    const url = `${window.location.origin}/type/result/${philosopherKey}`;
-    const text = `나는 ${philosopherName}형 철학자예요! 나의 철학자 유형은?`;
-    posthog?.capture("quiz_result_shared", { philosopher: philosopherKey });
+  const shareUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/type/result/${philosopherKey}`
+    : `/type/result/${philosopherKey}`;
+  const shareText = `나는 ${philosopherName}형 철학자예요! 나의 철학자 유형은?`;
 
-    if (navigator.share) {
-      await navigator.share({ title: text, url });
-    } else {
-      await navigator.clipboard.writeText(`${text}\n${url}`);
+  const handleNativeShare = async () => {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      await navigator.share({ title: shareText, url: shareUrl });
+      posthog?.capture("quiz_result_shared", { philosopher: philosopherKey, share_method: "native" });
+    } catch {
+      // 사용자가 취소한 경우 무시
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const handleCopyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      posthog?.capture("quiz_result_shared", { philosopher: philosopherKey, share_method: "clipboard" });
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // ignore
     }
   };
 
@@ -67,7 +84,6 @@ export function ResultCta({ philosopherKey, philosopherName }: ResultCtaProps) {
           지금 마음을 어지럽히는 것을 말해보세요.<br />
           2천 년의 지혜로 오늘만의 처방을 드려요.
         </p>
-        {/* 미리보기 처방 힌트 */}
         <div className="rounded-xl px-4 py-3 mb-5" style={{ background: "rgba(255,255,255,0.08)" }}>
           <p className="text-white/40 text-xs mb-1.5 font-sans italic">&ldquo;인간관계가 너무 힘들어요&rdquo;</p>
           <p className="text-white/70 text-sm leading-relaxed font-sans line-clamp-2">
@@ -86,24 +102,44 @@ export function ResultCta({ philosopherKey, philosopherName }: ResultCtaProps) {
         </div>
       </Link>
 
-      {/* 공유 */}
-      <button
-        onClick={handleShare}
-        className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-sans text-sm font-medium transition-all active:scale-[0.98]"
-        style={{ background: "#fff" }}
-      >
-        {copied ? (
+      {/* 공유 드롭업 */}
+      <div className="relative">
+        {showShareMenu && (
           <>
-            <Check className="w-4 h-4 text-primary" strokeWidth={2} />
-            <span className="text-primary">링크 복사됨!</span>
-          </>
-        ) : (
-          <>
-            <Share2 className="w-4 h-4 text-muted" strokeWidth={1.5} />
-            <span className="text-muted">결과 공유하기</span>
+            <div className="fixed inset-0 z-10" onClick={() => setShowShareMenu(false)} />
+            <div className="absolute bottom-full mb-2 left-0 right-0 z-20 bg-card border border-border rounded-xl overflow-hidden shadow-lg">
+              <button
+                onClick={() => { handleNativeShare(); setShowShareMenu(false); }}
+                disabled={sharing}
+                className="flex w-full items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-stone-50 transition-colors disabled:opacity-50"
+              >
+                <Share2 className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                앱으로 공유
+              </button>
+              <div className="border-t border-border" />
+              <button
+                onClick={() => { handleCopyUrl(); setShowShareMenu(false); }}
+                className="flex w-full items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-stone-50 transition-colors"
+              >
+                <Link2 className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                {copied ? "복사됨" : "링크 복사"}
+              </button>
+            </div>
           </>
         )}
-      </button>
+        <button
+          onClick={() => setShowShareMenu((v) => !v)}
+          className="flex w-full items-center justify-center gap-2 py-3.5 rounded-xl font-medium text-sm transition-all active:scale-95 hover:bg-stone-50"
+          style={{ background: "#fff" }}
+        >
+          <Share2 className="w-4 h-4 text-muted" strokeWidth={1.5} />
+          <span className="text-muted">결과 공유하기</span>
+          <ChevronUp
+            className={`w-4 h-4 text-muted transition-transform duration-200 ${showShareMenu ? "" : "rotate-180"}`}
+            strokeWidth={1.5}
+          />
+        </button>
+      </div>
 
       <Link
         href="/type/quiz"
