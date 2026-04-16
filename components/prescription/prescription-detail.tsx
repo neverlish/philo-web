@@ -171,18 +171,20 @@ export function PrescriptionDetail({
         />
 
         {/* Footer Actions */}
-        <footer className="flex flex-col gap-3 mb-8">
-          <ShareDropup
-            prescriptionId={prescriptionId}
-            concern={concern}
-            quote={quote.text}
-            philosopherName={philosopher.name}
-            philosopherSchool={philosopher.school}
-          />
+        <footer className="flex gap-3 mb-8">
+          <div className="flex-1">
+            <ShareDropup
+              prescriptionId={prescriptionId}
+              concern={concern}
+              quote={quote.text}
+              philosopherName={philosopher.name}
+              philosopherSchool={philosopher.school}
+            />
+          </div>
           <button
             onClick={toggleSave}
             disabled={saving || !prescriptionId}
-            className={`flex items-center justify-center gap-2 py-4 rounded-xl font-medium text-sm transition-all active:scale-95 disabled:opacity-50 ${
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm transition-all active:scale-95 disabled:opacity-50 ${
               saved
                 ? "bg-primary/10 text-primary border border-primary/20"
                 : "bg-foreground text-background"

@@ -148,7 +148,7 @@ export function ShareDropup({
       )}
       <button
         onClick={() => setShowShareMenu((v) => !v)}
-        className="flex w-full items-center justify-center gap-2 bg-card border border-border py-4 rounded-xl font-medium text-sm transition-all active:scale-95 hover:bg-stone-50"
+        className="flex w-full items-center justify-center gap-2 bg-card border border-border py-3 rounded-xl font-medium text-sm transition-all active:scale-95 hover:bg-stone-50"
       >
         <Share2 className="w-4 h-4" strokeWidth={1.5} />
         공유하기
