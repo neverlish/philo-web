@@ -1,21 +1,22 @@
 import { ImageResponse } from 'next/og'
 import { createClient } from '@supabase/supabase-js'
-import fs from 'fs'
-import path from 'path'
 import type { Database } from '@/types/supabase'
 
 export const runtime = 'nodejs'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
-let fontCache: ArrayBuffer | null = null
-
-function loadFont(): ArrayBuffer {
-  if (fontCache) return fontCache
-  const fontPath = path.join(process.cwd(), 'public/fonts/NotoSerifKR-Regular.ttf')
-  const buffer = fs.readFileSync(fontPath)
-  fontCache = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer
-  return fontCache
+async function loadKoreanFont(text: string): Promise<ArrayBuffer> {
+  const url = `https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400&text=${encodeURIComponent(text)}`
+  const css = await fetch(url, {
+    headers: {
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    },
+  }).then((r) => r.text())
+  const fontUrl = css.match(/src: url\(([^)]+)\) format\('woff2'\)/)?.[1]
+  if (!fontUrl) throw new Error('Font URL not found')
+  return fetch(fontUrl).then((r) => r.arrayBuffer())
 }
 
 export default async function ShareOgImage({
@@ -59,7 +60,9 @@ export default async function ShareOgImage({
 
   let fontData: ArrayBuffer
   try {
-    fontData = loadFont()
+    fontData = await loadKoreanFont(
+      `오늘의처방${data.quote_text}${data.philosopher_name}${data.philosopher_school}${data.philosopher_era}`
+    )
   } catch {
     fontData = new ArrayBuffer(0)
   }
