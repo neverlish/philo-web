@@ -2,7 +2,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Bookmark, ChevronRight } from "lucide-react";
+import { Bookmark, ChevronRight, CheckCircle2, PenLine } from "lucide-react";
 import Link from "next/link";
 import { getPhilosopherSymbol } from "@/lib/philosopher-symbols";
 
@@ -16,6 +16,7 @@ export interface SavedPrescription {
   savedAt: string;
   category: string;
   userIntention?: string | null;
+  hasReflection?: boolean;
 }
 
 interface SavedCardProps {
@@ -74,9 +75,20 @@ export function SavedCard({ prescription, index, onDelete }: SavedCardProps) {
 
           {/* Footer */}
           <div className="flex items-center justify-between pt-3 border-t border-border/50">
-            <span className="text-[11px] text-muted">
-              {prescription.savedAt}에 저장
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-muted">{prescription.savedAt}에 저장</span>
+              {prescription.hasReflection ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
+                  <CheckCircle2 className="w-3 h-3" />
+                  성찰 완료
+                </span>
+              ) : prescription.userIntention ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+                  <PenLine className="w-3 h-3" />
+                  다짐 있음
+                </span>
+              ) : null}
+            </div>
 
             {onDelete && (
               <button

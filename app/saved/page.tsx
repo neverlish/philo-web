@@ -26,7 +26,7 @@ export default async function Page() {
     return <LoginPrompt message="저장된 처방을 보려면 로그인이 필요해요" />;
   }
 
-  const [{ data }, { data: historyData }] = await Promise.all([
+  const [{ data }, { data: historyData }, { data: reflectionData }] = await Promise.all([
     supabase
       .from('user_saved_prescriptions')
       .select(`
@@ -48,9 +48,15 @@ export default async function Page() {
       .select('id, title, philosopher_name, philosopher_school, quote_text, user_intention, created_at')
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false }),
+    supabase
+      .from('prescription_reflections')
+      .select('prescription_id')
+      .eq('user_id', session.user.id),
   ])
 
   const rows = (data ?? []) as SavedRow[]
+  const reflectedIds = new Set((reflectionData ?? []).map((r) => r.prescription_id))
+
   const savedPrescriptions = rows.map((row) => {
     const ap = row.ai_prescriptions
     return {
@@ -67,6 +73,7 @@ export default async function Page() {
       }),
       category: ap?.philosopher_school ?? '',
       userIntention: ap?.user_intention ?? null,
+      hasReflection: reflectedIds.has(row.prescription_id),
     }
   })
 
@@ -83,6 +90,7 @@ export default async function Page() {
       : '',
     category: row.philosopher_school,
     userIntention: row.user_intention ?? null,
+    hasReflection: reflectedIds.has(row.id),
     isSaved: savedIds.has(row.id),
   }))
 
