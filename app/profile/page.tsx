@@ -46,12 +46,16 @@ export default async function ProfilePage() {
 
   const now = new Date();
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const eightDaysAgo = new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000).toISOString();
 
   const [
     { count: savedCount },
     { count: prescriptionCount },
     { data: checkIns },
     { data: monthlyPrescriptions },
+    { data: weeklyReflections },
+    { count: monthlyIntentionCount },
+    { count: monthlyReflectionCount },
   ] = await Promise.all([
     supabase
       .from("user_saved_prescriptions")
@@ -71,9 +75,36 @@ export default async function ProfilePage() {
       .eq("user_id", user.id)
       .gte("created_at", firstDayOfMonth)
       .order("created_at", { ascending: true }),
+    supabase
+      .from("prescription_reflections")
+      .select("created_at")
+      .eq("user_id", user.id)
+      .gte("created_at", eightDaysAgo),
+    supabase
+      .from("ai_prescriptions")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .not("user_intention", "is", null)
+      .gte("created_at", firstDayOfMonth),
+    supabase
+      .from("prescription_reflections")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", firstDayOfMonth),
   ]);
 
   const streak = calculateStreak((checkIns ?? []).map((c) => c.check_in_date));
+
+  const last7DaysSet = new Set(getRecentDaysKST(7));
+  const weeklyReflectionDays = new Set(
+    (weeklyReflections ?? [])
+      .filter((r) => r.created_at != null)
+      .map((r) => {
+        const kst = new Date(new Date(r.created_at!).getTime() + 9 * 60 * 60 * 1000);
+        return kst.toISOString().split("T")[0];
+      })
+      .filter((d) => last7DaysSet.has(d))
+  ).size;
 
   const checkInSet = new Set((checkIns ?? []).map((c) => c.check_in_date));
   const last7Days = getRecentDaysKST(7);
@@ -155,6 +186,15 @@ export default async function ProfilePage() {
               last7Days={last7Days}
             />
           </div>
+          <div className="mt-3 bg-card border border-border rounded-xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">이번 주 실천</p>
+              <p className="text-xs text-muted">7일 중 성찰 완료한 날</p>
+            </div>
+            <p className="text-2xl font-serif font-normal text-primary">
+              {weeklyReflectionDays}<span className="text-sm text-muted font-sans">/7</span>
+            </p>
+          </div>
         </div>
 
         {/* Monthly Report */}
@@ -169,6 +209,11 @@ export default async function ProfilePage() {
                 <span className="text-muted">·</span>
                 <span>연속 <strong>{streak}일</strong></span>
               </div>
+              {(monthlyIntentionCount ?? 0) > 0 && (
+                <p className="text-sm text-foreground mb-3">
+                  다짐 <strong>{monthlyIntentionCount}개</strong> 중 성찰 완료 <strong>{monthlyReflectionCount ?? 0}개</strong>
+                </p>
+              )}
               {topPhilosopher && (
                 <p className="text-sm text-foreground mb-2">
                   가장 많이 만난 철학자: <strong>{topPhilosopher}</strong>
