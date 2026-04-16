@@ -87,9 +87,9 @@ export function ShareDropup({
     const shareUrl = prescriptionId
       ? `${window.location.origin}/share/${prescriptionId}?utm_source=share&utm_medium=prescription&utm_campaign=wom`
       : window.location.origin;
-    const concernLine = concern ? `고민: ${concern}\n\n` : "";
+    const concernLine = concern ? `"${concern}"\n\n` : "";
     const text = `${concernLine}"${quote}"\n— ${philosopherName} (${philosopherSchool})\n\n${shareUrl}`;
-    const shareData = { title: `${philosopherName}의 처방`, text, url: shareUrl };
+    const shareData = { title: `철학자가 처방하는 내 고민`, text, url: shareUrl };
 
     try {
       let shareMethod: "native" | "clipboard";
