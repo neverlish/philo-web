@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePostHog } from "posthog-js/react";
 import Link from "next/link";
+import { Share2, Check } from "lucide-react";
 import { type PhilosopherKey } from "@/lib/quiz";
 
 interface ResultTrackerProps {
@@ -28,6 +29,21 @@ interface ResultCtaProps {
 
 export function ResultCta({ philosopherKey, philosopherName }: ResultCtaProps) {
   const posthog = usePostHog();
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/type/result/${philosopherKey}`;
+    const text = `나는 ${philosopherName}형 철학자예요! 나의 철학자 유형은?`;
+    posthog?.capture("quiz_result_shared", { philosopher: philosopherKey });
+
+    if (navigator.share) {
+      await navigator.share({ title: text, url });
+    } else {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -42,11 +58,27 @@ export function ResultCta({ philosopherKey, philosopherName }: ResultCtaProps) {
       >
         ✦ {philosopherName}의 처방 받으러 가기
       </Link>
+      <button
+        onClick={handleShare}
+        className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-sans text-sm font-medium transition-all active:scale-[0.98]"
+        style={{ background: "#fff" }}
+      >
+        {copied ? (
+          <>
+            <Check className="w-4 h-4 text-primary" strokeWidth={2} />
+            <span className="text-primary">링크 복사됨!</span>
+          </>
+        ) : (
+          <>
+            <Share2 className="w-4 h-4 text-muted" strokeWidth={1.5} />
+            <span className="text-muted">결과 공유하기</span>
+          </>
+        )}
+      </button>
       <Link
         href="/type/quiz"
         onClick={() => posthog?.capture("quiz_retaken", { philosopher: philosopherKey })}
-        className="flex items-center justify-center w-full py-3.5 rounded-xl font-sans text-sm text-muted transition-all active:scale-[0.98]"
-        style={{ background: "#fff" }}
+        className="flex items-center justify-center w-full py-3 rounded-xl font-sans text-xs text-muted/60 transition-all active:scale-[0.98]"
       >
         다시 테스트하기
       </Link>
