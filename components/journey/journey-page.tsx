@@ -6,6 +6,7 @@ import { Mic, CheckCircle2, Circle } from "lucide-react"
 import { Header } from "@/components/navigation/header"
 import { BottomNav } from "@/components/navigation/bottom-nav"
 import { PhilosopherMapTab } from "@/components/journey/philosopher-map-tab"
+import { CollectiveFeed } from "@/components/collective/collective-feed"
 import type { JourneyItem, PhilosopherItem } from "@/app/journey/page"
 
 interface MonthGroup {
@@ -74,7 +75,7 @@ function getThemeInsights(items: JourneyItem[]) {
 
 export function JourneyPage({ items, philosophers, encounteredNames }: JourneyPageProps) {
   const groups = groupByMonth(items)
-  const [tab, setTab] = useState<'지도' | '여정'>('지도')
+  const [tab, setTab] = useState<'지도' | '여정' | '함께'>('지도')
   const reflectionCount = items.filter((i) => i.reflection !== null).length
   const themeInsights = getThemeInsights(items)
   const uniquePhilosophers = getUniquePhilosophers(items)
@@ -85,7 +86,7 @@ export function JourneyPage({ items, philosophers, encounteredNames }: JourneyPa
 
       {/* Tabs */}
       <div className="flex border-b border-border px-6">
-        {(['지도', '여정'] as const).map((t) => (
+        {(['지도', '여정', '함께'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -95,7 +96,7 @@ export function JourneyPage({ items, philosophers, encounteredNames }: JourneyPa
                 : 'text-muted hover:text-foreground'
             }`}
           >
-            {t === '지도' ? '철학자 지도' : '나의 여정'}
+            {t === '지도' ? '철학자 지도' : t === '여정' ? '나의 여정' : '함께'}
           </button>
         ))}
       </div>
@@ -105,6 +106,8 @@ export function JourneyPage({ items, philosophers, encounteredNames }: JourneyPa
           <div className="px-6 pt-5">
             <PhilosopherMapTab philosophers={philosophers} encounteredNames={encounteredNames} />
           </div>
+        ) : tab === '함께' ? (
+          <CollectiveFeed />
         ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center px-6">
               <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mb-4">
