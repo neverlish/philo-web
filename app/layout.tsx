@@ -18,7 +18,7 @@ const notoSerif = Noto_Serif_KR({
   weight: ["400", "500", "600", "700"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://philoapp.kr'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://philo-web.vercel.app'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
