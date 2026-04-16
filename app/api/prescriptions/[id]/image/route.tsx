@@ -1,21 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { ImageResponse } from 'next/og'
 import { createClient } from '@/lib/supabase/server-auth'
-import fs from 'fs'
-import path from 'path'
+import { NextRequest } from 'next/server'
 
-let fontCache: ArrayBuffer | null = null
+export const runtime = 'nodejs'
 
-function loadFont(): ArrayBuffer {
-  if (fontCache) return fontCache
-  const fontPath = path.join(process.cwd(), 'public/fonts/NotoSerifKR-Regular.ttf')
-  const buffer = fs.readFileSync(fontPath)
-  fontCache = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer
-  return fontCache
+async function loadKoreanFont(text: string): Promise<ArrayBuffer> {
+  const url = `https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&text=${encodeURIComponent(text)}`
+  const css = await fetch(url, {
+    headers: {
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    },
+  }).then((r) => r.text())
+
+  const fontUrl = css.match(/src: url\(([^)]+)\) format\('woff2'\)/)?.[1]
+  if (!fontUrl) throw new Error('Font URL not found')
+  return fetch(fontUrl).then((r) => r.arrayBuffer())
 }
 
 export async function GET(
-  _req: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
@@ -24,7 +28,7 @@ export async function GET(
   const {
     data: { session },
   } = await supabase.auth.getSession()
-  if (!session) return new NextResponse('Unauthorized', { status: 401 })
+  if (!session) return new Response('Unauthorized', { status: 401 })
 
   const { data, error } = await supabase
     .from('ai_prescriptions')
@@ -33,17 +37,18 @@ export async function GET(
     .eq('user_id', session.user.id)
     .single()
 
-  if (error || !data) return new NextResponse('Not Found', { status: 404 })
+  if (error || !data) return new Response('Not found', { status: 404 })
 
+  const allText = `오늘의처방${data.philosopher_name}${data.philosopher_school}${data.philosopher_era}${data.quote_text}`
   let fontData: ArrayBuffer
   try {
-    fontData = loadFont()
+    fontData = await loadKoreanFont(allText)
   } catch {
-    return new NextResponse('Failed to load font', { status: 500 })
+    fontData = new ArrayBuffer(0)
   }
 
-  const quoteLength = data.quote_text.length
-  const quoteFontSize = quoteLength > 100 ? 30 : quoteLength > 70 ? 36 : quoteLength > 40 ? 42 : 48
+  const quoteLen = data.quote_text.length
+  const quoteFontSize = quoteLen > 100 ? 36 : quoteLen > 60 ? 44 : 52
 
   return new ImageResponse(
     (
@@ -53,59 +58,54 @@ export async function GET(
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          backgroundColor: '#1C1917',
-          padding: '80px',
+          backgroundColor: '#F9F7F2',
           fontFamily: 'Noto Serif KR',
+          padding: '88px',
           position: 'relative',
         }}
       >
-        {/* 배경 장식 따옴표 */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '48px',
-            right: '60px',
-            fontSize: '320px',
-            color: '#ffffff',
-            opacity: 0.04,
-            fontFamily: 'Georgia, serif',
-            lineHeight: 1,
-            display: 'flex',
-          }}
-        >
-          &ldquo;
-        </div>
-
-        {/* 상단 레이블 */}
-        <div style={{ display: 'flex', marginBottom: '64px' }}>
-          <span
+        {/* 상단 앱 레이블 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div
             style={{
-              border: '1px solid rgba(236, 91, 19, 0.6)',
-              borderRadius: '9999px',
-              padding: '8px 24px',
-              fontSize: '15px',
-              color: '#ec5b13',
-              letterSpacing: '0.15em',
+              width: '4px',
+              height: '22px',
+              backgroundColor: '#ec5b13',
+              display: 'flex',
             }}
-          >
-            오늘의 처방
+          />
+          <span style={{ fontSize: '22px', color: '#ec5b13', letterSpacing: '0.08em' }}>
+            오늘의처방
           </span>
         </div>
 
-        {/* 인용구 */}
+        {/* 인용구 영역 */}
         <div
           style={{
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
+            paddingTop: '16px',
           }}
         >
+          <div
+            style={{
+              fontSize: '100px',
+              color: '#ec5b13',
+              lineHeight: 0.9,
+              display: 'flex',
+              opacity: 0.25,
+              marginBottom: '8px',
+            }}
+          >
+            "
+          </div>
           <p
             style={{
-              fontSize: quoteFontSize,
-              lineHeight: 1.8,
-              color: '#F5F0E8',
+              fontSize: `${quoteFontSize}px`,
+              lineHeight: 1.75,
+              color: '#2C2420',
               margin: 0,
               wordBreak: 'keep-all',
               letterSpacing: '0.02em',
@@ -115,74 +115,23 @@ export async function GET(
           </p>
         </div>
 
-        {/* 철학자 정보 */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            marginTop: '56px',
-            marginBottom: '44px',
-          }}
-        >
-          <p
+        {/* 하단 철학자 정보 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div
             style={{
-              fontSize: '22px',
-              color: '#F5F0E8',
-              margin: 0,
-              letterSpacing: '0.06em',
+              width: '36px',
+              height: '2px',
+              backgroundColor: '#2C2420',
+              display: 'flex',
+              opacity: 0.25,
+              marginBottom: '4px',
             }}
-          >
-            — {data.philosopher_name}
+          />
+          <p style={{ fontSize: '28px', fontWeight: 700, color: '#2C2420', margin: 0 }}>
+            {data.philosopher_name}
           </p>
-          <p
-            style={{
-              fontSize: '14px',
-              color: '#78716c',
-              margin: 0,
-              letterSpacing: '0.1em',
-            }}
-          >
+          <p style={{ fontSize: '20px', color: '#6B5F56', margin: 0, letterSpacing: '0.04em' }}>
             {data.philosopher_school} · {data.philosopher_era}
-          </p>
-        </div>
-
-        {/* 구분선 */}
-        <div
-          style={{
-            height: '1px',
-            backgroundColor: '#292524',
-            marginBottom: '32px',
-          }}
-        />
-
-        {/* 앱 브랜딩 */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <p
-            style={{
-              fontSize: '17px',
-              color: '#ec5b13',
-              margin: 0,
-              letterSpacing: '0.05em',
-            }}
-          >
-            오늘의철학
-          </p>
-          <p
-            style={{
-              fontSize: '13px',
-              color: '#57534e',
-              margin: 0,
-              letterSpacing: '0.05em',
-            }}
-          >
-            philoapp.kr
           </p>
         </div>
       </div>
@@ -190,14 +139,10 @@ export async function GET(
     {
       width: 1080,
       height: 1080,
-      fonts: [
-        {
-          name: 'Noto Serif KR',
-          data: fontData,
-          weight: 400,
-          style: 'normal',
-        },
-      ],
+      fonts:
+        fontData.byteLength > 0
+          ? [{ name: 'Noto Serif KR', data: fontData, weight: 400, style: 'normal' }]
+          : [],
     }
   )
 }
