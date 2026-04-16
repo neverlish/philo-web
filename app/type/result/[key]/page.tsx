@@ -27,7 +27,7 @@ export default async function ResultPage({ params }: Props) {
   const compatibleType = PHILOSOPHER_TYPES[type.compatibleType]
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background">
+    <div className="min-h-dvh flex flex-col max-w-md mx-auto bg-background">
       <ResultTracker philosopherKey={type.key} philosopherName={type.name} />
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md px-4 py-4 flex items-center justify-between">

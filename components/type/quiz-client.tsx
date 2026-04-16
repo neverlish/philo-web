@@ -62,7 +62,7 @@ export function QuizClient() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background">
+    <div className="min-h-dvh flex flex-col max-w-md mx-auto bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md px-4 py-4">
         <div className="flex items-center gap-3 mb-4">
