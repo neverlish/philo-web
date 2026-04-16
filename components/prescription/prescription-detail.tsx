@@ -15,6 +15,7 @@ interface PrescriptionDetailProps {
   isSaved?: boolean;
   prescriptionId?: string;
   userIntention?: string | null;
+  userReflection?: string | null;
   concern?: string | null;
   intentionSuggestions?: string[];
 }
@@ -24,6 +25,7 @@ export function PrescriptionDetail({
   isSaved: initialIsSaved = false,
   prescriptionId,
   userIntention,
+  userReflection,
   concern,
   intentionSuggestions = [],
 }: PrescriptionDetailProps) {
@@ -165,6 +167,7 @@ export function PrescriptionDetail({
           prescriptionId={prescriptionId}
           initialIntention={userIntention}
           intentionSuggestions={intentionSuggestions}
+          initialReflection={userReflection}
         />
 
         {/* Footer Actions */}

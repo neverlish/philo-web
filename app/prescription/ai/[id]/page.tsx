@@ -20,7 +20,7 @@ export default async function AiPrescriptionPage({
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) redirect('/')
 
-  const [{ data, error }, { data: savedData }] = await Promise.all([
+  const [{ data, error }, { data: savedData }, { data: reflectionData }] = await Promise.all([
     supabase
       .from('ai_prescriptions')
       .select('*')
@@ -32,6 +32,14 @@ export default async function AiPrescriptionPage({
       .select('id')
       .eq('user_id', session.user.id)
       .eq('prescription_id', id)
+      .maybeSingle(),
+    supabase
+      .from('prescription_reflections')
+      .select('reflection_text')
+      .eq('prescription_id', id)
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle(),
   ])
 
@@ -73,6 +81,7 @@ export default async function AiPrescriptionPage({
       isSaved={!!savedData}
       prescriptionId={id}
       userIntention={row.user_intention ?? null}
+      userReflection={reflectionData?.reflection_text ?? null}
       concern={row.concern ?? null}
       intentionSuggestions={(row as any).intention_suggestions ?? []}
     />
