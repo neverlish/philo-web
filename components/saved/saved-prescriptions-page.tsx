@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { Bookmark, Mic } from "lucide-react";
 import Link from "next/link";
+import { usePostHog } from "posthog-js/react";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { SavedCard, SavedPrescription } from "@/components/saved/saved-card";
 import { Header } from "@/components/navigation/header";
@@ -24,6 +25,7 @@ export function SavedPrescriptionsPage({
     initialPrescriptions
   );
   const [filter, setFilter] = useState<"all" | "reflection" | "intention" | "incomplete">("all");
+  const posthog = usePostHog();
 
   const handleDelete = async (id: string) => {
     const prescription = savedPrescriptions.find((p) => p.id === id)
@@ -94,7 +96,10 @@ export function SavedPrescriptionsPage({
                 {categories.map((category) => (
                   <button
                     key={category.id}
-                    onClick={() => setFilter(category.id)}
+                    onClick={() => {
+                    setFilter(category.id)
+                    posthog?.capture('saved_filter_changed', { filter: category.id })
+                  }}
                     className={`flex-none px-5 py-2.5 rounded-full border font-serif text-sm whitespace-nowrap transition-colors ${
                       filter === category.id
                         ? "border-primary/20 bg-stone-100 text-foreground"

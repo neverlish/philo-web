@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Mic, CheckCircle2, Circle } from "lucide-react"
+import { usePostHog } from "posthog-js/react"
 import { Header } from "@/components/navigation/header"
 import { BottomNav } from "@/components/navigation/bottom-nav"
 import { PhilosopherMapTab } from "@/components/journey/philosopher-map-tab"
@@ -76,6 +77,7 @@ function getThemeInsights(items: JourneyItem[]) {
 export function JourneyPage({ items, philosophers, encounteredNames }: JourneyPageProps) {
   const groups = groupByMonth(items)
   const [tab, setTab] = useState<'지도' | '여정' | '함께'>('지도')
+  const posthog = usePostHog()
   const reflectionCount = items.filter((i) => i.reflection !== null).length
   const themeInsights = getThemeInsights(items)
   const uniquePhilosophers = getUniquePhilosophers(items)
@@ -89,7 +91,10 @@ export function JourneyPage({ items, philosophers, encounteredNames }: JourneyPa
         {(['지도', '여정', '함께'] as const).map((t) => (
           <button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => {
+              setTab(t)
+              posthog?.capture('journey_tab_changed', { tab: t })
+            }}
             className={`flex-1 py-3 text-sm font-medium transition-colors ${
               tab === t
                 ? 'text-foreground border-b-2 border-foreground'

@@ -2,9 +2,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Plus, X, Loader2 } from "lucide-react";
-import { AnimatePresence } from "framer-motion";
+import { usePostHog } from "posthog-js/react";
 
 interface Post {
   id: string;
@@ -37,6 +37,7 @@ export function CollectiveFeed() {
   const [submitting, setSubmitting] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const offsetRef = useRef(0);
+  const posthog = usePostHog();
 
   const fetchPosts = useCallback(async (reset = false, currentSort = sort) => {
     const offset = reset ? 0 : offsetRef.current;
@@ -79,6 +80,7 @@ export function CollectiveFeed() {
 
   const handleLike = async (post: Post) => {
     const prevLiked = post.isLiked;
+    posthog?.capture('collective_post_liked', { post_id: post.id, liked: !prevLiked })
     setPosts((prev) =>
       prev.map((p) =>
         p.id === post.id
@@ -111,6 +113,7 @@ export function CollectiveFeed() {
         body: JSON.stringify({ content: composeText.trim() }),
       });
       if (!res.ok) return;
+      posthog?.capture('collective_post_submitted')
       setComposeText("");
       setShowCompose(false);
       setSort("latest");
