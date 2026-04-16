@@ -1,10 +1,9 @@
 # 다음 작업 후보
 
-## 1. 성찰 데이터 활용 — 프로필 실천률 통계
-`prescription_reflections` 테이블이 쌓이기 시작하면 의미 있어짐.
-- 프로필 페이지에 "이번 주 실천률 N/7" 카드 추가
-- 다짐 저장 수 vs 성찰 완료 수 비율 표시
-- streak과 연결: 성찰 완료일 기준으로 연속일수 계산 고려
+## ✅ 1. 성찰 데이터 활용 — 프로필 실천률 통계 (완료 2026-04-16)
+- 프로필에 "이번 주 실천 N/7" 카드 추가 (`app/profile/page.tsx`)
+- 월간 리포트에 "다짐 X개 중 성찰 완료 Y개" 비율 표시
+- `prescription_reflections` + `ai_prescriptions.user_intention` 쿼리 활용
 
 ## 2. 저장 목록 강화 — 다짐/성찰 배지
 `/saved` 페이지 처방 카드에 상태 배지 표시.
@@ -18,11 +17,10 @@
 - 테마/태그별 탐색 (theme_tags 컬럼 활용)
 - 다른 유저의 공개 처방 피드 (collective 테이블 활용 가능)
 
-## 4. 온보딩 플로우
-첫 방문 유저 경험 개선.
-- 앱 소개 슬라이드 (1~3 화면)
-- 첫 체크인 유도 강화
-- 퀴즈 → 처방 연결 흐름 명확화
+## ✅ 4. 온보딩 플로우 (완료 2026-04-16)
+- 3슬라이드 인트로: 앱 소개 → 사용법 3단계 → 퀴즈 연결 CTA (`components/onboarding/onboarding-slides.tsx`)
+- `localStorage("philo_onboarding_v1")` 플래그로 첫 방문 1회만 표시
+- PostHog 이벤트: `onboarding_started` / `onboarding_completed` / `onboarding_dismissed`
 
 ---
 
