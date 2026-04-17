@@ -19,3 +19,14 @@ export function getRecentDaysKST(n: number): string[] {
 export function toKSTDateString(date: Date | string): string {
   return formatInTimeZone(new Date(date), KST, "yyyy-MM-dd");
 }
+
+/** KST 기준 이번 달 1일 00:00:00의 UTC ISO 문자열 반환 (Supabase gte 쿼리용) */
+export function getFirstDayOfMonthKST(): string {
+  const yyyyMM = formatInTimeZone(new Date(), KST, "yyyy-MM");
+  return new Date(`${yyyyMM}-01T00:00:00+09:00`).toISOString();
+}
+
+/** KST 기준 현재 월 이름 반환 (예: "4월") */
+export function getKSTMonthName(): string {
+  return `${formatInTimeZone(new Date(), KST, "M")}월`;
+}

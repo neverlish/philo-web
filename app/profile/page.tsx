@@ -10,7 +10,7 @@ import { Settings, HelpCircle, Shield, ChevronRight, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { StreakCard } from "@/components/profile/streak-card";
-import { getTodayKST, getRecentDaysKST, toKSTDateString } from "@/lib/date";
+import { getTodayKST, getRecentDaysKST, toKSTDateString, getFirstDayOfMonthKST, getKSTMonthName } from "@/lib/date";
 
 function calculateStreak(dates: string[]): number {
   if (dates.length === 0) return 0;
@@ -44,9 +44,8 @@ export default async function ProfilePage() {
 
   const user = session.user;
 
-  const now = new Date();
-  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-  const eightDaysAgo = new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000).toISOString();
+  const firstDayOfMonth = getFirstDayOfMonthKST();
+  const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
 
   const [
     { count: intentionCount },
@@ -109,7 +108,7 @@ export default async function ProfilePage() {
   const checkInSet = new Set((checkIns ?? []).map((c) => c.check_in_date));
   const last7Days = getRecentDaysKST(7);
 
-  const monthName = `${now.getMonth() + 1}월`;
+  const monthName = getKSTMonthName();
   const monthlyCount = monthlyPrescriptions?.length ?? 0;
 
   const philosopherCounts: Record<string, number> = {};
