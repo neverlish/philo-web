@@ -1,7 +1,7 @@
 // components/saved/saved-prescriptions-page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PenLine, Mic } from "lucide-react";
 import Link from "next/link";
 import { usePostHog } from "posthog-js/react";
@@ -23,6 +23,11 @@ export function SavedPrescriptionsPage({
   const [tab, setTab] = useState<"intention" | "history">("intention")
   const [filter, setFilter] = useState<"all" | "reflection" | "incomplete">("all");
   const posthog = usePostHog();
+
+  useEffect(() => {
+    posthog?.capture("saved_viewed", { intention_count: initialIntentions.length, history_count: history.length })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const categories = [
     { id: "all" as const, label: "전체" },

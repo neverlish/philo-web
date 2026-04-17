@@ -27,7 +27,10 @@ export function SharePromptBanner({
     const key = `share_nudge_${prescriptionId}`
     if (sessionStorage.getItem(key)) return
 
-    const timer = setTimeout(() => setVisible(true), 2000)
+    const timer = setTimeout(() => {
+      setVisible(true)
+      posthog?.capture("share_prompt_shown", { prescription_id: prescriptionId })
+    }, 2000)
     return () => clearTimeout(timer)
   }, [prescriptionId])
 

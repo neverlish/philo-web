@@ -1,9 +1,10 @@
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Clock, Mic } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import type { Metadata } from 'next'
 import type { Database } from '@/types/supabase'
+import { SharePageTracker, SharePageCTA } from '@/components/share/share-page-tracker'
 
 type Row = Database['public']['Tables']['ai_prescriptions']['Row']
 
@@ -64,6 +65,7 @@ export default async function SharePage({
         <span className="text-xs text-muted">공유된 처방</span>
       </header>
 
+      <SharePageTracker prescriptionId={id} />
       <main className="flex-1 px-6 pb-12">
         {/* Title */}
         <div className="mb-8 text-center">
@@ -124,13 +126,7 @@ export default async function SharePage({
           <p className="text-center text-sm text-muted mb-4">
             나도 나만의 철학 처방을 받고 싶다면
           </p>
-          <Link
-            href="/opening"
-            className="flex items-center justify-center gap-2 w-full bg-foreground text-background py-4 rounded-xl font-medium text-sm transition-all active:scale-95"
-          >
-            <Mic className="w-4 h-4" strokeWidth={1.5} />
-            오늘의 고민 이야기하기
-          </Link>
+          <SharePageCTA prescriptionId={id} />
         </section>
       </main>
     </div>
