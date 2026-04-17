@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Prescription } from "@/types";
 import { ArrowLeft, Clock, PenLine } from "lucide-react";
 import { getPhilosopherSymbol } from "@/lib/philosopher-symbols";
@@ -8,6 +8,7 @@ import Link from "next/link";
 import { usePostHog } from 'posthog-js/react'
 import { PushPromptBanner } from "@/components/notification/push-prompt-banner"
 import { ShareDropup } from "./share-dropup"
+import { SharePromptBanner } from "./share-prompt-banner"
 import { IntentionSection } from "./intention-section"
 
 interface PrescriptionDetailProps {
@@ -43,6 +44,32 @@ export function PrescriptionDetail({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prescriptionId])
 
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleQuoteLongPress = useCallback(() => {
+    const shareUrl = prescriptionId
+      ? `${window.location.origin}/share/${prescriptionId}?utm_source=longpress`
+      : window.location.href
+    const text = `"${quote.text}"\n— ${philosopher.name} (${philosopher.school})\n\n${shareUrl}`
+    if (navigator.share && navigator.canShare?.({ title: "오늘의 처방", text, url: shareUrl })) {
+      navigator.share({ title: "오늘의 처방", text, url: shareUrl }).catch(() => {})
+      posthog?.capture("prescription_shared", { share_method: "longpress", prescription_id: prescriptionId })
+    } else {
+      navigator.clipboard.writeText(text).catch(() => {})
+    }
+  }, [prescriptionId, quote.text, philosopher.name, philosopher.school, posthog])
+
+  const handleTouchStart = useCallback(() => {
+    longPressTimer.current = setTimeout(handleQuoteLongPress, 600)
+  }, [handleQuoteLongPress])
+
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }, [])
+
   const handleIntentionClick = () => {
     intentionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     setIntentionFocusTrigger((n) => n + 1)
@@ -74,7 +101,12 @@ export function PrescriptionDetail({
         </header>
 
         {/* Quote Card */}
-        <section className="bg-card rounded-3xl p-8 mb-8 shadow-sm relative overflow-hidden">
+        <section
+          className="bg-card rounded-3xl p-8 mb-8 shadow-sm relative overflow-hidden select-none"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onTouchMove={handleTouchEnd}
+        >
           <span
             className="absolute -top-3 -right-2 text-[88px] font-light text-foreground pointer-events-none select-none leading-none"
             style={{ opacity: 0.07 }}
@@ -181,6 +213,15 @@ export function PrescriptionDetail({
           </Link>
         </div>
       </main>
+      {prescriptionId && (
+        <SharePromptBanner
+          prescriptionId={prescriptionId}
+          quote={quote.text}
+          philosopherName={philosopher.name}
+          philosopherSchool={philosopher.school}
+          concern={concern}
+        />
+      )}
       <PushPromptBanner />
     </div>
   );
