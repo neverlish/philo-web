@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { createClient } from '@/lib/supabase/server-auth'
 import { captureServerEvent } from '@/lib/posthog/server'
+import { getTodayKST } from '@/lib/date'
 import { SYSTEM_PROMPT, ClaudeResponseSchema, type ClaudeResponse } from './prompt'
 
 export async function POST(request: Request) {
@@ -34,13 +35,13 @@ export async function POST(request: Request) {
     // 최근 7일 처방 (오늘 제외)
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-    const today = new Date().toISOString().split('T')[0]
+    const today = getTodayKST()
     const { data: recentPrescription } = await supabase
       .from('ai_prescriptions')
       .select('concern, philosopher_name, user_intention, created_at')
       .eq('user_id', session.user.id)
       .gte('created_at', sevenDaysAgo.toISOString())
-      .lt('created_at', `${today}T00:00:00`)
+      .lt('created_at', new Date(`${today}T00:00:00+09:00`).toISOString())
       .not('user_intention', 'is', null)
       .order('created_at', { ascending: false })
       .limit(1)

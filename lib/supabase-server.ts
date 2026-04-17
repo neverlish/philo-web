@@ -1,5 +1,6 @@
 // Server-side Supabase utilities
 import { createClient } from '@supabase/supabase-js'
+import { getTodayKST } from '@/lib/date'
 import type { Database } from '@/types/supabase'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -36,7 +37,7 @@ export async function getQuotes(params?: {
   if (params?.category) query = query.eq('category', params.category)
   if (params?.philosopher_id) query = query.eq('philosopher_id', params.philosopher_id)
   if (params?.today) {
-    const todayDate = new Date().toISOString().split('T')[0]
+    const todayDate = getTodayKST()
     query = query.eq('date_scheduled', todayDate).limit(1)
   }
   if (params?.concern) {

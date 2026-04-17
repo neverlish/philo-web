@@ -14,3 +14,8 @@ export function getRecentDaysKST(n: number): string[] {
     return formatInTimeZone(subDays(new Date(), n - 1 - i), KST, "yyyy-MM-dd");
   });
 }
+
+/** 임의 날짜/문자열을 KST 기준 YYYY-MM-DD 문자열로 변환 */
+export function toKSTDateString(date: Date | string): string {
+  return formatInTimeZone(new Date(date), KST, "yyyy-MM-dd");
+}

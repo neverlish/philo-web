@@ -10,7 +10,7 @@ import { Settings, HelpCircle, Shield, ChevronRight, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { StreakCard } from "@/components/profile/streak-card";
-import { getTodayKST, getRecentDaysKST } from "@/lib/date";
+import { getTodayKST, getRecentDaysKST, toKSTDateString } from "@/lib/date";
 
 function calculateStreak(dates: string[]): number {
   if (dates.length === 0) return 0;
@@ -101,8 +101,7 @@ export default async function ProfilePage() {
     (weeklyReflections ?? [])
       .filter((r) => r.created_at != null)
       .map((r) => {
-        const kst = new Date(new Date(r.created_at!).getTime() + 9 * 60 * 60 * 1000);
-        return kst.toISOString().split("T")[0];
+        return toKSTDateString(r.created_at!);
       })
       .filter((d) => last7DaysSet.has(d))
   ).size;

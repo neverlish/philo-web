@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { getTodayKST } from '@/lib/date'
 import type { DbQuote } from '@/types'
 
 export const dynamic = 'force-dynamic'
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
     }
     if (today === 'true') {
       // 오늘의 명언 (date_scheduled가 오늘인 것)
-      const todayDate = new Date().toISOString().split('T')[0]
+      const todayDate = getTodayKST()
       query = query.eq('date_scheduled', todayDate).limit(1)
     }
     if (concern) {

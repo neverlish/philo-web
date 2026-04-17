@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import webpush from 'web-push'
 import { createClient } from '@/lib/supabase/server-auth'
+import { getTodayKST } from '@/lib/date'
 
 const NOTIFICATION_PAYLOAD = JSON.stringify({
   title: '오늘의철학',
@@ -27,11 +28,11 @@ export async function POST(request: Request) {
 
   const supabase = await createClient()
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayKST()
   const { data: subscriptions, error } = await supabase
     .from('push_subscriptions')
     .select('endpoint, p256dh, auth, user_id')
-    .not('user_id', 'in', `(select user_id from check_ins where created_at >= '${today}')`)
+    .not('user_id', 'in', `(select user_id from check_ins where created_at >= '${today}T00:00:00+09:00')`)
 
   if (error) {
     console.error('Failed to fetch subscriptions:', error)
