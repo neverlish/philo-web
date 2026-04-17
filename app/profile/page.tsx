@@ -49,7 +49,7 @@ export default async function ProfilePage() {
   const eightDaysAgo = new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000).toISOString();
 
   const [
-    { count: savedCount },
+    { count: intentionCount },
     { count: prescriptionCount },
     { data: checkIns },
     { data: monthlyPrescriptions },
@@ -58,9 +58,10 @@ export default async function ProfilePage() {
     { count: monthlyReflectionCount },
   ] = await Promise.all([
     supabase
-      .from("user_saved_prescriptions")
+      .from("ai_prescriptions")
       .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id),
+      .eq("user_id", user.id)
+      .not("user_intention", "is", null),
     supabase
       .from("ai_prescriptions")
       .select("id", { count: "exact", head: true })
@@ -119,12 +120,13 @@ export default async function ProfilePage() {
   const topPhilosopher = Object.entries(philosopherCounts)
     .sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 
-  const { data: featuredSaved } = await supabase
-    .from("user_saved_prescriptions")
-    .select("prescription_id")
+  const { data: featuredIntention } = await supabase
+    .from("ai_prescriptions")
+    .select("id")
     .eq("user_id", user.id)
-    .gte("saved_at", firstDayOfMonth)
-    .order("saved_at", { ascending: true })
+    .not("user_intention", "is", null)
+    .gte("created_at", firstDayOfMonth)
+    .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
 
@@ -173,8 +175,8 @@ export default async function ProfilePage() {
         <div className="w-full mb-8">
           <div className="grid grid-cols-3 gap-4">
             <Link href="/saved" className="bg-card border border-border rounded-xl p-4 text-center hover:border-primary/30 transition-colors">
-              <p className="text-2xl font-serif font-normal text-primary mb-1">{savedCount ?? 0}</p>
-              <p className="text-xs text-muted">저장한 처방</p>
+              <p className="text-2xl font-serif font-normal text-primary mb-1">{intentionCount ?? 0}</p>
+              <p className="text-xs text-muted">다짐한 처방</p>
             </Link>
             <Link href="/saved" className="bg-card border border-border rounded-xl p-4 text-center hover:border-primary/30 transition-colors">
               <p className="text-2xl font-serif font-normal text-primary mb-1">{prescriptionCount ?? 0}</p>
@@ -205,7 +207,7 @@ export default async function ProfilePage() {
               <div className="flex items-center gap-4 mb-4 text-sm text-foreground">
                 <span>고민 <strong>{monthlyCount}회</strong></span>
                 <span className="text-muted">·</span>
-                <span>저장 <strong>{savedCount ?? 0}개</strong></span>
+                <span>다짐 <strong>{monthlyIntentionCount ?? 0}개</strong></span>
                 <span className="text-muted">·</span>
                 <span>연속 <strong>{streak}일</strong></span>
               </div>
@@ -219,9 +221,9 @@ export default async function ProfilePage() {
                   가장 많이 만난 철학자: <strong>{topPhilosopher}</strong>
                 </p>
               )}
-              {featuredSaved?.prescription_id && (
+              {featuredIntention?.id && (
                 <Link
-                  href={`/prescription/ai/${featuredSaved.prescription_id}`}
+                  href={`/prescription/ai/${featuredIntention.id}`}
                   className="inline-flex items-center gap-1 text-sm text-primary mt-2 hover:underline"
                 >
                   대표 처방 보기 →

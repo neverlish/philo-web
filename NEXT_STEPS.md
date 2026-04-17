@@ -11,11 +11,10 @@
 - 성찰 완료 → 강조 배지
 - 필터: "실천 완료", "다짐 있음", "미완료"
 
-## 3. 탐색 탭 채우기
-지금 하단 nav의 탐색 탭(`/explore` 또는 현재 빈 페이지)을 채움.
-- 철학자별 처방 탐색
-- 테마/태그별 탐색 (theme_tags 컬럼 활용)
-- 다른 유저의 공개 처방 피드 (collective 테이블 활용 가능)
+## ✅ 3. 탐색 탭 채우기 (완료 2026-04-16)
+- 철학자 지도: 전체 철학자 시대/지역/키워드 필터, 만남 진행도 (`components/journey/philosopher-map-tab.tsx`)
+- 나의 여정: 다짐·회고 타임라인, 테마 인사이트, 성장률 (`components/journey/journey-page.tsx`)
+- 함께: 공개 처방 피드 탭 추가 (`components/collective/collective-feed.tsx`)
 
 ## ✅ 4. 온보딩 플로우 (완료 2026-04-16)
 - 3슬라이드 인트로: 앱 소개 → 사용법 3단계 → 퀴즈 연결 CTA (`components/onboarding/onboarding-slides.tsx`)
@@ -24,4 +23,4 @@
 
 ---
 
-*최종 업데이트: 2026-04-16*
+*최종 업데이트: 2026-04-16 (2, 3번 완료)*

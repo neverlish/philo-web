@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePostHog } from "posthog-js/react";
 import { CheckCircle } from "lucide-react";
 
@@ -9,6 +9,7 @@ interface IntentionSectionProps {
   initialIntention?: string | null;
   intentionSuggestions: string[];
   initialReflection?: string | null;
+  focusTrigger?: number;
 }
 
 export function IntentionSection({
@@ -16,9 +17,17 @@ export function IntentionSection({
   initialIntention,
   intentionSuggestions,
   initialReflection,
+  focusTrigger,
 }: IntentionSectionProps) {
   const [intention, setIntention] = useState(initialIntention ?? "");
   const [intentionSaved, setIntentionSaved] = useState(!!initialIntention);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (focusTrigger && focusTrigger > 0 && !intentionSaved) {
+      inputRef.current?.focus();
+    }
+  }, [focusTrigger, intentionSaved]);
   const [savingIntention, setSavingIntention] = useState(false);
   const [reflection, setReflection] = useState(initialReflection ?? "");
   const [reflectionSaved, setReflectionSaved] = useState(!!initialReflection);
@@ -94,6 +103,7 @@ export function IntentionSection({
         )}
         <div className="flex gap-2">
           <input
+            ref={inputRef}
             type="text"
             value={intention}
             onChange={(e) => { setIntention(e.target.value); setIntentionSaved(false); }}

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bookmark, Mic } from "lucide-react";
+import { PenLine, Mic } from "lucide-react";
 import Link from "next/link";
 import { usePostHog } from "posthog-js/react";
 import { BottomNav } from "@/components/navigation/bottom-nav";
@@ -14,66 +14,46 @@ interface HistoryItem extends SavedPrescription {
 }
 
 export function SavedPrescriptionsPage({
-  savedPrescriptions: initialPrescriptions,
+  intentions: initialIntentions,
   history = [],
 }: {
-  savedPrescriptions: SavedPrescription[]
+  intentions: SavedPrescription[]
   history?: HistoryItem[]
 }) {
-  const [tab, setTab] = useState<"saved" | "history">("saved")
-  const [savedPrescriptions, setSavedPrescriptions] = useState<SavedPrescription[]>(
-    initialPrescriptions
-  );
-  const [filter, setFilter] = useState<"all" | "reflection" | "intention" | "incomplete">("all");
+  const [tab, setTab] = useState<"intention" | "history">("intention")
+  const [filter, setFilter] = useState<"all" | "reflection" | "incomplete">("all");
   const posthog = usePostHog();
-
-  const handleDelete = async (id: string) => {
-    const prescription = savedPrescriptions.find((p) => p.id === id)
-    if (!prescription) return
-
-    setSavedPrescriptions((prev) => prev.filter((p) => p.id !== id));
-
-    try {
-      await fetch(`/api/prescriptions/${prescription.prescriptionId}/save`, {
-        method: 'DELETE',
-      })
-    } catch {
-      // 실패해도 UI는 그대로 유지 (낙관적 업데이트)
-    }
-  };
 
   const categories = [
     { id: "all" as const, label: "전체" },
-    { id: "reflection" as const, label: "✓ 실천 완료" },
-    { id: "intention" as const, label: "✎ 다짐 있음" },
-    { id: "incomplete" as const, label: "미완료" },
+    { id: "reflection" as const, label: "✓ 성찰 완료" },
+    { id: "incomplete" as const, label: "미성찰" },
   ];
 
-  const filteredPrescriptions =
+  const filteredIntentions =
     filter === "all"
-      ? savedPrescriptions
-      : savedPrescriptions.filter((p) => {
+      ? initialIntentions
+      : initialIntentions.filter((p) => {
           if (filter === "reflection") return !!p.hasReflection;
-          if (filter === "intention") return !!p.userIntention && !p.hasReflection;
-          if (filter === "incomplete") return !p.userIntention && !p.hasReflection;
+          if (filter === "incomplete") return !p.hasReflection;
           return true;
         });
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
+    <div className="min-h-dvh flex flex-col max-w-md mx-auto bg-background shadow-2xl">
       <Header title="처방함" />
 
       {/* Tabs */}
       <div className="flex border-b border-border px-6">
         <button
-          onClick={() => setTab("saved")}
+          onClick={() => setTab("intention")}
           className={`flex-1 py-3 text-sm font-medium transition-colors ${
-            tab === "saved"
+            tab === "intention"
               ? "text-foreground border-b-2 border-foreground"
               : "text-muted hover:text-foreground"
           }`}
         >
-          저장됨 {savedPrescriptions.length > 0 && <span className="ml-1 text-xs text-primary">{savedPrescriptions.length}</span>}
+          실천 중 {initialIntentions.length > 0 && <span className="ml-1 text-xs text-primary">{initialIntentions.length}</span>}
         </button>
         <button
           onClick={() => setTab("history")}
@@ -88,18 +68,18 @@ export function SavedPrescriptionsPage({
       </div>
 
       <main className="flex-1 flex flex-col px-6 pt-4 pb-32 overflow-y-auto">
-        {tab === "saved" ? (
+        {tab === "intention" ? (
           <>
-            {/* Category Filters */}
+            {/* Filters */}
             <div className="w-full mb-6">
               <div className="flex gap-3 overflow-x-auto pb-2">
                 {categories.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => {
-                    setFilter(category.id)
-                    posthog?.capture('saved_filter_changed', { filter: category.id })
-                  }}
+                      setFilter(category.id)
+                      posthog?.capture('saved_filter_changed', { filter: category.id })
+                    }}
                     className={`flex-none px-5 py-2.5 rounded-full border font-serif text-sm whitespace-nowrap transition-colors ${
                       filter === category.id
                         ? "border-primary/20 bg-stone-100 text-foreground"
@@ -112,25 +92,24 @@ export function SavedPrescriptionsPage({
               </div>
             </div>
 
-            {filteredPrescriptions.length > 0 ? (
+            {filteredIntentions.length > 0 ? (
               <div className="w-full space-y-4">
-                {filteredPrescriptions.map((prescription, index) => (
+                {filteredIntentions.map((prescription, index) => (
                   <SavedCard
                     key={prescription.id}
                     prescription={prescription}
                     index={index}
-                    onDelete={handleDelete}
                   />
                 ))}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mb-4">
-                  <Bookmark className="w-8 h-8 text-muted" strokeWidth={1.5} />
+                  <PenLine className="w-8 h-8 text-muted" strokeWidth={1.5} />
                 </div>
-                <p className="text-sm text-foreground font-medium mb-2">저장된 처방이 없어요</p>
+                <p className="text-sm text-foreground font-medium mb-2">아직 다짐이 없어요</p>
                 <p className="text-xs text-muted mb-6 leading-relaxed">
-                  마음에 닿는 처방을 받으면<br />북마크로 저장해두세요
+                  처방을 받고 오늘의 다짐을 남기면<br />여기에 쌓여요
                 </p>
                 <Link
                   href="/opening/input"

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Prescription } from "@/types";
-import { ArrowLeft, Bookmark, Clock } from "lucide-react";
+import { ArrowLeft, Clock, PenLine } from "lucide-react";
 import { getPhilosopherSymbol } from "@/lib/philosopher-symbols";
 import Link from "next/link";
 import { usePostHog } from 'posthog-js/react'
@@ -12,7 +12,6 @@ import { IntentionSection } from "./intention-section"
 
 interface PrescriptionDetailProps {
   prescription: Prescription;
-  isSaved?: boolean;
   prescriptionId?: string;
   userIntention?: string | null;
   userReflection?: string | null;
@@ -22,7 +21,6 @@ interface PrescriptionDetailProps {
 
 export function PrescriptionDetail({
   prescription,
-  isSaved: initialIsSaved = false,
   prescriptionId,
   userIntention,
   userReflection,
@@ -31,8 +29,8 @@ export function PrescriptionDetail({
 }: PrescriptionDetailProps) {
   const { quote, philosopher, title, subtitle } = prescription;
   const philosopherSymbol = getPhilosopherSymbol(philosopher.name);
-  const [saved, setSaved] = useState(initialIsSaved);
-  const [saving, setSaving] = useState(false);
+  const [intentionFocusTrigger, setIntentionFocusTrigger] = useState(0);
+  const intentionRef = useRef<HTMLDivElement>(null);
   const posthog = usePostHog()
 
   useEffect(() => {
@@ -40,30 +38,14 @@ export function PrescriptionDetail({
       posthog?.capture('prescription_viewed', {
         prescription_id: prescriptionId,
         philosopher: philosopher.name,
-        is_saved: initialIsSaved,
       })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prescriptionId])
-  const toggleSave = async () => {
-    if (!prescriptionId || saving) return;
-    setSaving(true);
-    const prevSaved = saved;
-    setSaved(!saved);
 
-    try {
-      const method = prevSaved ? 'DELETE' : 'POST';
-      const res = await fetch(`/api/prescriptions/${prescriptionId}/save`, { method });
-      if (!res.ok && res.status !== 409) {
-        setSaved(prevSaved);
-      } else if (!prevSaved) {
-        posthog?.capture('prescription_saved', { prescription_id: prescriptionId })
-      }
-    } catch {
-      setSaved(prevSaved);
-    } finally {
-      setSaving(false);
-    }
+  const handleIntentionClick = () => {
+    intentionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    setIntentionFocusTrigger((n) => n + 1)
   };
 
   return (
@@ -123,15 +105,10 @@ export function PrescriptionDetail({
                 </p>
               </div>
               <button
-                onClick={toggleSave}
-                disabled={saving || !prescriptionId}
-                className="p-3 bg-background rounded-full hover:bg-stone-100 transition-colors disabled:opacity-50"
+                onClick={handleIntentionClick}
+                className="p-3 bg-background rounded-full hover:bg-stone-100 transition-colors"
               >
-                <Bookmark
-                  className="w-5 h-5"
-                  strokeWidth={1.5}
-                  fill={saved ? "currentColor" : "none"}
-                />
+                <PenLine className="w-5 h-5" strokeWidth={1.5} />
               </button>
             </div>
           </div>
@@ -163,12 +140,15 @@ export function PrescriptionDetail({
           </div>
         </section>
 
-        <IntentionSection
-          prescriptionId={prescriptionId}
-          initialIntention={userIntention}
-          intentionSuggestions={intentionSuggestions}
-          initialReflection={userReflection}
-        />
+        <div ref={intentionRef}>
+          <IntentionSection
+            prescriptionId={prescriptionId}
+            initialIntention={userIntention}
+            intentionSuggestions={intentionSuggestions}
+            initialReflection={userReflection}
+            focusTrigger={intentionFocusTrigger}
+          />
+        </div>
 
         {/* Footer Actions */}
         <footer className="flex gap-3 mb-8">
@@ -182,20 +162,11 @@ export function PrescriptionDetail({
             />
           </div>
           <button
-            onClick={toggleSave}
-            disabled={saving || !prescriptionId}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm transition-all active:scale-95 disabled:opacity-50 ${
-              saved
-                ? "bg-primary/10 text-primary border border-primary/20"
-                : "bg-foreground text-background"
-            }`}
+            onClick={handleIntentionClick}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm bg-foreground text-background transition-all active:scale-95"
           >
-            <Bookmark
-              className="w-4 h-4"
-              strokeWidth={1.5}
-              fill={saved ? "currentColor" : "none"}
-            />
-            {saved ? "저장됨" : "저장하기"}
+            <PenLine className="w-4 h-4" strokeWidth={1.5} />
+            다짐 남기기
           </button>
         </footer>
 

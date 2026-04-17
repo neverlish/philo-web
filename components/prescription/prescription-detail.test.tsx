@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { Prescription } from '@/types'
 
@@ -57,41 +57,9 @@ describe('PrescriptionDetail', () => {
     expect(screen.getAllByText('마르쿠스 아우렐리우스').length).toBeGreaterThan(0)
   })
 
-  it('shows 저장하기 button when not saved', () => {
-    render(
-      <PrescriptionDetail prescription={MOCK_PRESCRIPTION} isSaved={false} prescriptionId="prescription-abc" />
-    )
-    expect(screen.getByText('저장하기')).toBeInTheDocument()
-  })
-
-  it('shows 저장됨 button when already saved', () => {
-    render(
-      <PrescriptionDetail prescription={MOCK_PRESCRIPTION} isSaved={true} prescriptionId="prescription-abc" />
-    )
-    // The footer save button shows '저장됨' when saved
-    const savedButtons = screen.getAllByText('저장됨')
-    expect(savedButtons.length).toBeGreaterThan(0)
-  })
-
-  it('optimistically toggles save state on click', async () => {
-    render(
-      <PrescriptionDetail prescription={MOCK_PRESCRIPTION} isSaved={false} prescriptionId="prescription-abc" />
-    )
-    fireEvent.click(screen.getByText('저장하기'))
-    await waitFor(() => {
-      expect(screen.getAllByText('저장됨').length).toBeGreaterThan(0)
-    })
-  })
-
-  it('rollbacks save state if API fails', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500 }))
-    render(
-      <PrescriptionDetail prescription={MOCK_PRESCRIPTION} isSaved={false} prescriptionId="prescription-abc" />
-    )
-    fireEvent.click(screen.getByText('저장하기'))
-    await waitFor(() => {
-      expect(screen.getByText('저장하기')).toBeInTheDocument()
-    })
+  it('renders 다짐 남기기 button', () => {
+    render(<PrescriptionDetail prescription={MOCK_PRESCRIPTION} prescriptionId="prescription-abc" />)
+    expect(screen.getByText('다짐 남기기')).toBeInTheDocument()
   })
 
   it('renders 공유하기 button', () => {

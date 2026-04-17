@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { SavedCard, SavedPrescription } from './saved-card'
 
@@ -40,27 +40,14 @@ describe('SavedCard', () => {
     expect(screen.getByText('인간관계')).toBeInTheDocument()
   })
 
-  it('renders saved date', () => {
+  it('renders received date', () => {
     render(<SavedCard prescription={MOCK_PRESCRIPTION} index={0} />)
-    expect(screen.getByText(/2026-03-22에 저장/)).toBeInTheDocument()
+    expect(screen.getByText(/2026-03-22에 받음/)).toBeInTheDocument()
   })
 
-  it('does not render delete button when onDelete is not provided', () => {
+  it('does not render delete button', () => {
     render(<SavedCard prescription={MOCK_PRESCRIPTION} index={0} />)
     expect(screen.queryByText('삭제')).not.toBeInTheDocument()
-  })
-
-  it('renders delete button when onDelete is provided', () => {
-    const onDelete = vi.fn()
-    render(<SavedCard prescription={MOCK_PRESCRIPTION} index={0} onDelete={onDelete} />)
-    expect(screen.getByText('삭제')).toBeInTheDocument()
-  })
-
-  it('calls onDelete with prescription.id when delete button clicked', () => {
-    const onDelete = vi.fn().mockResolvedValue(undefined)
-    render(<SavedCard prescription={MOCK_PRESCRIPTION} index={0} onDelete={onDelete} />)
-    fireEvent.click(screen.getByText('삭제'))
-    expect(onDelete).toHaveBeenCalledWith('saved-1')
   })
 
   it('renders userIntention when provided', () => {
