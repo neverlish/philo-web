@@ -125,7 +125,7 @@ export default async function SharePage({
             나도 나만의 철학 처방을 받고 싶다면
           </p>
           <Link
-            href="/"
+            href="/opening"
             className="flex items-center justify-center gap-2 w-full bg-foreground text-background py-4 rounded-xl font-medium text-sm transition-all active:scale-95"
           >
             <Mic className="w-4 h-4" strokeWidth={1.5} />

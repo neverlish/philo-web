@@ -1,21 +1,14 @@
 import { ImageResponse } from 'next/og'
 import { createClient } from '@/lib/supabase/server-auth'
 import { NextRequest } from 'next/server'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
 export const runtime = 'nodejs'
 
-async function loadKoreanFont(text: string): Promise<ArrayBuffer> {
-  const url = `https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&text=${encodeURIComponent(text)}`
-  const css = await fetch(url, {
-    headers: {
-      'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    },
-  }).then((r) => r.text())
-
-  const fontUrl = css.match(/src: url\(([^)]+)\) format\('woff2'\)/)?.[1]
-  if (!fontUrl) throw new Error('Font URL not found')
-  return fetch(fontUrl).then((r) => r.arrayBuffer())
+function loadKoreanFont(): ArrayBuffer {
+  const fontPath = join(process.cwd(), 'public', 'fonts', 'NotoSerifKR-Regular.ttf')
+  return readFileSync(fontPath).buffer as ArrayBuffer
 }
 
 export async function GET(
@@ -39,10 +32,9 @@ export async function GET(
 
   if (error || !data) return new Response('Not found', { status: 404 })
 
-  const allText = `오늘의처방${data.philosopher_name}${data.philosopher_school}${data.philosopher_era}${data.quote_text}`
   let fontData: ArrayBuffer
   try {
-    fontData = await loadKoreanFont(allText)
+    fontData = loadKoreanFont()
   } catch {
     fontData = new ArrayBuffer(0)
   }
