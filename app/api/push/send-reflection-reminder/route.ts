@@ -1,23 +1,14 @@
 import { NextResponse } from 'next/server'
-import webpush from 'web-push'
 import { createClient } from '@/lib/supabase/server-auth'
 import { getTodayKST } from '@/lib/date'
+import { isCronAuthorized, initVapid, sendPushBatch } from '@/lib/push/send'
 
 export async function POST(request: Request) {
-  const authHeader = request.headers.get('Authorization')
-  const cronSecret = process.env.CRON_SECRET
-  const isVercelCron = request.headers.get('x-vercel-cron') === '1'
-  const isAuthorized = isVercelCron || (cronSecret && authHeader === `Bearer ${cronSecret}`)
-
-  if (!isAuthorized) {
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  webpush.setVapidDetails(
-    process.env.VAPID_EMAIL!,
-    process.env.VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!,
-  )
+  initVapid()
 
   const supabase = await createClient()
   const today = getTodayKST()
@@ -66,37 +57,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ sent: 0 })
   }
 
-  let sent = 0
-
-  await Promise.allSettled(
-    subscriptions.map(async (sub) => {
+  const { sent } = await sendPushBatch(
+    subscriptions,
+    (sub) => {
       const prescriptionId = userPrescriptionMap.get(sub.user_id)
-      const payload = JSON.stringify({
+      return JSON.stringify({
         title: '오늘의철학',
         body: '오늘 다짐 어떻게 됐나요? 짧게 돌아보세요 🌙',
         url: prescriptionId ? `/prescription/ai/${prescriptionId}` : '/',
         icon: '/favicon.ico',
       })
-
-      try {
-        await webpush.sendNotification(
-          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-          payload,
-        )
-        sent++
-      } catch (err: unknown) {
-        if (
-          err &&
-          typeof err === 'object' &&
-          'statusCode' in err &&
-          (err as { statusCode: number }).statusCode === 410
-        ) {
-          await supabase.from('push_subscriptions').delete().eq('endpoint', sub.endpoint)
-        } else {
-          console.error('Push send error:', err)
-        }
-      }
-    }),
+    },
+    supabase,
   )
 
   console.log(`Reflection reminder sent: ${sent}/${subscriptions.length}`)

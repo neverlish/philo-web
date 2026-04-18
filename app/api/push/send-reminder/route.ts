@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import webpush from 'web-push'
 import { createClient } from '@/lib/supabase/server-auth'
 import { getTodayKST } from '@/lib/date'
+import { isCronAuthorized, initVapid, sendPushBatch } from '@/lib/push/send'
 
-const NOTIFICATION_PAYLOAD = JSON.stringify({
+const PAYLOAD = JSON.stringify({
   title: '오늘의철학',
   body: '오늘 하루 마음속 고민을 철학으로 풀어볼까요?',
   url: '/opening',
@@ -11,21 +11,11 @@ const NOTIFICATION_PAYLOAD = JSON.stringify({
 })
 
 export async function POST(request: Request) {
-  const authHeader = request.headers.get('Authorization')
-  const cronSecret = process.env.CRON_SECRET
-  const isVercelCron = request.headers.get('x-vercel-cron') === '1'
-  const isAuthorized = isVercelCron || (cronSecret && authHeader === `Bearer ${cronSecret}`)
-
-  if (!isAuthorized) {
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  webpush.setVapidDetails(
-    process.env.VAPID_EMAIL!,
-    process.env.VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!,
-  )
-
+  initVapid()
   const supabase = await createClient()
 
   const today = getTodayKST()
@@ -43,28 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ sent: 0 })
   }
 
-  let sent = 0
-  const failures: string[] = []
-
-  await Promise.allSettled(
-    subscriptions.map(async (sub) => {
-      try {
-        await webpush.sendNotification(
-          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-          NOTIFICATION_PAYLOAD,
-        )
-        sent++
-      } catch (err: unknown) {
-        if (err && typeof err === 'object' && 'statusCode' in err && (err as { statusCode: number }).statusCode === 410) {
-          await supabase.from('push_subscriptions').delete().eq('endpoint', sub.endpoint)
-        } else {
-          failures.push(sub.endpoint)
-          console.error('Push send error:', err)
-        }
-      }
-    })
-  )
-
+  const { sent, failures } = await sendPushBatch(subscriptions, () => PAYLOAD, supabase)
   console.log(`Push reminder sent: ${sent}/${subscriptions.length}`)
-  return NextResponse.json({ sent, failures: failures.length })
+  return NextResponse.json({ sent, failures })
 }
