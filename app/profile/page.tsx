@@ -10,29 +10,8 @@ import { Settings, HelpCircle, Shield, ChevronRight, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { StreakCard } from "@/components/profile/streak-card";
-import { getTodayKST, getRecentDaysKST, toKSTDateString, getFirstDayOfMonthKST, getKSTMonthName } from "@/lib/date";
-
-function calculateStreak(dates: string[]): number {
-  if (dates.length === 0) return 0;
-
-  const sorted = [...dates].sort().reverse();
-  const today = getTodayKST();
-
-  if (sorted[0] !== today) return 0;
-
-  let streak = 1;
-  for (let i = 1; i < sorted.length; i++) {
-    const prev = new Date(sorted[i - 1]);
-    const curr = new Date(sorted[i]);
-    const diffDays = Math.round((prev.getTime() - curr.getTime()) / (1000 * 60 * 60 * 24));
-    if (diffDays === 1) {
-      streak++;
-    } else {
-      break;
-    }
-  }
-  return streak;
-}
+import { getRecentDaysKST, toKSTDateString, getFirstDayOfMonthKST, getKSTMonthName } from "@/lib/date";
+import { calculateStreak } from "@/lib/streak";
 
 export default async function ProfilePage() {
   const supabase = await createClient();

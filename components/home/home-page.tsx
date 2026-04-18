@@ -17,6 +17,7 @@ import { OnboardingSlides, useOnboarding } from "@/components/onboarding/onboard
 import { usePostHog } from 'posthog-js/react';
 import Link from 'next/link';
 import { getTodayKST, getRecentDaysKST } from "@/lib/date";
+import { calculateStreak } from "@/lib/streak";
 
 type ReflectionTarget = {
   id: string
@@ -43,21 +44,6 @@ const categories = [
 
 export type CategoryFilter = { keyword?: string; region?: string; era?: string; concerns?: string };
 
-function calculateStreak(dates: string[]): number {
-  if (dates.length === 0) return 0;
-  const sorted = [...dates].sort().reverse();
-  const today = getTodayKST();
-  if (sorted[0] !== today) return 0;
-  let count = 1;
-  for (let i = 1; i < sorted.length; i++) {
-    const prev = new Date(sorted[i - 1]);
-    const curr = new Date(sorted[i]);
-    const diff = Math.round((prev.getTime() - curr.getTime()) / 86400000);
-    if (diff === 1) count++;
-    else break;
-  }
-  return count;
-}
 
 interface HomePageProps {
   initialPhilosophers: DbPhilosopher[];
