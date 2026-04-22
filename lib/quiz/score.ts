@@ -1,6 +1,7 @@
 import { QUESTIONS, type PhilosopherKey } from './data'
+import { getSajuInfo } from './saju'
 
-export function calculateResult(answers: number[]): PhilosopherKey {
+export function calculateResult(answers: number[], birthYear?: number): PhilosopherKey {
   const scores: Record<PhilosopherKey, number> = {
     socrates: 0,
     nietzsche: 0,
@@ -10,6 +11,13 @@ export function calculateResult(answers: number[]): PhilosopherKey {
     kant: 0,
     zhuangzi: 0,
     kierkegaard: 0,
+  }
+
+  if (birthYear) {
+    const saju = getSajuInfo(birthYear)
+    for (const [key, pts] of Object.entries(saju.scores)) {
+      scores[key as PhilosopherKey] += pts as number
+    }
   }
 
   answers.forEach((choiceIndex, questionIndex) => {

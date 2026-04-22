@@ -222,23 +222,23 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 3,
-    question: '나에게 정말 좋은 하루란?',
+    question: '단톡방에 내가 보낸 메시지에 아무도 답이 없다. 10초 뒤 당신은?',
     choices: [
       {
-        text: '깊이 생각하고 대화하면서 무언가를 발견한 날',
-        scores: { socrates: 2, kierkegaard: 1 },
+        text: '한 번 더 메시지를 보낸다',
+        scores: { confucius: 2 },
       },
       {
-        text: '좋아하는 것을 하고 충분히 쉰 날',
-        scores: { epicurus: 2, zhuangzi: 1 },
+        text: '내가 잘못 말한 건 아닐까 되짚어본다',
+        scores: { kierkegaard: 2 },
       },
       {
-        text: '해야 할 일을 해내고 뿌듯하게 마무리한 날',
-        scores: { kant: 2, epictetus: 1 },
+        text: '각자 바쁜 거겠지 — 그냥 넘긴다',
+        scores: { zhuangzi: 2 },
       },
       {
-        text: '소중한 사람들과 따뜻하게 연결된 날',
-        scores: { confucius: 2, epicurus: 1 },
+        text: '신경 쓰지 않기로 한다',
+        scores: { epictetus: 2 },
       },
     ],
   },
@@ -266,23 +266,23 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 5,
-    question: '나를 앞으로 나아가게 만드는 힘은?',
+    question: '갑자기 모든 계획이 틀어졌다. 가장 먼저 드는 생각은?',
     choices: [
       {
-        text: '지금의 나를 뛰어넘고 더 강해지고 싶다는 욕구',
-        scores: { nietzsche: 2, kierkegaard: 1 },
+        text: '이건 더 나은 방향으로 가는 기회일 수 있어',
+        scores: { nietzsche: 2 },
       },
       {
-        text: '이 일이 나에게 진정한 의미가 있다는 확신',
-        scores: { kierkegaard: 2, socrates: 1 },
+        text: '일단 오늘 하루를 잘 보내는 것부터',
+        scores: { epicurus: 2 },
       },
       {
-        text: '해야 한다는 의무감과 원칙에 대한 신념',
-        scores: { kant: 2, confucius: 1 },
+        text: '왜 이렇게 됐는지 근본 원인을 파악해야 해',
+        scores: { socrates: 2 },
       },
       {
-        text: '어떤 상황에서도 흔들리지 않겠다는 내면의 다짐',
-        scores: { epictetus: 2, zhuangzi: 1 },
+        text: '원칙대로 차근차근 다시 정리해야지',
+        scores: { kant: 2 },
       },
     ],
   },
@@ -310,23 +310,23 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 7,
-    question: '지금 이 순간 나에게 가장 필요한 것은?',
+    question: '새벽 3시, 잠이 안 온다. 당신은?',
     choices: [
       {
-        text: '나를 아끼는 사람들과 따뜻한 시간',
-        scores: { confucius: 2, epicurus: 1 },
+        text: '루틴대로 행동한다 — 원칙을 지킨다',
+        scores: { kant: 2 },
       },
       {
-        text: '어떤 상황에도 흔들리지 않는 내면의 단단함',
-        scores: { epictetus: 2, kant: 1 },
+        text: '왜 잠이 안 오는지 근본 이유를 생각해본다',
+        scores: { socrates: 2 },
       },
       {
-        text: '내가 진짜 무엇을 원하는지에 대한 이해',
-        scores: { socrates: 2, kierkegaard: 1 },
+        text: '나 자신을 탐색하는 시간으로 삼는다',
+        scores: { kierkegaard: 2 },
       },
       {
-        text: '아무 생각 없이 충분히 쉬고 충전하는 시간',
-        scores: { epicurus: 2, zhuangzi: 1 },
+        text: '좋아하는 것들로 나를 충전한다',
+        scores: { epicurus: 2 },
       },
     ],
   },

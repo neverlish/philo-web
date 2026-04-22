@@ -12,6 +12,11 @@ export function QuizClient() {
   const router = useRouter();
   const posthog = usePostHog();
   const [currentQ, setCurrentQ] = useState(0);
+  const [birthYear] = useState<number | undefined>(() => {
+    if (typeof window === 'undefined') return undefined
+    const stored = sessionStorage.getItem('philo_quiz_birth_year')
+    return stored ? parseInt(stored) : undefined
+  });
   const [answers, setAnswers] = useState<(number | null)[]>(
     Array(QUESTIONS.length).fill(null)
   );
@@ -41,8 +46,8 @@ export function QuizClient() {
     setAnswers(newAnswers);
 
     if (isLast) {
-      const result = calculateResult(newAnswers as number[]);
-      posthog?.capture('quiz_completed', { result_philosopher: result });
+      const result = calculateResult(newAnswers as number[], birthYear);
+      posthog?.capture('quiz_completed', { result_philosopher: result, hasBirthYear: !!birthYear });
       router.push(`/type/result/${result}`);
       return;
     }

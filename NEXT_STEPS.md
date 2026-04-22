@@ -5,7 +5,7 @@
 - 월간 리포트에 "다짐 X개 중 성찰 완료 Y개" 비율 표시
 - `prescription_reflections` + `ai_prescriptions.user_intention` 쿼리 활용
 
-## 2. 저장 목록 강화 — 다짐/성찰 배지
+## ✅ 2. 저장 목록 강화 — 다짐/성찰 배지 (완료 2026-04-16)
 `/saved` 페이지 처방 카드에 상태 배지 표시.
 - 다짐 있음 → 작은 체크 아이콘
 - 성찰 완료 → 강조 배지
@@ -23,4 +23,35 @@
 
 ---
 
-*최종 업데이트: 2026-04-16 (2, 3번 완료)*
+## 🐛 버그 / 기술 부채
+
+### KST 날짜 버그 — `toISOString().split('T')[0]` 금지 패턴 (5곳)
+CLAUDE.md 규칙 위반: UTC 기준이라 KST 자정~오전9시 사이에 전날 날짜로 처리됨.
+`lib/date.ts`의 `getTodayKST()` 로 교체 필요.
+
+| 파일 | 라인 | 용도 |
+|------|------|------|
+| `app/api/prescription/generate/route.ts` | 37 | 오늘 체크인 중복 방지 쿼리 |
+| `app/api/push/send-reminder/route.ts` | 30 | 오늘 체크인 여부 확인 |
+| `app/api/quotes/route.ts` | 29 | 오늘의 인용구 조회 |
+| `lib/supabase-server.ts` | 39 | 오늘 처방 조회 |
+| `app/profile/page.tsx` | 105 | KST 변환 후 split (의도적이나 패턴 통일 필요) |
+
+---
+
+## 5. 개선 후보
+
+### A. 공유 페이지 SEO / OG 최적화
+- `/share/[id]` 동적 OG 이미지: 현재 정적 이미지, 처방 내용 반영한 동적 OG로 교체
+- sitemap에 공개 처방 URL 포함 (현재 `robots: noindex`)
+
+### B. 알림 개인화
+- 아침 알림: 현재 고정 문구 → 마지막 처방 테마 기반 문구
+- 저녁 성찰 알림: 다짐 내용을 알림 body에 포함
+
+### C. 오류 모니터링
+- Sentry 또는 Vercel Error Tracking 연동 (현재 `console.error`만 존재)
+
+---
+
+*최종 업데이트: 2026-04-17*

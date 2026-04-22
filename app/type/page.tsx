@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { ArrowRight, Clock, UserX } from 'lucide-react'
+import { Clock, UserX } from 'lucide-react'
+import { TypeIntroClient } from '@/components/type/type-intro-client'
 
 export const metadata: Metadata = {
   title: '나의 철학자 유형 찾기',
@@ -61,17 +61,7 @@ export default function TypeIntroPage() {
           나를 가장 잘 이해하는 철학자의 처방을 미리 확인해보세요.
         </p>
 
-        <Link
-          href="/type/quiz"
-          className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-serif font-medium text-sm tracking-wide transition-all active:scale-[0.98] text-white"
-          style={{
-            background: 'linear-gradient(135deg, #a33900 0%, #ec5b13 100%)',
-            boxShadow: '0 4px 24px rgba(236, 91, 19, 0.35)',
-          }}
-        >
-          지금 바로 알아보기
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+        <TypeIntroClient />
       </div>
     </div>
   )

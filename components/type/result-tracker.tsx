@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePostHog } from "posthog-js/react";
 import Link from "next/link";
 import { Share2, Link2, ChevronUp } from "lucide-react";
-import { type PhilosopherKey } from "@/lib/quiz";
+import { type PhilosopherKey, getSajuInfo, type SajuInfo } from "@/lib/quiz";
 
 interface ResultTrackerProps {
   philosopherKey: PhilosopherKey;
@@ -22,6 +22,42 @@ export function ResultTracker({ philosopherKey, philosopherName }: ResultTracker
   return null;
 }
 
+interface SajuBannerProps {
+  philosopherName: string;
+}
+
+export function SajuBanner({ philosopherName }: SajuBannerProps) {
+  const [sajuInfo, setSajuInfo] = useState<SajuInfo | null>(null);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem('philo_quiz_birth_year')
+    if (!stored) return
+    const year = parseInt(stored)
+    if (year >= 1924 && year <= 2024) {
+      setSajuInfo(getSajuInfo(year))
+    }
+  }, []);
+
+  if (!sajuInfo) return null;
+
+  return (
+    <section
+      className="rounded-2xl px-5 py-4 mb-6 flex items-center gap-3"
+      style={{ background: 'rgba(236,91,19,0.06)', border: '1px solid rgba(236,91,19,0.12)' }}
+    >
+      <span className="text-2xl">{sajuInfo.zodiacEmoji}</span>
+      <div>
+        <p className="text-xs text-primary font-medium font-sans">
+          {sajuInfo.zodiac}띠의 철학자
+        </p>
+        <p className="text-xs text-muted font-sans mt-0.5">
+          {sajuInfo.zodiacDesc} — {philosopherName}와 공명합니다
+        </p>
+      </div>
+    </section>
+  );
+}
+
 interface ResultCtaProps {
   philosopherKey: PhilosopherKey;
   philosopherName: string;
@@ -32,18 +68,29 @@ export function ResultCta({ philosopherKey, philosopherName }: ResultCtaProps) {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [sajuInfo, setSajuInfo] = useState<SajuInfo | null>(null);
 
-  const shareUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/type/result/${philosopherKey}`
-    : `/type/result/${philosopherKey}`;
-  const shareText = `나는 ${philosopherName}형 철학자예요! 나의 철학자 유형은?`;
+  useEffect(() => {
+    const stored = sessionStorage.getItem('philo_quiz_birth_year')
+    if (!stored) return
+    const year = parseInt(stored)
+    if (year >= 1924 && year <= 2024) {
+      setSajuInfo(getSajuInfo(year))
+    }
+  }, []);
+
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : ''
+  const shareUrl = `${baseUrl}/type/result/${philosopherKey}?utm_source=share&utm_medium=type_quiz`
+  const shareText = sajuInfo
+    ? `${sajuInfo.zodiacEmoji} 나는 ${sajuInfo.zodiac}띠 ${philosopherName}형!\n나의 철학 사주는?`
+    : `나는 ${philosopherName}형 철학자예요! 나의 철학자 유형은?`
 
   const handleNativeShare = async () => {
     if (sharing) return;
     setSharing(true);
     try {
       await navigator.share({ title: shareText, url: shareUrl });
-      posthog?.capture("quiz_result_shared", { philosopher: philosopherKey, share_method: "native" });
+      posthog?.capture("quiz_result_shared", { philosopher: philosopherKey, share_method: "native", hasSaju: !!sajuInfo });
     } catch {
       // 사용자가 취소한 경우 무시
     } finally {
@@ -54,7 +101,7 @@ export function ResultCta({ philosopherKey, philosopherName }: ResultCtaProps) {
   const handleCopyUrl = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      posthog?.capture("quiz_result_shared", { philosopher: philosopherKey, share_method: "clipboard" });
+      posthog?.capture("quiz_result_shared", { philosopher: philosopherKey, share_method: "clipboard", hasSaju: !!sajuInfo });
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
