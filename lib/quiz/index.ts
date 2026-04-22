@@ -1,5 +1,5 @@
 export { QUESTIONS, PHILOSOPHER_TYPES } from './data'
 export type { PhilosopherKey, PhilosopherType, Question, AnswerChoice } from './data'
 export { calculateResult } from './score'
-export { getSajuInfo } from './saju'
-export type { SajuInfo } from './saju'
+export { getMbtiMapping } from './mbti'
+export type { MbtiMapping } from './mbti'

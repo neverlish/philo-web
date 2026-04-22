@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, RotateCcw, Quote, Heart, Sparkles } from 'lucide-react'
 import { PHILOSOPHER_TYPES, type PhilosopherKey } from '@/lib/quiz'
-import { ResultTracker, ResultCta, SajuBanner } from '@/components/type/result-tracker'
+import { ResultTracker, ResultCta, MbtiBanner } from '@/components/type/result-tracker'
 
 interface Props {
   params: Promise<{ key: string }>
@@ -64,7 +64,7 @@ export default async function ResultPage({ params }: Props) {
           </p>
         </section>
 
-        <SajuBanner philosopherName={type.name} />
+        <MbtiBanner philosopherKey={type.key} philosopherName={type.name} />
 
         {/* 설명 */}
         <section

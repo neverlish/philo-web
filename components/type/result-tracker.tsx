@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { usePostHog } from "posthog-js/react";
 import Link from "next/link";
 import { Share2, Link2, ChevronUp } from "lucide-react";
-import { type PhilosopherKey, getSajuInfo, type SajuInfo } from "@/lib/quiz";
+import { type PhilosopherKey, getMbtiMapping, type MbtiMapping } from "@/lib/quiz";
 
 interface ResultTrackerProps {
   philosopherKey: PhilosopherKey;
   philosopherName: string;
 }
 
-export function ResultTracker({ philosopherKey, philosopherName }: ResultTrackerProps) {
+export function ResultTracker({ philosopherKey }: ResultTrackerProps) {
   const posthog = usePostHog();
 
   useEffect(() => {
@@ -22,37 +22,62 @@ export function ResultTracker({ philosopherKey, philosopherName }: ResultTracker
   return null;
 }
 
-interface SajuBannerProps {
+interface MbtiBannerProps {
+  philosopherKey: PhilosopherKey;
   philosopherName: string;
 }
 
-export function SajuBanner({ philosopherName }: SajuBannerProps) {
-  const [sajuInfo, setSajuInfo] = useState<SajuInfo | null>(null);
+export function MbtiBanner({ philosopherKey, philosopherName }: MbtiBannerProps) {
+  const [state, setState] = useState<{ mbti: string; mapping: MbtiMapping } | null>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('philo_quiz_birth_year')
+    const stored = sessionStorage.getItem('philo_quiz_mbti')
     if (!stored) return
-    const year = parseInt(stored)
-    if (year >= 1924 && year <= 2024) {
-      setSajuInfo(getSajuInfo(year))
-    }
+    const mapping = getMbtiMapping(stored)
+    if (mapping) setState({ mbti: stored, mapping })
   }, []);
 
-  if (!sajuInfo) return null;
+  if (!state) return null;
+
+  const isMatchedPhilosopher = state.mapping.philosopher === philosopherKey
 
   return (
-    <section
-      className="rounded-2xl px-5 py-4 mb-6 flex items-center gap-3"
-      style={{ background: 'rgba(236,91,19,0.06)', border: '1px solid rgba(236,91,19,0.12)' }}
-    >
-      <span className="text-2xl">{sajuInfo.zodiacEmoji}</span>
-      <div>
-        <p className="text-xs text-primary font-medium font-sans">
-          {sajuInfo.zodiac}띠의 철학자
+    <section className="mb-6">
+      {/* MBTI × 철학자 배지 */}
+      <div
+        className="rounded-2xl p-5"
+        style={{
+          background: 'linear-gradient(135deg, #2C2420 0%, #3d2e28 100%)',
+        }}
+      >
+        <p className="text-white/40 text-[10px] tracking-widest uppercase mb-3 font-sans">
+          MBTI × 철학자 조합
         </p>
-        <p className="text-xs text-muted font-sans mt-0.5">
-          {sajuInfo.zodiacDesc} — {philosopherName}와 공명합니다
+        <div className="flex items-baseline gap-2 mb-2">
+          <span
+            className="font-serif text-2xl font-bold"
+            style={{ color: '#ec5b13' }}
+          >
+            {state.mbti}
+          </span>
+          <span className="text-white/40 text-lg">×</span>
+          <span className="font-serif text-2xl font-bold text-white">
+            {philosopherName}
+          </span>
+        </div>
+        <p className="font-serif text-white/90 text-base font-medium mb-3">
+          {isMatchedPhilosopher ? state.mapping.combinedTitle : `${state.mbti}의 철학자`}
         </p>
+        {isMatchedPhilosopher && (
+          <p className="text-white/55 text-xs leading-relaxed font-sans">
+            {state.mapping.combinedDesc}
+          </p>
+        )}
+        {!isMatchedPhilosopher && (
+          <p className="text-white/55 text-xs leading-relaxed font-sans">
+            MBTI를 넘어 당신만의 철학적 성향이 {philosopherName}형으로 드러났습니다.
+          </p>
+        )}
       </div>
     </section>
   );
@@ -68,21 +93,20 @@ export function ResultCta({ philosopherKey, philosopherName }: ResultCtaProps) {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const [sajuInfo, setSajuInfo] = useState<SajuInfo | null>(null);
+  const [mbtiState, setMbtiState] = useState<{ mbti: string; mapping: MbtiMapping } | null>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('philo_quiz_birth_year')
+    const stored = sessionStorage.getItem('philo_quiz_mbti')
     if (!stored) return
-    const year = parseInt(stored)
-    if (year >= 1924 && year <= 2024) {
-      setSajuInfo(getSajuInfo(year))
-    }
+    const mapping = getMbtiMapping(stored)
+    if (mapping) setMbtiState({ mbti: stored, mapping })
   }, []);
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : ''
   const shareUrl = `${baseUrl}/type/result/${philosopherKey}?utm_source=share&utm_medium=type_quiz`
-  const shareText = sajuInfo
-    ? `${sajuInfo.zodiacEmoji} 나는 ${sajuInfo.zodiac}띠 ${philosopherName}형!\n나의 철학 사주는?`
+
+  const shareText = mbtiState
+    ? `나는 ${mbtiState.mbti} × ${philosopherName}형!\n"${mbtiState.mapping.combinedTitle}"\n나의 철학 유형은?`
     : `나는 ${philosopherName}형 철학자예요! 나의 철학자 유형은?`
 
   const handleNativeShare = async () => {
@@ -90,7 +114,11 @@ export function ResultCta({ philosopherKey, philosopherName }: ResultCtaProps) {
     setSharing(true);
     try {
       await navigator.share({ title: shareText, url: shareUrl });
-      posthog?.capture("quiz_result_shared", { philosopher: philosopherKey, share_method: "native", hasSaju: !!sajuInfo });
+      posthog?.capture("quiz_result_shared", {
+        philosopher: philosopherKey,
+        share_method: "native",
+        mbti: mbtiState?.mbti ?? null,
+      });
     } catch {
       // 사용자가 취소한 경우 무시
     } finally {
@@ -101,7 +129,11 @@ export function ResultCta({ philosopherKey, philosopherName }: ResultCtaProps) {
   const handleCopyUrl = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      posthog?.capture("quiz_result_shared", { philosopher: philosopherKey, share_method: "clipboard", hasSaju: !!sajuInfo });
+      posthog?.capture("quiz_result_shared", {
+        philosopher: philosopherKey,
+        share_method: "clipboard",
+        mbti: mbtiState?.mbti ?? null,
+      });
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {

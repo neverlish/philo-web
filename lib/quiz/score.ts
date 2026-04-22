@@ -1,7 +1,7 @@
 import { QUESTIONS, type PhilosopherKey } from './data'
-import { getSajuInfo } from './saju'
+import { getMbtiMapping } from './mbti'
 
-export function calculateResult(answers: number[], birthYear?: number): PhilosopherKey {
+export function calculateResult(answers: number[], mbti?: string): PhilosopherKey {
   const scores: Record<PhilosopherKey, number> = {
     socrates: 0,
     nietzsche: 0,
@@ -13,10 +13,12 @@ export function calculateResult(answers: number[], birthYear?: number): Philosop
     kierkegaard: 0,
   }
 
-  if (birthYear) {
-    const saju = getSajuInfo(birthYear)
-    for (const [key, pts] of Object.entries(saju.scores)) {
-      scores[key as PhilosopherKey] += pts as number
+  if (mbti) {
+    const mapping = getMbtiMapping(mbti)
+    if (mapping) {
+      for (const [key, pts] of Object.entries(mapping.scores)) {
+        scores[key as PhilosopherKey] += pts as number
+      }
     }
   }
 
