@@ -4,6 +4,7 @@ import { useState, useMemo } from "react"
 import Link from "next/link"
 import { BookLock, X } from "lucide-react"
 import type { PhilosopherItem } from "@/app/journey/page"
+import { getPhilosopherPath } from "@/lib/philosopher-slugs"
 
 interface PhilosopherMapTabProps {
   philosophers: PhilosopherItem[]
@@ -21,7 +22,7 @@ const REGION_FILTERS = ['전체', '동양', '서양'] as const
 function PhilosopherCard({ p, met }: { p: PhilosopherItem; met: boolean }) {
   if (met) {
     return (
-      <Link href={`/philosopher/${p.id}`}>
+      <Link href={getPhilosopherPath(p.id, p.nameEn)}>
         <div className="rounded-2xl p-4 border border-primary/25 bg-primary/5 hover:border-primary/40 transition-colors h-full">
           <div className="flex items-start justify-between gap-1 mb-0.5">
             <p className="text-sm font-serif font-bold text-foreground leading-snug">{p.name}</p>

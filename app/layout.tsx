@@ -22,6 +22,9 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://philo-web.vercel.ap
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  verification: {
+    google: 'BsH4VCFnAV6p-Sza4tvoaUcM4Yeu7QBxqAT-ZfRyTYM',
+  },
   title: {
     default: '오늘의철학',
     template: '%s | 오늘의철학',

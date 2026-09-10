@@ -7,13 +7,14 @@ export const getCachedPhilosophers = unstable_cache(
     const supabase = createPublicClient()
     const { data } = await supabase
       .from('philosophers')
-      .select('id, name, era, region, years, keywords, core_idea')
+      .select('id, name, name_en, era, region, years, keywords, core_idea')
       .order('era')
       .order('name')
 
     return (data ?? []).map((p) => ({
       id: p.id,
       name: p.name,
+      nameEn: p.name_en,
       era: p.era,
       region: p.region,
       years: p.years,

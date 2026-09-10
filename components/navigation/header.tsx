@@ -25,6 +25,7 @@ export function Header({ title, showSearch = true, showBack }: HeaderProps) {
         {showBack ? (
           <button
             onClick={() => router.back()}
+            aria-label="뒤로 가기"
             className="flex size-9 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" strokeWidth={1.5} />
@@ -39,7 +40,11 @@ export function Header({ title, showSearch = true, showBack }: HeaderProps) {
         )}
         <div className="flex items-center gap-1">
           {showSearch && (
-            <button className="flex size-9 items-center justify-center rounded-full hover:bg-black/5 transition-colors">
+            <button
+              type="button"
+              aria-label="검색"
+              className="flex size-9 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+            >
               <Search className="w-5 h-5" strokeWidth={1.5} />
             </button>
           )}
@@ -47,6 +52,8 @@ export function Header({ title, showSearch = true, showBack }: HeaderProps) {
             <div className="relative">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                aria-label="사용자 메뉴"
+                aria-expanded={isUserMenuOpen}
                 className="flex size-9 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
               >
                 {user.user_metadata?.avatar_url ? (
@@ -84,6 +91,7 @@ export function Header({ title, showSearch = true, showBack }: HeaderProps) {
           ) : (
             <button
               onClick={() => setIsLoginModalOpen(true)}
+              aria-label="로그인"
               className="flex size-9 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
             >
               <User className="w-5 h-5" strokeWidth={1.5} />

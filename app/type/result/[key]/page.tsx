@@ -9,6 +9,10 @@ interface Props {
   params: Promise<{ key: string }>
 }
 
+export function generateStaticParams() {
+  return Object.keys(PHILOSOPHER_TYPES).map((key) => ({ key }))
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { key } = await params
   const type = PHILOSOPHER_TYPES[key as PhilosopherKey]
@@ -16,6 +20,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `나는 ${type.name}형 — ${type.typeName}`,
     description: type.headline,
+    alternates: {
+      canonical: `/type/result/${key}`,
+    },
+    openGraph: {
+      title: `나는 ${type.name}형 — ${type.typeName}`,
+      description: type.headline,
+      url: `/type/result/${key}`,
+    },
   }
 }
 

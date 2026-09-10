@@ -10,6 +10,7 @@ import { PushPromptBanner } from "@/components/notification/push-prompt-banner"
 import { ShareDropup } from "./share-dropup"
 import { SharePromptBanner } from "./share-prompt-banner"
 import { IntentionSection } from "./intention-section"
+import { getPhilosopherPath } from "@/lib/philosopher-slugs"
 
 interface PrescriptionDetailProps {
   prescription: Prescription;
@@ -124,7 +125,7 @@ export function PrescriptionDetail({
             <div className="flex items-center justify-between">
               <div>
                 {philosopher.id !== 'ai-generated' ? (
-                  <Link href={`/philosopher/${philosopher.id}`} className="font-bold text-base font-serif text-foreground hover:text-primary transition-colors underline underline-offset-2">
+                  <Link href={getPhilosopherPath(philosopher.id, philosopher.nameEn)} className="font-bold text-base font-serif text-foreground hover:text-primary transition-colors underline underline-offset-2">
                     {philosopher.name}
                   </Link>
                 ) : (

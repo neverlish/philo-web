@@ -1,10 +1,43 @@
 // app/philosopher/[id]/page.tsx
-import { notFound } from 'next/navigation'
+import { cache } from 'react'
+import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Mic } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { DbPhilosopher, DbQuote } from '@/types'
 import type { Metadata } from 'next'
+import { getPhilosopherPath, getPhilosopherSlug, isPhilosopherId } from '@/lib/philosopher-slugs'
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://philo-web.vercel.app'
+
+const getPhilosopher = cache(async (routeParam: string) => {
+  if (isPhilosopherId(routeParam)) {
+    const { data } = await supabase
+      .from('philosophers')
+      .select('*')
+      .eq('id', routeParam)
+      .maybeSingle()
+
+    return data
+  }
+
+  const { data } = await supabase
+    .from('philosophers')
+    .select('*')
+
+  return data?.find((philosopher) => getPhilosopherSlug(philosopher.name_en) === routeParam) ?? null
+})
+
+export async function generateStaticParams() {
+  const { data } = await supabase
+    .from('philosophers')
+    .select('name_en')
+
+  return (data ?? [])
+    .map((philosopher) => getPhilosopherSlug(philosopher.name_en))
+    .filter(Boolean)
+    .map((id) => ({ id }))
+}
 
 export async function generateMetadata({
   params,
@@ -12,20 +45,22 @@ export async function generateMetadata({
   params: Promise<{ id: string }>
 }): Promise<Metadata> {
   const { id } = await params
-  const { data } = await supabase
-    .from('philosophers')
-    .select('name, name_en, core_idea, era, region')
-    .eq('id', id)
-    .single()
+  const data = await getPhilosopher(id)
 
   if (!data) return { title: '철학자' }
 
+  const canonicalPath = getPhilosopherPath(data.id, data.name_en)
+
   return {
-    title: data.name,
+    title: `${data.name} 철학: 핵심 사상과 명언`,
     description: data.core_idea,
+    alternates: {
+      canonical: canonicalPath,
+    },
     openGraph: {
-      title: `${data.name} (${data.name_en})`,
+      title: `${data.name} 철학: 핵심 사상과 명언`,
       description: data.core_idea,
+      url: canonicalPath,
     },
   }
 }
@@ -36,19 +71,51 @@ export default async function PhilosopherPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const philosopher = await getPhilosopher(id)
 
-  const [{ data: philosopher, error }, { data: quotes }] = await Promise.all([
-    supabase.from('philosophers').select('*').eq('id', id).single(),
-    supabase.from('quotes').select('*').eq('philosopher_id', id).order('created_at', { ascending: false }),
-  ])
+  if (!philosopher) notFound()
 
-  if (error || !philosopher) notFound()
+  const canonicalPath = getPhilosopherPath(philosopher.id, philosopher.name_en)
+  if (id !== getPhilosopherSlug(philosopher.name_en)) {
+    permanentRedirect(canonicalPath)
+  }
+
+  const { data: quotes } = await supabase
+    .from('quotes')
+    .select('*')
+    .eq('philosopher_id', philosopher.id)
+    .order('created_at', { ascending: false })
 
   const p = philosopher as DbPhilosopher
   const quoteList = (quotes ?? []) as DbQuote[]
+  const philosopherUrl = `${siteUrl}${canonicalPath}`
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: '오늘의철학',
+        item: siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: p.name,
+        item: philosopherUrl,
+      },
+    ],
+  }
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md px-4 py-5 flex items-center">
         <Link href="/" className="p-2 -ml-2 hover:bg-primary/10 rounded-full transition-colors">

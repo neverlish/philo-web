@@ -43,7 +43,7 @@ export default async function AiPrescriptionPage({
 
   const { data: matchedPhilosopher } = await supabase
     .from('philosophers')
-    .select('id')
+    .select('id, name_en')
     .eq('name', row.philosopher_name)
     .maybeSingle()
 
@@ -54,7 +54,7 @@ export default async function AiPrescriptionPage({
     philosopher: {
       id: matchedPhilosopher?.id ?? 'ai-generated',
       name: row.philosopher_name,
-      nameEn: '',
+      nameEn: matchedPhilosopher?.name_en ?? '',
       era: row.philosopher_era,
       school: row.philosopher_school,
       description: '',

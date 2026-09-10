@@ -38,7 +38,7 @@ const slides = [
         ].map(({ step, label }, i, arr) => (
           <div key={step} className="flex items-center gap-2">
             <div className="flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl bg-card border border-border">
-              <span className="text-[11px] font-mono font-bold text-primary">{step}</span>
+              <span className="text-[11px] font-mono font-bold text-primary-readable">{step}</span>
               <span className="text-[11px] text-foreground font-medium whitespace-nowrap">{label}</span>
             </div>
             {i < arr.length - 1 && <span className="text-muted/40 text-sm">→</span>}
@@ -102,7 +102,12 @@ export function OnboardingSlides({ onDone }: OnboardingSlidesProps) {
   const slide = slides[current];
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background max-w-md mx-auto">
+    <div
+      className="fixed inset-0 z-50 flex flex-col bg-background max-w-md mx-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="onboarding-title"
+    >
       {/* Dismiss */}
       <div className="flex justify-end px-6 pt-5">
         <button
@@ -127,7 +132,7 @@ export function OnboardingSlides({ onDone }: OnboardingSlidesProps) {
             <p className="text-[10px] font-medium tracking-[0.2em] uppercase text-muted mb-3">
               {slide.eyebrow}
             </p>
-            <h2 className="text-3xl font-serif font-normal leading-tight text-foreground mb-4 break-keep whitespace-pre-line">
+            <h2 id="onboarding-title" className="text-3xl font-serif font-normal leading-tight text-foreground mb-4 break-keep whitespace-pre-line">
               {slide.title}
             </h2>
             <p className="text-muted text-sm leading-relaxed whitespace-pre-line">

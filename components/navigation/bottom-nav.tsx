@@ -25,6 +25,7 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               aria-label={item.label}
               className={`flex items-center justify-center transition-colors ${
                 isActive ? "text-primary" : "text-muted hover:text-foreground"

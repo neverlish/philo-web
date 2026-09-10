@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { supabase } from '@/lib/supabase'
+import { getPhilosopherSlug, isPhilosopherId } from '@/lib/philosopher-slugs'
 
 export const runtime = 'edge'
 export const alt = '철학자 소개'
@@ -9,13 +10,22 @@ export const contentType = 'image/png'
 export default async function Image({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const { data } = await supabase
-    .from('philosophers')
-    .select('name, name_en, era, region, core_idea')
-    .eq('id', params.id)
-    .single()
+  const { id } = await params
+  const fields = 'name, name_en, era, region, core_idea'
+
+  const data = isPhilosopherId(id)
+    ? (await supabase
+        .from('philosophers')
+        .select(fields)
+        .eq('id', id)
+        .maybeSingle()).data
+    : (await supabase
+        .from('philosophers')
+        .select(fields)).data?.find(
+          (philosopher) => getPhilosopherSlug(philosopher.name_en) === id
+        )
 
   const name = data?.name ?? '철학자'
   const nameEn = data?.name_en ?? ''
@@ -40,7 +50,7 @@ export default async function Image({
         }}
       >
         <div style={{ fontSize: 20, color: '#a89f8c', letterSpacing: '3px' }}>
-          {era}
+          {data?.region ? `${data.region} · ${era}` : era}
         </div>
         <div style={{ fontSize: 80, fontWeight: 700, color: '#f5f0e8', lineHeight: 1.1 }}>
           {name}

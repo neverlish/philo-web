@@ -20,11 +20,15 @@ export async function generateMetadata({
     .eq('id', id)
     .single()
 
-  if (!data) return { title: '오늘의철학' }
+  if (!data) return {
+    title: '오늘의철학',
+    robots: { index: false, follow: false },
+  }
 
   return {
     title: `${data.philosopher_name}의 처방 — ${data.title}`,
     description: data.quote_text,
+    robots: { index: false, follow: false },
     openGraph: {
       title: `${data.philosopher_name}의 처방`,
       description: data.quote_text,

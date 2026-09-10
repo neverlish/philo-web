@@ -166,12 +166,13 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
       })
   }, [user])
 
-  if (checking) return null;
-
   return (
     <>
     {showOnboarding && <OnboardingSlides onDone={doneOnboarding} />}
-    <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
+    <div
+      className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl"
+      aria-hidden={showOnboarding || undefined}
+    >
       <Header title="지혜의 다리" />
 
       <main className="flex-1 flex flex-col px-6 pt-2 pb-32 overflow-y-auto">
@@ -205,7 +206,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
         )}
 
         {/* Today's Prescription / CTA */}
-        {user ? (
+        {user && !checking ? (
           <div className="w-full mb-8 mt-2">
             {todayPrescription ? (
               <AnimatePresence mode="wait">
@@ -283,10 +284,10 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
               <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
                 오늘의철학
               </span>
-              <h2 className="text-3xl font-serif font-normal leading-tight text-foreground mb-4 break-keep">
+              <h1 className="text-3xl font-serif font-normal leading-tight text-foreground mb-4 break-keep">
                 고민을 말하면<br />
                 철학자가 처방합니다
-              </h2>
+              </h1>
               <p className="text-muted text-sm leading-relaxed mb-6">
                 소크라테스, 노자, 니체가 오늘 당신의 고민을 듣습니다.<br />
                 2천 년의 지혜가 지금 이 순간을 위해 준비돼 있어요.
@@ -299,7 +300,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
                 ].map(({ step, label }, i, arr) => (
                   <div key={step} className="flex items-center gap-2">
                     <div className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-full bg-card" style={{ boxShadow: '0 2px 8px rgba(44,36,32,0.06)' }}>
-                      <span className="text-[11px] font-mono font-bold text-primary">{step}</span>
+                      <span className="text-[11px] font-mono font-bold text-primary-readable">{step}</span>
                       <span className="text-[11px] text-foreground font-medium whitespace-nowrap">{label}</span>
                     </div>
                     {i < arr.length - 1 && (
@@ -328,6 +329,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
         {/* 철학자 유형 테스트 배너 */}
         <Link
           href="/type"
+          prefetch={false}
           onClick={() => posthog?.capture('quiz_banner_clicked')}
           className="flex items-center justify-between gap-3 mb-6 px-4 py-3 rounded-xl active:scale-[0.98] transition-transform"
           style={{
@@ -346,10 +348,22 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           <ArrowRight className="w-4 h-4 text-white/70 flex-shrink-0" />
         </Link>
 
+        <Link
+          href="/wisdom"
+          prefetch={false}
+          className="group mb-8 flex items-end justify-between border-y border-primary/15 py-5"
+        >
+          <div>
+            <p className="mb-2 text-[10px] font-medium tracking-[0.2em] text-muted">고민별 철학 가이드</p>
+            <p className="font-serif text-xl leading-snug text-foreground">마음의 문제를<br />철학의 질문으로</p>
+          </div>
+          <ArrowRight className="mb-1 h-4 w-4 text-muted transition-transform group-hover:translate-x-1" strokeWidth={1.4} />
+        </Link>
+
         {/* Philosophers Section */}
         <div ref={philosophersRef} className="w-full mb-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-medium tracking-[0.2em] uppercase text-muted">철학자 탐색</span>
+            <h2 className="text-[10px] font-medium tracking-[0.2em] uppercase text-muted">철학자 탐색</h2>
           </div>
           <div className="flex gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden">
             {categories.map((category, index) => (

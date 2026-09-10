@@ -5,17 +5,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/philosopher/'],
-        disallow: [
-          '/opening/',
-          '/prescription/',
-          '/saved',
-          '/profile/',
-          '/journey',
-          '/collective',
-        ],
+        allow: '/',
+        disallow: ['/api/', '/auth/'],
       },
     ],
-    sitemap: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://philoapp.kr'}/sitemap.xml`,
+    sitemap: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://philo-web.vercel.app'}/sitemap.xml`,
   }
 }

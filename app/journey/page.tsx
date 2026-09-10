@@ -20,6 +20,7 @@ export interface JourneyItem {
 export interface PhilosopherItem {
   id: string
   name: string
+  nameEn: string
   era: string
   region: string
   years: string | null

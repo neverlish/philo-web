@@ -5,6 +5,7 @@ import { Philosopher } from "@/types";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { getPhilosopherSymbol } from "@/lib/philosopher-symbols";
+import { getPhilosopherPath } from "@/lib/philosopher-slugs";
 
 interface PhilosopherCardProps {
   philosopher: Philosopher;
@@ -26,7 +27,8 @@ export function PhilosopherCard({ philosopher, description, index = 0, keywords,
       transition={{ duration: 0.4, delay: Math.min(index * 0.08, 0.4), ease: "easeOut" }}
     >
       <Link
-        href={`/philosopher/${philosopher.id}`}
+        href={getPhilosopherPath(philosopher.id, philosopher.nameEn)}
+        prefetch={false}
         className="group relative flex flex-col gap-3 border-b border-primary/10 pb-8 transition-all duration-300"
       >
         {/* 철학자 심볼 배경 워터마크 */}
@@ -39,7 +41,7 @@ export function PhilosopherCard({ philosopher, description, index = 0, keywords,
         </span>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] uppercase tracking-[0.15em] text-primary font-bold">
+          <span className="text-[10px] uppercase tracking-[0.15em] text-primary-readable font-bold">
             {philosopher.era}{years ? ` · ${years}` : ""} · {philosopher.nameEn}
           </span>
           {region && (
@@ -67,7 +69,7 @@ export function PhilosopherCard({ philosopher, description, index = 0, keywords,
             ))}
           </div>
         )}
-        <span className="text-xs text-foreground/40 font-medium">{philosopher.name} →</span>
+        <span className="text-xs text-muted font-medium">{philosopher.name} →</span>
       </Link>
     </motion.div>
   );

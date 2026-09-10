@@ -5,6 +5,14 @@ import { TypeIntroClient } from '@/components/type/type-intro-client'
 export const metadata: Metadata = {
   title: '나의 철학자 유형 찾기',
   description: '7가지 질문으로 찾는 나만의 철학자 유형. 소크라테스, 니체, 에피쿠로스 등 8인의 철학자 중 나와 가장 닮은 사람은?',
+  alternates: {
+    canonical: '/type',
+  },
+  openGraph: {
+    title: '나의 철학자 유형 찾기',
+    description: '7가지 질문으로 찾는 나만의 철학자 유형. 나와 가장 닮은 철학자를 확인해보세요.',
+    url: '/type',
+  },
 }
 
 export default function TypeIntroPage() {
