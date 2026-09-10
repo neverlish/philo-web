@@ -30,12 +30,22 @@ export function SearchPage({ philosophers, topics, quotes, initialQuery }: Searc
   )
   const total = results.philosophers.length + results.topics.length + results.quotes.length
 
-  useEffect(() => {
+  const updateQuery = (value: string) => {
+    const nextQuery = value.slice(0, 100)
+    setQuery(nextQuery)
     const url = new URL(window.location.href)
-    if (trimmedQuery) url.searchParams.set('q', trimmedQuery)
+    if (nextQuery.trim()) url.searchParams.set('q', nextQuery.trim())
     else url.searchParams.delete('q')
-    window.history.replaceState(null, '', `${url.pathname}${url.search}`)
-  }, [trimmedQuery])
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
+  }
+
+  useEffect(() => {
+    const restoreQuery = () => {
+      setQuery((new URL(window.location.href).searchParams.get('q') ?? '').slice(0, 100))
+    }
+    window.addEventListener('popstate', restoreQuery)
+    return () => window.removeEventListener('popstate', restoreQuery)
+  }, [])
 
   const trackSearch = (value: string) => {
     const found = searchContent(value, philosophers, topics, quotes)
@@ -46,7 +56,7 @@ export function SearchPage({ philosophers, topics, quotes, initialQuery }: Searc
   }
 
   const chooseSuggestion = (suggestion: string) => {
-    setQuery(suggestion)
+    updateQuery(suggestion)
     trackSearch(suggestion)
     inputRef.current?.focus()
   }
@@ -74,8 +84,9 @@ export function SearchPage({ philosophers, topics, quotes, initialQuery }: Searc
             enterKeyHint="search"
             autoFocus
             autoComplete="off"
+            maxLength={100}
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => updateQuery(event.target.value)}
             placeholder="고민이나 철학자를 검색하세요"
             className="h-14 w-full rounded-2xl border border-foreground/15 bg-card pl-12 pr-12 text-[15px] text-foreground shadow-[0_8px_30px_rgba(44,36,32,0.06)] outline-none transition focus:border-primary-readable focus:ring-2 focus:ring-primary/10"
           />
@@ -83,7 +94,7 @@ export function SearchPage({ philosophers, topics, quotes, initialQuery }: Searc
             <button
               type="button"
               onClick={() => {
-                setQuery('')
+                updateQuery('')
                 inputRef.current?.focus()
               }}
               aria-label="검색어 지우기"
