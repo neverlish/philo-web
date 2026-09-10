@@ -11,9 +11,23 @@ export interface SearchablePhilosopher {
   coreIdea: string
 }
 
+export interface SearchableQuote {
+  id: string
+  philosopherId: string
+  philosopherName: string
+  philosopherNameEn: string
+  text: string
+  meaning: string
+  application: string
+  category: string | null
+  book: string | null
+  concerns: string[] | null
+}
+
 export interface ContentSearchResults {
   philosophers: SearchablePhilosopher[]
   topics: WisdomTopic[]
+  quotes: SearchableQuote[]
 }
 
 function normalize(value: string) {
@@ -44,9 +58,10 @@ export function searchContent(
   rawQuery: string,
   philosophers: SearchablePhilosopher[],
   topics: WisdomTopic[],
+  quotes: SearchableQuote[] = [],
 ): ContentSearchResults {
   const query = normalize(rawQuery)
-  if (!query) return { philosophers: [], topics: [] }
+  if (!query) return { philosophers: [], topics: [], quotes: [] }
 
   const rankedPhilosophers = philosophers
     .map((philosopher) => ({
@@ -86,5 +101,24 @@ export function searchContent(
     .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title, 'ko'))
     .map(({ item }) => item)
 
-  return { philosophers: rankedPhilosophers, topics: rankedTopics }
+  const rankedQuotes = quotes
+    .map((quote) => ({
+      item: quote,
+      score: matchScore(
+        query,
+        [quote.text, quote.philosopherName, quote.philosopherNameEn],
+        [
+          quote.meaning,
+          quote.application,
+          quote.category ?? '',
+          quote.book ?? '',
+          ...(quote.concerns ?? []),
+        ],
+      ),
+    }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score || a.item.text.localeCompare(b.item.text, 'ko'))
+    .map(({ item }) => item)
+
+  return { philosophers: rankedPhilosophers, topics: rankedTopics, quotes: rankedQuotes }
 }

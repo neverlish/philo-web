@@ -179,7 +179,7 @@ export default async function PhilosopherPage({
 
         {/* Quotes */}
         {quoteList.length > 0 && (
-          <section className="mb-8">
+          <section id="quotes" className="mb-8 scroll-mt-24">
             <div className="flex items-center gap-2 mb-4">
               <span className="w-1 h-4 bg-foreground" />
               <h2 className="text-sm font-bold tracking-widest">명언</h2>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { WISDOM_TOPIC_LIST } from '@/lib/wisdom-topics'
-import { searchContent, type SearchablePhilosopher } from '@/lib/content-search'
+import { searchContent, type SearchablePhilosopher, type SearchableQuote } from '@/lib/content-search'
 
 const philosophers: SearchablePhilosopher[] = [
   {
@@ -25,6 +25,21 @@ const philosophers: SearchablePhilosopher[] = [
   },
 ]
 
+const quotes: SearchableQuote[] = [
+  {
+    id: 'quote-1',
+    philosopherId: '2',
+    philosopherName: '세네카',
+    philosopherNameEn: 'Seneca',
+    text: '우리는 실제보다 상상 속에서 더 많은 고통을 겪는다',
+    meaning: '불안은 대부분 미래에 대한 상상에서 비롯됩니다.',
+    application: '통제 가능한 것과 불가능한 것을 나누어 보세요.',
+    category: '불안',
+    book: '편지',
+    concerns: ['미래가 불안해요'],
+  },
+]
+
 describe('searchContent', () => {
   it('finds a philosopher by Korean and English names', () => {
     expect(searchContent('니체', philosophers, []).philosophers[0]?.id).toBe('1')
@@ -40,12 +55,18 @@ describe('searchContent', () => {
     expect(searchContent('사랑', [], WISDOM_TOPIC_LIST).topics[0]?.slug).toBe('relationships')
   })
 
+  it('finds quotes by text, explanation, and philosopher', () => {
+    expect(searchContent('상상', [], [], quotes).quotes[0]?.id).toBe('quote-1')
+    expect(searchContent('불안', [], [], quotes).quotes[0]?.id).toBe('quote-1')
+    expect(searchContent('세네카', [], [], quotes).quotes[0]?.id).toBe('quote-1')
+  })
+
   it('requires every word in a multi-word query to match', () => {
     expect(searchContent('서양 통제', philosophers, []).philosophers.map((item) => item.id)).toEqual(['2'])
     expect(searchContent('동양 통제', philosophers, []).philosophers).toEqual([])
   })
 
   it('returns empty groups for a blank query', () => {
-    expect(searchContent('   ', philosophers, WISDOM_TOPIC_LIST)).toEqual({ philosophers: [], topics: [] })
+    expect(searchContent('   ', philosophers, WISDOM_TOPIC_LIST, quotes)).toEqual({ philosophers: [], topics: [], quotes: [] })
   })
 })

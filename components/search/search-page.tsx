@@ -7,27 +7,28 @@ import { usePostHog } from 'posthog-js/react'
 import { Header } from '@/components/navigation/header'
 import { BottomNav } from '@/components/navigation/bottom-nav'
 import { getPhilosopherPath } from '@/lib/philosopher-slugs'
-import { searchContent, type SearchablePhilosopher } from '@/lib/content-search'
+import { searchContent, type SearchablePhilosopher, type SearchableQuote } from '@/lib/content-search'
 import type { WisdomTopic } from '@/lib/wisdom-topics'
 
 interface SearchPageProps {
   philosophers: SearchablePhilosopher[]
   topics: WisdomTopic[]
+  quotes: SearchableQuote[]
   initialQuery: string
 }
 
 const suggestions = ['불안', '인간관계', '삶의 의미', '통제', '니체']
 
-export function SearchPage({ philosophers, topics, initialQuery }: SearchPageProps) {
+export function SearchPage({ philosophers, topics, quotes, initialQuery }: SearchPageProps) {
   const [query, setQuery] = useState(initialQuery)
   const inputRef = useRef<HTMLInputElement>(null)
   const posthog = usePostHog()
   const trimmedQuery = query.trim()
   const results = useMemo(
-    () => searchContent(trimmedQuery, philosophers, topics),
-    [trimmedQuery, philosophers, topics],
+    () => searchContent(trimmedQuery, philosophers, topics, quotes),
+    [trimmedQuery, philosophers, topics, quotes],
   )
-  const total = results.philosophers.length + results.topics.length
+  const total = results.philosophers.length + results.topics.length + results.quotes.length
 
   useEffect(() => {
     const url = new URL(window.location.href)
@@ -37,10 +38,10 @@ export function SearchPage({ philosophers, topics, initialQuery }: SearchPagePro
   }, [trimmedQuery])
 
   const trackSearch = (value: string) => {
-    const found = searchContent(value, philosophers, topics)
+    const found = searchContent(value, philosophers, topics, quotes)
     posthog?.capture('content_searched', {
       query: value,
-      result_count: found.philosophers.length + found.topics.length,
+      result_count: found.philosophers.length + found.topics.length + found.quotes.length,
     })
   }
 
@@ -152,6 +153,36 @@ export function SearchPage({ philosophers, topics, initialQuery }: SearchPagePro
                         <span className="font-serif text-2xl" style={{ color: topic.accent }} aria-hidden>{topic.symbol}</span>
                       </div>
                       <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted">{topic.description}</p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {results.quotes.length > 0 && (
+              <section aria-labelledby="quote-results" className="mb-12">
+                <div className="mb-2 flex items-center justify-between border-b border-foreground/10 pb-3">
+                  <h2 id="quote-results" className="text-[10px] font-semibold tracking-[0.22em] text-muted">명언과 해설</h2>
+                  <span className="font-mono text-[10px] text-muted">{String(results.quotes.length).padStart(2, '0')}</span>
+                </div>
+                <div className="divide-y divide-foreground/10">
+                  {results.quotes.map((quote) => (
+                    <Link
+                      key={quote.id}
+                      href={`${getPhilosopherPath(quote.philosopherId, quote.philosopherNameEn)}#quotes`}
+                      onClick={() => posthog?.capture('search_result_clicked', { query: trimmedQuery, type: 'quote', id: quote.id })}
+                      className="group block py-7"
+                    >
+                      <blockquote className="font-serif text-xl leading-8 text-foreground">
+                        &ldquo;{quote.text}&rdquo;
+                      </blockquote>
+                      <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted">{quote.meaning}</p>
+                      <div className="mt-4 flex items-center justify-between gap-4">
+                        <p className="text-[10px] font-semibold tracking-[0.16em] text-primary-readable">
+                          {quote.philosopherName}{quote.book ? ` · ${quote.book}` : ''}
+                        </p>
+                        <ArrowRight className="h-4 w-4 shrink-0 text-muted transition-transform group-hover:translate-x-1" strokeWidth={1.5} aria-hidden />
+                      </div>
                     </Link>
                   ))}
                 </div>
