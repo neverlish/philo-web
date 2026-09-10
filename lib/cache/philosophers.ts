@@ -5,11 +5,13 @@ import type { PhilosopherItem } from '@/app/journey/page'
 export const getCachedPhilosophers = unstable_cache(
   async (): Promise<PhilosopherItem[]> => {
     const supabase = createPublicClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('philosophers')
       .select('id, name, name_en, era, region, years, keywords, core_idea')
       .order('era')
       .order('name')
+
+    if (error) throw error
 
     return (data ?? []).map((p) => ({
       id: p.id,
