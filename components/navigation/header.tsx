@@ -42,6 +42,7 @@ export function Header({ title, showSearch = true, showBack }: HeaderProps) {
           {showSearch && (
             <button
               type="button"
+              onClick={() => router.push("/search")}
               aria-label="검색"
               className="flex size-9 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
             >
