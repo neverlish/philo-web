@@ -3,6 +3,7 @@ import { SearchPage } from '@/components/search/search-page'
 import { getCachedPhilosophers } from '@/lib/cache/philosophers'
 import { getCachedSearchQuotes } from '@/lib/cache/search-quotes'
 import { WISDOM_TOPIC_LIST } from '@/lib/wisdom-topics'
+import { parseSearchFilter } from '@/lib/search-filter'
 
 export const metadata: Metadata = {
   title: '철학 검색',
@@ -13,9 +14,9 @@ export const metadata: Metadata = {
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string | string[] }>
+  searchParams: Promise<{ q?: string | string[]; type?: string | string[] }>
 }) {
-  const [{ q }, philosophers, quotes] = await Promise.all([
+  const [{ q, type }, philosophers, quotes] = await Promise.all([
     searchParams,
     getCachedPhilosophers(),
     getCachedSearchQuotes(),
@@ -27,6 +28,7 @@ export default async function Page({
       topics={WISDOM_TOPIC_LIST}
       quotes={quotes}
       initialQuery={typeof q === 'string' ? q.slice(0, 100) : ''}
+      initialFilter={parseSearchFilter(type)}
     />
   )
 }

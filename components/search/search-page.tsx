@@ -9,18 +9,21 @@ import { BottomNav } from '@/components/navigation/bottom-nav'
 import { getPhilosopherPath } from '@/lib/philosopher-slugs'
 import { searchContent, type SearchablePhilosopher, type SearchableQuote } from '@/lib/content-search'
 import type { WisdomTopic } from '@/lib/wisdom-topics'
+import { SEARCH_FILTERS, parseSearchFilter, type SearchFilter } from '@/lib/search-filter'
 
 interface SearchPageProps {
   philosophers: SearchablePhilosopher[]
   topics: WisdomTopic[]
   quotes: SearchableQuote[]
   initialQuery: string
+  initialFilter?: SearchFilter
 }
 
 const suggestions = ['불안', '인간관계', '삶의 의미', '통제', '니체']
 
-export function SearchPage({ philosophers, topics, quotes, initialQuery }: SearchPageProps) {
+export function SearchPage({ philosophers, topics, quotes, initialQuery, initialFilter = 'all' }: SearchPageProps) {
   const [query, setQuery] = useState(initialQuery)
+  const [filter, setFilter] = useState<SearchFilter>(initialFilter)
   const inputRef = useRef<HTMLInputElement>(null)
   const posthog = usePostHog()
   const trimmedQuery = query.trim()
@@ -29,6 +32,15 @@ export function SearchPage({ philosophers, topics, quotes, initialQuery }: Searc
     [trimmedQuery, philosophers, topics, quotes],
   )
   const total = results.philosophers.length + results.topics.length + results.quotes.length
+  const visibleCount = filter === 'all' ? total : results[filter].length
+
+  const updateFilter = (nextFilter: SearchFilter) => {
+    setFilter(nextFilter)
+    const url = new URL(window.location.href)
+    if (nextFilter === 'all') url.searchParams.delete('type')
+    else url.searchParams.set('type', nextFilter)
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
+  }
 
   const updateQuery = (value: string) => {
     const nextQuery = value.slice(0, 100)
@@ -42,6 +54,7 @@ export function SearchPage({ philosophers, topics, quotes, initialQuery }: Searc
   useEffect(() => {
     const restoreQuery = () => {
       setQuery((new URL(window.location.href).searchParams.get('q') ?? '').slice(0, 100))
+      setFilter(parseSearchFilter(new URL(window.location.href).searchParams.get('type')))
     }
     window.addEventListener('popstate', restoreQuery)
     return () => window.removeEventListener('popstate', restoreQuery)
@@ -74,7 +87,7 @@ export function SearchPage({ philosophers, topics, quotes, initialQuery }: Searc
           }}
           className="relative"
         >
-          <label htmlFor="content-search" className="sr-only">철학자와 고민별 가이드 검색</label>
+          <label htmlFor="content-search" className="sr-only">철학자, 명언, 고민별 가이드 검색</label>
           <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" strokeWidth={1.6} aria-hidden />
           <input
             ref={inputRef}
@@ -131,18 +144,37 @@ export function SearchPage({ philosophers, topics, quotes, initialQuery }: Searc
           </section>
         ) : (
           <div className="mt-10">
+            <div role="group" aria-label="검색 결과 분류" className="mb-6 grid grid-cols-4 border-b border-foreground/15">
+              {SEARCH_FILTERS.map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  aria-pressed={filter === item.value}
+                  onClick={() => updateFilter(item.value)}
+                  className={`min-h-12 border-b-2 px-1 py-3 text-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${filter === item.value ? 'border-primary-readable font-semibold text-primary-readable' : 'border-transparent text-muted hover:text-foreground'}`}
+                >
+                  {item.label} <span className="font-mono">{item.value === 'all' ? total : results[item.value].length}</span>
+                </button>
+              ))}
+            </div>
             <p className="mb-8 text-xs text-muted" aria-live="polite">
-              <strong className="font-medium text-foreground">&lsquo;{trimmedQuery}&rsquo;</strong>에 관한 지혜 {total}개
+              <strong className="font-medium text-foreground">&lsquo;{trimmedQuery}&rsquo;</strong>에 관한 지혜 {visibleCount}개
             </p>
 
-            {total === 0 && (
+            {visibleCount === 0 && (
               <section className="rounded-2xl border border-dashed border-foreground/20 px-6 py-12 text-center">
-                <p className="font-serif text-xl text-foreground">아직 연결된 지혜가 없어요</p>
-                <p className="mt-3 text-sm leading-6 text-muted">짧은 단어로 다시 찾아보거나 추천 검색어를 선택해보세요.</p>
+                <p className="font-serif text-xl text-foreground">{total > 0 ? '이 분류에는 결과가 없어요' : '아직 연결된 지혜가 없어요'}</p>
+                {total > 0 ? (
+                  <button type="button" onClick={() => updateFilter('all')} className="mt-3 min-h-11 text-sm text-primary-readable underline underline-offset-4">
+                    전체 결과 {total}개 보기
+                  </button>
+                ) : (
+                  <p className="mt-3 text-sm leading-6 text-muted">짧은 단어로 다시 찾아보거나 추천 검색어를 선택해보세요.</p>
+                )}
               </section>
             )}
 
-            {results.topics.length > 0 && (
+            {(filter === 'all' || filter === 'topics') && results.topics.length > 0 && (
               <section aria-labelledby="guide-results" className="mb-12">
                 <div className="mb-4 flex items-center justify-between border-b border-foreground/10 pb-3">
                   <h2 id="guide-results" className="text-[10px] font-semibold tracking-[0.22em] text-muted">고민별 철학 가이드</h2>
@@ -170,7 +202,7 @@ export function SearchPage({ philosophers, topics, quotes, initialQuery }: Searc
               </section>
             )}
 
-            {results.quotes.length > 0 && (
+            {(filter === 'all' || filter === 'quotes') && results.quotes.length > 0 && (
               <section aria-labelledby="quote-results" className="mb-12">
                 <div className="mb-2 flex items-center justify-between border-b border-foreground/10 pb-3">
                   <h2 id="quote-results" className="text-[10px] font-semibold tracking-[0.22em] text-muted">명언과 해설</h2>
@@ -200,7 +232,7 @@ export function SearchPage({ philosophers, topics, quotes, initialQuery }: Searc
               </section>
             )}
 
-            {results.philosophers.length > 0 && (
+            {(filter === 'all' || filter === 'philosophers') && results.philosophers.length > 0 && (
               <section aria-labelledby="philosopher-results">
                 <div className="mb-2 flex items-center justify-between border-b border-foreground/10 pb-3">
                   <h2 id="philosopher-results" className="text-[10px] font-semibold tracking-[0.22em] text-muted">철학자</h2>
