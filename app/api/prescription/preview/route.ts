@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
+import { DIALOGUE_SYSTEM, parseDialogue } from '@/lib/philosophy-dialogue'
 
 const PHILOSOPHER_CONTEXT = `
 당신이 선택할 수 있는 철학자 목록 (이 외에도 잘 알려진 철학자 선택 가능):
@@ -78,6 +79,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
+    // Follow-ups use the same endpoint and WAF allowance as the initial preview.
+    if (body && typeof body === 'object' && 'mode' in body) {
+      if (body.mode !== 'dialogue') return NextResponse.json({ error: 'Invalid mode' }, { status: 400 })
+      const dialogue = parseDialogue(body)
+      if (!dialogue) return NextResponse.json({ error: 'Invalid dialogue' }, { status: 400 })
+      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, maxRetries: 0, timeout: 25000 })
+      const result = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001', max_tokens: 900,
+        system: `${DIALOGUE_SYSTEM}\n현재 모드: ${dialogue.intent === 'summarize' ? '정리' : '탐색'}`,
+        messages: [
+          { role: 'user', content: JSON.stringify({ concern: dialogue.concern, previousInterpretation: dialogue.context }) },
+          ...dialogue.messages,
+        ],
+      }, { signal: request.signal })
+      const reply = result.content.filter(block => block.type === 'text').map(block => block.text).join('\n\n').trim()
+      if (!reply || result.stop_reason === 'max_tokens') return NextResponse.json({ error: 'Incomplete reply' }, { status: 502 })
+      return NextResponse.json({ reply }, { headers: { 'Cache-Control': 'no-store' } })
+    }
+
     const concern = body && typeof body === 'object' && 'concern' in body ? body.concern : undefined
 
     if (typeof concern !== 'string' || !concern.trim()) {
@@ -111,7 +131,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ prescription: parsed, concern })
   } catch (error) {
-    console.error('Preview prescription error:', error)
+    // Do not log personal concern text or provider request bodies.
+    console.error('Preview prescription failed:', error instanceof Error ? error.name : 'UnknownError')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

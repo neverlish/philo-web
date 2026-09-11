@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Clock, Sparkles, Flame, Bell } from "lucide-react";
 import Link from "next/link";
 import { LoginModal } from "@/components/auth/LoginModal";
+import { PhilosophyDialogue } from '@/components/practice/philosophy-dialogue';
 
 interface PreviewPrescription {
   concern: string;
@@ -57,7 +58,7 @@ export default function PreviewPrescriptionPage() {
       <div className="mx-6 mb-2 mt-1 flex items-center gap-2 bg-primary/10 rounded-xl px-4 py-3">
         <Sparkles className="w-4 h-4 text-primary flex-shrink-0" strokeWidth={1.5} />
         <p className="text-xs text-primary leading-relaxed">
-          회원가입하면 이 처방을 저장하고 매일 새로운 처방을 받을 수 있어요
+          이 해설은 출발점이에요. 맞지 않는 부분은 고치고, 아래에서 질문을 이어가보세요.
         </p>
       </div>
 
@@ -103,6 +104,8 @@ export default function PreviewPrescriptionPage() {
           </div>
           <p className="text-foreground/80 text-[15px] leading-relaxed">{quote.meaning}</p>
         </section>
+
+        <PhilosophyDialogue concern={data.concern} context={`${philosopher.name}: ${quote.meaning}\n${quote.application}`} />
 
         {/* Guests can read the application; saving still requires login. */}
         <section className="mb-12">

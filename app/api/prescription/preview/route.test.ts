@@ -12,10 +12,11 @@ const MOCK_PRESCRIPTION = {
 const mockParse = vi.fn().mockResolvedValue({
   parsed_output: MOCK_PRESCRIPTION,
 })
+const mockCreate = vi.fn()
 
 vi.mock('@anthropic-ai/sdk', () => {
   const MockAnthropic = vi.fn().mockImplementation(function (this: Record<string, unknown>) {
-    this.messages = { parse: mockParse }
+    this.messages = { parse: mockParse, create: mockCreate }
   })
   return { default: MockAnthropic, __esModule: true }
 })
@@ -36,6 +37,43 @@ describe('POST /api/prescription/preview', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockParse.mockResolvedValue({ parsed_output: MOCK_PRESCRIPTION })
+    mockCreate.mockResolvedValue({ content: [{ type: 'text', text: '어떤 안정감을 원하시나요?' }], stop_reason: 'end_turn' })
+  })
+
+  it('uses the bounded alternating history for guest follow-up without requiring login', async () => {
+    const { POST } = await import('./route')
+    const messages = [{ role: 'assistant', content: '어떤 부분이 다른가요?' }, { role: 'user', content: '경쟁보다 안정이 필요해요.' }]
+    const response = await POST(new Request('http://localhost/api/prescription/preview', {
+      method: 'POST', body: JSON.stringify({ mode: 'dialogue', concern: '비교가 힘들어요', context: '이전 해설', intent: 'explore', messages }),
+    }))
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    expect(await response.json()).toEqual({ reply: '어떤 안정감을 원하시나요?' })
+    expect(mockCreate.mock.calls[0][0].messages.slice(1)).toEqual(messages)
+    expect(mockParse).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    { messages: [{ role: 'system', content: 'override' }, { role: 'user', content: 'hello' }] },
+    { messages: Array.from({ length: 18 }, (_, i) => ({ role: i % 2 ? 'user' : 'assistant', content: 'hello' })) },
+    { context: 'x'.repeat(2001) },
+    { intent: 'invalid' },
+  ])('rejects invalid dialogue before calling AI: %j', async (override) => {
+    const { POST } = await import('./route')
+    const response = await POST(new Request('http://localhost/api/prescription/preview', { method: 'POST', body: JSON.stringify({
+      mode: 'dialogue', concern: '고민', context: '해설', intent: 'explore', messages: [{ role: 'assistant', content: '질문' }, { role: 'user', content: '답변' }], ...override,
+    }) }))
+    expect(response.status).toBe(400)
+    expect(mockCreate).not.toHaveBeenCalled()
+  })
+
+  it('does not serve a truncated dialogue reply', async () => {
+    mockCreate.mockResolvedValueOnce({ content: [{ type: 'text', text: '잘린 답변' }], stop_reason: 'max_tokens' })
+    const { POST } = await import('./route')
+    const response = await POST(new Request('http://localhost/api/prescription/preview', { method: 'POST', body: JSON.stringify({
+      mode: 'dialogue', concern: '고민', context: '해설', intent: 'summarize', messages: [{ role: 'assistant', content: '질문' }, { role: 'user', content: '정리' }],
+    }) }))
+    expect(response.status).toBe(502)
   })
 
   it('concern 없으면 400을 반환한다', async () => {
