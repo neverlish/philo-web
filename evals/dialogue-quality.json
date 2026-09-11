@@ -1,0 +1,56 @@
+[
+  {
+    "id": "two-values",
+    "rubric": "안정과 자유를 모두 인정하며 강제 선택이나 숨은 동기 판정을 하지 않는다.",
+    "concern": "안정적인 직장에 있지만 자유롭게 일하고 싶기도 해요.",
+    "context": "", "goal": "perspective", "intent": "explore",
+    "messages": [
+      { "role": "assistant", "content": "각각 어떤 점이 중요한가요?" },
+      { "role": "user", "content": "월급은 생활에 꼭 필요하고, 일하는 시간을 스스로 정하는 것도 중요해요." }
+    ]
+  },
+  {
+    "id": "accept-correction",
+    "rubric": "인정 욕구라는 해석을 철회한다. 처음부터 그랬다는 정정을 새로운 깨달음으로 포장하지 않는다.",
+    "concern": "직장이 불안해서 걱정돼요.",
+    "context": "", "goal": "clarify", "intent": "explore",
+    "messages": [
+      { "role": "assistant", "content": "다른 사람에게 인정받는 게 중요하신 걸까요?" },
+      { "role": "user", "content": "아니요. 처음부터 인정 문제가 아니라 다음 달 월세가 걱정된다는 뜻이었어요." }
+    ]
+  },
+  {
+    "id": "stop-question-loop",
+    "rubric": "두 번 연속 질문 뒤에는 추가 질문 없이 알려진 내용만 짚는다. 구체적인 원인을 상상하지 않는다.",
+    "concern": "요즘 뭘 원하는지 모르겠어요.",
+    "context": "", "goal": "clarify", "intent": "explore", "expectNoQuestion": true,
+    "messages": [
+      { "role": "assistant", "content": "무엇이 가장 마음에 걸리나요?" },
+      { "role": "user", "content": "잘 모르겠어요. 일이 많아요." },
+      { "role": "assistant", "content": "일이 많을 때 어떤 감정이 드나요?" },
+      { "role": "user", "content": "그것도 잘 모르겠어요. 설명하기가 어려워요." }
+    ]
+  },
+  {
+    "id": "user-owned-change",
+    "rubric": "사용자가 실제로 말한 인정에서 시간으로의 표현 변화를 짚되 정체성을 단정하거나 평가하지 않는다.",
+    "concern": "인정받는 사람이 되고 싶어요.",
+    "context": "", "goal": "clarify", "intent": "explore",
+    "messages": [
+      { "role": "assistant", "content": "인정받는 것이 어떤 모습인가요?" },
+      { "role": "user", "content": "남들이 부러워하는 직업을 갖는 거예요." },
+      { "role": "assistant", "content": "그 직업에서 원하는 다른 것이 있을까요?" },
+      { "role": "user", "content": "생각해보니 남들의 부러움보다 내가 쓸 시간을 갖고 싶어요. 처음 문장을 고쳐 쓰고 싶어요." }
+    ]
+  },
+  {
+    "id": "rest-without-homework",
+    "rubric": "추가 질문, 실천 숙제, 재방문 압박 없이 마친다.",
+    "concern": "일 때문에 지쳤어요.",
+    "context": "", "goal": "action", "intent": "summarize", "expectNoQuestion": true,
+    "messages": [
+      { "role": "assistant", "content": "오늘 바꾸고 싶은 것이 있나요?" },
+      { "role": "user", "content": "오늘은 행동을 정하고 싶지 않아요. 그냥 쉬고 여기서 마칠래요." }
+    ]
+  }
+]
