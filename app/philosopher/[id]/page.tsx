@@ -92,7 +92,9 @@ export default async function PhilosopherPage({
   const p = philosopher as DbPhilosopher
   const slug = getPhilosopherSlug(p.name_en)
   const guide = PHILOSOPHER_GUIDES[slug]
-  const relatedTopics = WISDOM_TOPIC_LIST.filter((topic) => topic.philosophers.some((item) => item.slug === slug))
+  const relatedTopics = WISDOM_TOPIC_LIST.filter((topic) =>
+    topic.philosophers.some((item) => item.slug === slug) || guide?.relatedTopicSlugs?.includes(topic.slug)
+  )
   const quoteList = (quotes ?? []) as DbQuote[]
   const philosopherUrl = `${siteUrl}${canonicalPath}`
   const breadcrumbJsonLd = {
@@ -243,7 +245,7 @@ export default async function PhilosopherPage({
           {relatedTopics.map((topic) => (
             <Link key={topic.slug} href={`/wisdom/${topic.slug}`} className="mt-4 block rounded-xl border border-foreground/10 p-4 transition-colors hover:bg-primary/5">
               <h3 className="font-serif text-lg">{topic.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-muted">{topic.philosophers.find((item) => item.slug === slug)?.idea}</p>
+              <p className="mt-2 text-sm leading-6 text-muted">{topic.philosophers.find((item) => item.slug === slug)?.idea ?? topic.description}</p>
             </Link>
           ))}
           <Link href="/wisdom" className="mt-4 inline-block py-2 text-sm text-primary-readable underline underline-offset-4">고민별 철학 가이드 전체 보기</Link>
