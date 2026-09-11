@@ -20,6 +20,18 @@ const EMOTION_CHIPS = [
 
 type SttStatus = "idle" | "listening" | "error";
 
+interface SpeechInput {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onstart: () => void;
+  onresult: (event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void;
+  onend: () => void;
+  onerror: () => void;
+  start: () => void;
+  stop: () => void;
+}
+
 interface ConcernSheetProps {
   isOpen: boolean;
   onClose: () => void;
@@ -34,7 +46,7 @@ export function ConcernSheet({ isOpen, onClose, isLoggedIn = false, initialText 
   const [sttStatus, setSttStatus] = useState<SttStatus>("idle");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechInput | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -46,14 +58,16 @@ export function ConcernSheet({ isOpen, onClose, isLoggedIn = false, initialText 
 
   const startListening = () => {
     if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) return;
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const speechWindow = window as Window & { SpeechRecognition?: new () => SpeechInput; webkitSpeechRecognition?: new () => SpeechInput };
+    const SpeechRecognition = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
     const recognition = new SpeechRecognition();
     recognitionRef.current = recognition;
     recognition.lang = "ko-KR";
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.onstart = () => setSttStatus("listening");
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event) => {
       setText(event.results[0][0].transcript);
     };
     recognition.onend = () => setSttStatus("idle");
@@ -91,6 +105,11 @@ export function ConcernSheet({ isOpen, onClose, isLoggedIn = false, initialText 
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ concern: text.trim() }),
         });
+        if (res.status === 429) {
+          setError("체험 요청이 많아요. 최대 10분 뒤 다시 시도해주세요. 공개 가이드와 철학 연습은 계속 이용할 수 있어요.");
+          setSubmitting(false);
+          return;
+        }
         if (!res.ok) throw new Error();
         const data = await res.json();
         const concern = text.trim();

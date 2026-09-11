@@ -51,6 +51,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     ...philosopherUrls,
+    { url: `${siteUrl}/practice/control`, changeFrequency: 'monthly', priority: 0.8 },
     ...typeResultUrls,
     ...wisdomUrls,
   ]

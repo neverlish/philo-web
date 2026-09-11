@@ -117,6 +117,19 @@ export default async function WisdomTopicPage({ params }: Props) {
             </ol>
           </section>
 
+          {topic.sources && (
+            <section className="mb-10 text-sm leading-7 text-[#554E48]">
+              <h2 className="font-serif text-xl text-[#29231F]">해설 출처와 읽을거리</h2>
+              <p className="mt-3">철학적 해설과 오늘의철학이 제안하는 일상 연습입니다. 직접 인용이나 치료 안내가 아닙니다.</p>
+              <ul className="mt-3 space-y-2">
+                {topic.sources.map((source) => <li key={source.url}><a href={source.url} className="underline underline-offset-4">{source.title}</a></li>)}
+              </ul>
+            </section>
+          )}
+          <Link href="/practice/control" className="mb-10 block border-l-2 border-[#9A5B38] py-3 pl-5">
+            <span className="text-xs text-[#766D65]">로그인 없이 해보는 철학 연습</span>
+            <p className="mt-2 font-serif text-xl">지금 내가 선택할 수 있는 것 나누기 →</p>
+          </Link>
           <section className="border-y border-[#29231F]/15 py-12">
             <p className="text-[10px] font-semibold tracking-[0.24em]" style={{ color: topic.accent }}>RELATED THINKERS</p>
             <h2 className="mt-3 font-serif text-3xl">더 깊이 읽기</h2>

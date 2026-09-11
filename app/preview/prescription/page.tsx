@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Clock, Sparkles, Lock, Flame, Bell } from "lucide-react";
+import { ArrowLeft, Clock, Sparkles, Flame, Bell } from "lucide-react";
 import Link from "next/link";
 import { LoginModal } from "@/components/auth/LoginModal";
 
@@ -31,6 +31,8 @@ export default function PreviewPrescriptionPage() {
       return;
     }
     try {
+      // Restore browser-only preview data after hydration, never during server rendering.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setData(JSON.parse(stored));
     } catch {
       router.replace("/");
@@ -102,9 +104,9 @@ export default function PreviewPrescriptionPage() {
           <p className="text-foreground/80 text-[15px] leading-relaxed">{quote.meaning}</p>
         </section>
 
-        {/* Application — 블러 처리, 회원가입 후 공개 */}
-        <section className="mb-12 relative">
-          <div className="bg-primary/10 rounded-2xl p-6 blur-sm select-none pointer-events-none" aria-hidden>
+        {/* Guests can read the application; saving still requires login. */}
+        <section className="mb-12">
+          <div className="bg-primary/10 rounded-2xl p-6">
             <div className="flex items-center gap-3 mb-3">
               <div className="bg-card p-1.5 rounded-lg">
                 <Clock className="w-4 h-4 text-primary" strokeWidth={2} />
@@ -113,18 +115,8 @@ export default function PreviewPrescriptionPage() {
             </div>
             <p className="text-[15px] leading-relaxed text-foreground/90">{quote.application}</p>
           </div>
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-background/60 backdrop-blur-[2px]">
-            <div className="flex items-center gap-2 text-foreground">
-              <Lock className="w-4 h-4" strokeWidth={1.5} />
-              <p className="text-sm font-medium">실천 방법은 회원만 볼 수 있어요</p>
-            </div>
-            <button
-              onClick={() => openLoginWithSaveIntent()}
-              className="px-5 py-2 rounded-full bg-foreground text-background text-xs font-medium transition-all active:scale-95"
-            >
-              회원가입하고 확인하기
-            </button>
-          </div>
+          <p className="mt-3 text-xs text-muted">실천 방법은 로그인 없이 볼 수 있어요. 저장과 기록은 로그인 후 이용할 수 있습니다.</p>
+          <Link href="/practice/control" className="mt-4 inline-block text-sm underline underline-offset-4">지금 할 수 있는 행동 나눠보기 →</Link>
         </section>
 
         {/* Streak Teaser */}

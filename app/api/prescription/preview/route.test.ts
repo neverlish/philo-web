@@ -25,6 +25,14 @@ vi.mock('@anthropic-ai/sdk/helpers/json-schema', () => ({
 }))
 
 describe('POST /api/prescription/preview', () => {
+  it.each([null, [], 42, { concern: 123 }, { concern: {} }])('invalid body %j returns 400 without calling AI', async (body) => {
+    const { POST } = await import('./route')
+    const response = await POST(new Request('http://localhost/api/prescription/preview', {
+      method: 'POST', body: JSON.stringify(body),
+    }))
+    expect(response.status).toBe(400)
+    expect(mockParse).not.toHaveBeenCalled()
+  })
   beforeEach(() => {
     vi.clearAllMocks()
     mockParse.mockResolvedValue({ parsed_output: MOCK_PRESCRIPTION })

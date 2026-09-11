@@ -360,6 +360,11 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           <ArrowRight className="mb-1 h-4 w-4 text-muted transition-transform group-hover:translate-x-1" strokeWidth={1.4} />
         </Link>
 
+        <Link href="/practice/control" prefetch={false} className="mb-8 block rounded-xl border border-primary/20 p-5">
+          <p className="text-xs text-muted">로그인 없이 · 3분 철학 연습</p>
+          <p className="mt-2 font-serif text-lg">통제할 수 있는 것 나누기 →</p>
+        </Link>
+
         {/* Philosophers Section */}
         <div ref={philosophersRef} className="w-full mb-5">
           <div className="flex items-center justify-between mb-2">

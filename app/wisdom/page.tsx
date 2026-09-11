@@ -24,7 +24,7 @@ export default function WisdomPage() {
         </Link>
 
         <header className="border-b border-[#29231F]/15 pb-12 pt-16 sm:pb-16 sm:pt-24">
-          <p className="mb-5 text-[10px] font-semibold tracking-[0.3em] text-[#9A5B38]">WISDOM INDEX · 01—03</p>
+          <p className="mb-5 text-[10px] font-semibold tracking-[0.3em] text-[#9A5B38]">WISDOM INDEX · 01—{String(WISDOM_TOPIC_LIST.length).padStart(2, '0')}</p>
           <h1 className="max-w-xl font-serif text-5xl font-medium leading-[1.08] tracking-[-0.03em] sm:text-7xl">
             마음의 문제를<br />철학의 질문으로
           </h1>
@@ -33,6 +33,10 @@ export default function WisdomPage() {
           </p>
         </header>
 
+        <Link href="/practice/control" className="my-8 block border-l-2 border-[#9A5B38] py-3 pl-5">
+          <span className="text-xs text-[#766D65]">로그인 없이 직접 해보기 · 약 3분</span>
+          <p className="mt-2 font-serif text-xl">통제할 수 있는 것 나누기 →</p>
+        </Link>
         <section aria-label="고민별 철학 가이드" className="divide-y divide-[#29231F]/15">
           {WISDOM_TOPIC_LIST.map((topic, index) => (
             <Link

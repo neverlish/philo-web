@@ -71,16 +71,16 @@ const ClaudeResponseSchema = {
 
 export async function POST(request: Request) {
   try {
-    let body: { concern?: string }
+    let body: unknown
     try {
       body = await request.json()
     } catch {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
-    const { concern } = body
+    const concern = body && typeof body === 'object' && 'concern' in body ? body.concern : undefined
 
-    if (!concern?.trim()) {
+    if (typeof concern !== 'string' || !concern.trim()) {
       return NextResponse.json({ error: 'concern is required' }, { status: 400 })
     }
 
