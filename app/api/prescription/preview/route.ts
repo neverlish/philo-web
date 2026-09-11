@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
-import { DIALOGUE_SYSTEM, parseDialogue } from '@/lib/philosophy-dialogue'
+import { DIALOGUE_GOALS, DIALOGUE_SYSTEM, parseDialogue } from '@/lib/philosophy-dialogue'
 
 const PHILOSOPHER_CONTEXT = `
 당신이 선택할 수 있는 철학자 목록 (이 외에도 잘 알려진 철학자 선택 가능):
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
       const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, maxRetries: 0, timeout: 25000 })
       const result = await client.messages.create({
         model: 'claude-haiku-4-5-20251001', max_tokens: 900,
-        system: `${DIALOGUE_SYSTEM}\n현재 모드: ${dialogue.intent === 'summarize' ? '정리' : '탐색'}`,
+        system: `${DIALOGUE_SYSTEM}\n현재 모드: ${dialogue.intent === 'summarize' ? '정리' : '탐색'}\n사용자의 대화 방향: ${DIALOGUE_GOALS[dialogue.goal].label}`,
         messages: [
           { role: 'user', content: JSON.stringify({ concern: dialogue.concern, previousInterpretation: dialogue.context }) },
           ...dialogue.messages,

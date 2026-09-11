@@ -10,6 +10,38 @@ function start() {
 }
 
 describe('PhilosophyDialogue', () => {
+  it('offers a goal and optional experiment without sending or overwriting a draft', () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    render(<PhilosophyDialogue concern="인정받고 싶어요" context="" entry />)
+    fireEvent.click(screen.getByRole('radio', { name: '다른 관점을 만나고 싶어요' }))
+    fireEvent.click(screen.getByRole('button', { name: '이 방향으로 이야기하기' }))
+    expect(screen.getByLabelText('대화 내용')).toHaveTextContent('다른 각도로')
+    fireEvent.click(screen.getByRole('button', { name: '짧은 사고실험을 해볼까요?' }))
+    fireEvent.click(screen.getByRole('button', { name: '아직 모르겠어요' }))
+    expect((screen.getByLabelText('내 생각 이어서 적기') as HTMLTextAreaElement).value).toContain('아직 모르겠어요')
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: '그래도 원해요' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '조금 달라요' })).toBeDisabled()
+  })
+
+  it('lets the user rewrite and compare their own words without AI', () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    start()
+    fireEvent.click(screen.getByText('내 문장을 다르게 써보기'))
+    fireEvent.change(screen.getByLabelText('지금의 나는 이렇게 표현하고 싶어요'), { target: { value: '나만의 시간을 원해요' } })
+    fireEvent.click(screen.getByRole('button', { name: '고친 문장을 입력창에 담기' }))
+    expect(screen.getByLabelText('내 생각 이어서 적기').getAttribute('maxlength')).toBe('1000')
+    expect(fetchMock).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: '여기서 마치고 내 문장 남기기' }))
+    fireEvent.change(screen.getByLabelText('오늘 내가 발견한 것은…'), { target: { value: '안정이 필요해요' } })
+    fireEvent.click(screen.getByRole('button', { name: '처음 생각과 나란히 보기' }))
+    expect(screen.getByLabelText('내 생각의 두 문장')).toHaveTextContent('최초 고민')
+    expect(screen.getByLabelText('내 생각의 두 문장')).toHaveTextContent('안정이 필요해요')
+    fireEvent.change(screen.getByLabelText('오늘 내가 발견한 것은…'), { target: { value: '수정한 생각' } })
+    expect(screen.queryByLabelText('내 생각의 두 문장')).not.toBeInTheDocument()
+  })
   it('waits for input, carries prior messages, and leaves the reflection local', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ reply: '안정감은 어떤 모습인가요?' }) })
     vi.stubGlobal('fetch', fetchMock)

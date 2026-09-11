@@ -44,12 +44,13 @@ describe('POST /api/prescription/preview', () => {
     const { POST } = await import('./route')
     const messages = [{ role: 'assistant', content: '어떤 부분이 다른가요?' }, { role: 'user', content: '경쟁보다 안정이 필요해요.' }]
     const response = await POST(new Request('http://localhost/api/prescription/preview', {
-      method: 'POST', body: JSON.stringify({ mode: 'dialogue', concern: '비교가 힘들어요', context: '이전 해설', intent: 'explore', messages }),
+      method: 'POST', body: JSON.stringify({ mode: 'dialogue', concern: '비교가 힘들어요', context: '이전 해설', intent: 'explore', goal: 'perspective', messages }),
     }))
     expect(response.status).toBe(200)
     expect(response.headers.get('cache-control')).toBe('no-store')
     expect(await response.json()).toEqual({ reply: '어떤 안정감을 원하시나요?' })
     expect(mockCreate.mock.calls[0][0].messages.slice(1)).toEqual(messages)
+    expect(mockCreate.mock.calls[0][0].system).toContain('다른 관점을 만나고 싶어요')
     expect(mockParse).not.toHaveBeenCalled()
   })
 
@@ -58,6 +59,7 @@ describe('POST /api/prescription/preview', () => {
     { messages: Array.from({ length: 18 }, (_, i) => ({ role: i % 2 ? 'user' : 'assistant', content: 'hello' })) },
     { context: 'x'.repeat(2001) },
     { intent: 'invalid' },
+    { goal: '__proto__' },
   ])('rejects invalid dialogue before calling AI: %j', async (override) => {
     const { POST } = await import('./route')
     const response = await POST(new Request('http://localhost/api/prescription/preview', { method: 'POST', body: JSON.stringify({

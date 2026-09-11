@@ -87,6 +87,7 @@ export function ConcernSheet({ isOpen, onClose, isLoggedIn = false, initialText 
 
   const handleSubmit = async () => {
     if (!text.trim() || submitting) return;
+    if (text.trim().length > 1000) { setError('고민은 1000자 이내로 적어주세요.'); return; }
     setSubmitting(true);
     setError(null);
     try {
@@ -100,22 +101,8 @@ export function ConcernSheet({ isOpen, onClose, isLoggedIn = false, initialText 
         const { prescriptionId } = await res.json();
         router.push(`/prescription/ai/${prescriptionId}`);
       } else {
-        const res = await fetch("/api/prescription/preview", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ concern: text.trim() }),
-        });
-        if (res.status === 429) {
-          setError("체험 요청이 많아요. 최대 10분 뒤 다시 시도해주세요. 공개 가이드와 철학 연습은 계속 이용할 수 있어요.");
-          setSubmitting(false);
-          return;
-        }
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        const concern = text.trim();
-        sessionStorage.setItem("previewPrescription", JSON.stringify({ concern, ...data.prescription }));
-        localStorage.setItem("pendingConcern", concern);
-        router.push("/preview/prescription");
+        sessionStorage.setItem("dialogueConcern", text.trim());
+        router.push("/preview/dialogue");
       }
     } catch {
       setError("잠시 후 다시 시도해주세요");
@@ -179,6 +166,7 @@ export function ConcernSheet({ isOpen, onClose, isLoggedIn = false, initialText 
             {/* Textarea + Mic */}
             <div className="relative mb-4">
               <textarea
+                maxLength={1000}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="고민을 자유롭게 적어보세요..."
@@ -234,11 +222,11 @@ export function ConcernSheet({ isOpen, onClose, isLoggedIn = false, initialText 
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  처방 만드는 중...
+                  {isLoggedIn ? '처방 만드는 중...' : '대화로 이동 중...'}
                 </>
               ) : (
                 <>
-                  <span className="relative z-10">✦ 철학적 처방 받기</span>
+                  <span className="relative z-10">{isLoggedIn ? '✦ 철학적 처방 받기' : '✦ 이 고민으로 대화 시작하기'}</span>
                   <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
                 </>
               )}
