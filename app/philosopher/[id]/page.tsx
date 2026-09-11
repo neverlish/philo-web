@@ -7,6 +7,8 @@ import { supabase } from '@/lib/supabase'
 import type { DbPhilosopher, DbQuote } from '@/types'
 import type { Metadata } from 'next'
 import { getPhilosopherPath, getPhilosopherSlug, isPhilosopherId } from '@/lib/philosopher-slugs'
+import { PHILOSOPHER_GUIDES } from '@/lib/philosopher-guides'
+import { WISDOM_TOPIC_LIST } from '@/lib/wisdom-topics'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://philo-web.vercel.app'
 
@@ -50,16 +52,17 @@ export async function generateMetadata({
   if (!data) return { title: '철학자' }
 
   const canonicalPath = getPhilosopherPath(data.id, data.name_en)
+  const guide = PHILOSOPHER_GUIDES[getPhilosopherSlug(data.name_en)]
 
   return {
     title: `${data.name} 철학: 핵심 사상과 명언`,
-    description: data.core_idea,
+    description: guide?.description ?? data.core_idea,
     alternates: {
       canonical: canonicalPath,
     },
     openGraph: {
       title: `${data.name} 철학: 핵심 사상과 명언`,
-      description: data.core_idea,
+      description: guide?.description ?? data.core_idea,
       url: canonicalPath,
     },
   }
@@ -87,6 +90,9 @@ export default async function PhilosopherPage({
     .order('created_at', { ascending: false })
 
   const p = philosopher as DbPhilosopher
+  const slug = getPhilosopherSlug(p.name_en)
+  const guide = PHILOSOPHER_GUIDES[slug]
+  const relatedTopics = WISDOM_TOPIC_LIST.filter((topic) => topic.philosophers.some((item) => item.slug === slug))
   const quoteList = (quotes ?? []) as DbQuote[]
   const philosopherUrl = `${siteUrl}${canonicalPath}`
   const breadcrumbJsonLd = {
@@ -118,7 +124,7 @@ export default async function PhilosopherPage({
       />
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md px-4 py-5 flex items-center">
-        <Link href="/" className="p-2 -ml-2 hover:bg-primary/10 rounded-full transition-colors">
+        <Link href="/" aria-label="홈으로" className="p-2 -ml-2 hover:bg-primary/10 rounded-full transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
       </header>
@@ -154,6 +160,29 @@ export default async function PhilosopherPage({
               <h2 className="text-sm font-bold tracking-widest">소개</h2>
             </div>
             <p className="text-[15px] leading-relaxed text-foreground/80">{p.description}</p>
+          </section>
+        )}
+
+        {guide && (
+          <section aria-labelledby="philosophy-guide" className="mb-10 border-y border-foreground/10 py-7">
+            <h2 id="philosophy-guide" className="font-serif text-2xl">{p.name} 철학 쉽게 읽기</h2>
+            <p className="mt-3 text-xs leading-6 text-muted">아래는 참고 자료를 바탕으로 풀어 쓴 해설입니다.</p>
+            {guide.sections.map((section) => (
+              <div key={section.title} className="mt-7">
+                <h3 className="font-serif text-lg leading-7">{section.title}</h3>
+                <p className="mt-3 text-[15px] leading-7 text-muted">{section.text}</p>
+              </div>
+            ))}
+            <h3 className="mt-8 font-serif text-lg">일상에 적용해보기</h3>
+            <p className="mt-2 text-xs text-muted">오늘의철학이 제안하는 연습</p>
+            <p className="mt-3 text-[15px] leading-7 text-muted">{guide.practice}</p>
+            <h3 className="mt-8 font-serif text-lg">대표 읽을거리와 해설 출처</h3>
+            {guide.reading.map((reading) => (
+              <div key={reading.url} className="mt-4 rounded-xl border border-foreground/10 p-4">
+                <a href={reading.url} className="text-sm font-medium text-primary-readable underline underline-offset-4">{reading.title}</a>
+                <p className="mt-3 text-sm leading-6 text-muted">{reading.note}</p>
+              </div>
+            ))}
           </section>
         )}
 
@@ -208,6 +237,17 @@ export default async function PhilosopherPage({
             </div>
           </section>
         )}
+
+        <section aria-labelledby="related-guides" className="mb-10 border-t border-foreground/10 pt-7">
+          <h2 id="related-guides" className="font-serif text-xl">고민과 연결해서 읽기</h2>
+          {relatedTopics.map((topic) => (
+            <Link key={topic.slug} href={`/wisdom/${topic.slug}`} className="mt-4 block rounded-xl border border-foreground/10 p-4 transition-colors hover:bg-primary/5">
+              <h3 className="font-serif text-lg">{topic.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted">{topic.philosophers.find((item) => item.slug === slug)?.idea}</p>
+            </Link>
+          ))}
+          <Link href="/wisdom" className="mt-4 inline-block py-2 text-sm text-primary-readable underline underline-offset-4">고민별 철학 가이드 전체 보기</Link>
+        </section>
 
         {/* CTA */}
         <Link

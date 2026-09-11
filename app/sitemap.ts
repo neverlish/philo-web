@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { PHILOSOPHER_TYPES } from '@/lib/quiz'
 import { getPhilosopherPath } from '@/lib/philosopher-slugs'
 import { WISDOM_TOPIC_LIST } from '@/lib/wisdom-topics'
+import { PHILOSOPHER_PAGE_UPDATED_AT } from '@/lib/philosopher-guides'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://philo-web.vercel.app'
@@ -13,7 +14,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const philosopherUrls: MetadataRoute.Sitemap = (philosophers ?? []).map((p) => ({
     url: `${siteUrl}${getPhilosopherPath(p.id, p.name_en)}`,
-    lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
+    lastModified: new Date(Math.max(
+      new Date(PHILOSOPHER_PAGE_UPDATED_AT).getTime(),
+      p.updated_at ? new Date(p.updated_at).getTime() || 0 : 0,
+    )),
     changeFrequency: 'monthly',
     priority: 0.8,
   }))
