@@ -18,6 +18,7 @@ import { usePostHog } from 'posthog-js/react';
 import Link from 'next/link';
 import { getTodayKST, getRecentDaysKST } from "@/lib/date";
 import { calculateStreak } from "@/lib/streak";
+import { trackExplorer } from "@/lib/posthog/explorer-events";
 
 type ReflectionTarget = {
   id: string
@@ -325,6 +326,14 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
             </div>
           </>
         )}
+
+        <Link href="/explore" prefetch={false}
+          onClick={() => trackExplorer('explorer_entry_clicked', 'index')}
+          className="mb-6 block border-y border-primary/20 py-6">
+          <span className="text-xs text-muted">로그인 없이, 그림으로 만나는 철학</span>
+          <p className="mt-2 font-serif text-2xl">철학자의 방으로 들어가기 →</p>
+          <p className="mt-2 text-xs leading-6 text-muted">플라톤의 동굴부터 생각의 관계 지도까지</p>
+        </Link>
 
         {/* 철학자 유형 테스트 배너 */}
         <Link

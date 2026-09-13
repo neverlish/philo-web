@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
+import { trackPractice, practiceAnalyticsHeaders } from '@/lib/posthog/practice-events'
 import { DIALOGUE_GOALS, MAX_DIALOGUE_MESSAGES, OPENING_QUESTION, type DialogueGoal, type DialogueMessage } from '@/lib/philosophy-dialogue'
 
 export function PhilosophyDialogue({ concern, context, entry = false }: { concern: string; context: string; entry?: boolean }) {
@@ -29,6 +30,7 @@ export function PhilosophyDialogue({ concern, context, entry = false }: { concer
   }, [messages, pending])
 
   function stop() {
+    trackPractice('dialogue_ended', { entry, reason: 'manual', interrupted: !!controller.current, turn_count: Math.floor(messages.length / 2) })
     controller.current?.abort()
     controller.current = null
     setPending('')
@@ -39,6 +41,7 @@ export function PhilosophyDialogue({ concern, context, entry = false }: { concer
   async function send(intent: 'explore' | 'summarize' = 'explore') {
     const text = intent === 'summarize' ? '지금까지의 대화를 오늘 할 작은 행동 하나로 정리해주세요.' : draft.trim()
     if (!text || controller.current || atLimit) return
+    trackPractice('dialogue_message_submitted', { entry, intent, turn_count: Math.floor(messages.length / 2) + 1 })
     const request = new AbortController()
     controller.current = request
     setPending(text)
@@ -47,7 +50,7 @@ export function PhilosophyDialogue({ concern, context, entry = false }: { concer
     const timer = setTimeout(() => request.abort(), 30000)
     try {
       const response = await fetch('/api/prescription/preview', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: request.signal,
+        method: 'POST', headers: { 'Content-Type': 'application/json', ...practiceAnalyticsHeaders() }, signal: request.signal,
         body: JSON.stringify({ mode: 'dialogue', concern, context, messages: next, intent, goal }),
       })
       if (response.status === 429) throw new Error('요청이 많아요. 최대 10분 뒤 다시 보내거나, 지금 내 문장으로 마무리해도 괜찮아요.')
@@ -55,10 +58,13 @@ export function PhilosophyDialogue({ concern, context, entry = false }: { concer
       const data = await response.json()
       if (typeof data.reply !== 'string' || !data.reply.trim()) throw new Error('답변이 비어 있어요. 잠시 후 다시 보내주세요.')
       if (controller.current !== request) return
+      trackPractice('dialogue_reply_received', { entry, intent, turn_count: Math.floor(next.length / 2) })
+      if (intent === 'summarize') trackPractice('dialogue_ended', { entry, reason: 'summary', turn_count: Math.floor(next.length / 2) })
       setMessages([...next, { role: 'assistant', content: data.reply }])
       if (intent === 'explore') setDraft('')
       if (intent === 'summarize') setEnded(true)
     } catch (failure) {
+      if (controller.current === request) trackPractice('dialogue_request_failed', { entry, intent, reason: request.signal.aborted ? 'timeout' : 'request_failed' })
       if (controller.current === request) setError(request.signal.aborted ? '응답 시간이 길어졌어요. 입력은 그대로 남아 있습니다. 다시 보내주세요.' : failure instanceof Error ? failure.message : '잠시 후 다시 보내주세요.')
     } finally {
       clearTimeout(timer)
@@ -80,7 +86,7 @@ export function PhilosophyDialogue({ concern, context, entry = false }: { concer
           </label>)}
         </fieldset>}
         <p className="mt-3 text-xs leading-6 text-muted">전송하면 처음 고민·해설과 후속 대화가 AI 제공자에게 전달됩니다. 후속 대화는 계정에 저장하지 않으며 새로고침하면 사라집니다. 초기 처방과 합산해 IP당 10분에 5회 요청할 수 있어요.</p>
-        <button onClick={() => { if (entry) setMessages([{ role: 'assistant', content: DIALOGUE_GOALS[goal].question }]); setStarted(true) }} className="mt-5 min-h-12 rounded-xl bg-foreground px-5 py-3 text-sm text-background">{entry ? '이 방향으로 이야기하기' : 'AI와 이어서 생각하기'}</button>
+        <button onClick={() => { trackPractice('dialogue_started', { entry }); if (entry) setMessages([{ role: 'assistant', content: DIALOGUE_GOALS[goal].question }]); setStarted(true) }} className="mt-5 min-h-12 rounded-xl bg-foreground px-5 py-3 text-sm text-background">{entry ? '이 방향으로 이야기하기' : 'AI와 이어서 생각하기'}</button>
       </> : <>
         <div ref={transcript} role="region" aria-label="대화 내용" tabIndex={0}
           onScroll={() => { const el = transcript.current; if (el) follow.current = el.scrollHeight - el.scrollTop - el.clientHeight < 60 }}
@@ -113,14 +119,14 @@ export function PhilosophyDialogue({ concern, context, entry = false }: { concer
             <p className="my-3 text-xs leading-6 text-muted">AI가 정해주는 결론 대신 직접 고쳐보세요. 쓰는 동안에는 전송되지 않습니다.</p>
             <label htmlFor="dialogue-rewrite" className="text-sm">지금의 나는 이렇게 표현하고 싶어요</label>
             <textarea id="dialogue-rewrite" maxLength={900} rows={3} value={rewrite} onChange={event => setRewrite(event.target.value)} className="mt-2 w-full rounded-xl border border-primary/30 bg-background p-3 text-base leading-7" />
-            <button disabled={!!pending || !!draft.trim() || !rewrite.trim()} onClick={() => { setDraft(`처음 고민을 이렇게 고쳐 표현하고 싶어요: ${rewrite.trim()}\n이 표현을 바탕으로 함께 생각해주세요.`); input.current?.focus() }} className="min-h-11 text-sm underline underline-offset-4 disabled:opacity-40">고친 문장을 입력창에 담기</button>
+            <button disabled={!!pending || !!draft.trim() || !rewrite.trim()} onClick={() => { trackPractice('dialogue_rewrite_used', { entry }); setDraft(`처음 고민을 이렇게 고쳐 표현하고 싶어요: ${rewrite.trim()}\n이 표현을 바탕으로 함께 생각해주세요.`); input.current?.focus() }} className="min-h-11 text-sm underline underline-offset-4 disabled:opacity-40">고친 문장을 입력창에 담기</button>
           </details>
           <div className="mt-3 border-t border-primary/15 pt-3">
-            <button aria-expanded={exercise} onClick={() => setExercise(!exercise)} className="min-h-11 font-serif text-lg">{exercise ? '사고실험 접기' : '짧은 사고실험을 해볼까요?'}</button>
+            <button aria-expanded={exercise} onClick={() => { if (!exercise) trackPractice('dialogue_experiment_opened', { entry }); setExercise(!exercise) }} className="min-h-11 font-serif text-lg">{exercise ? '사고실험 접기' : '짧은 사고실험을 해볼까요?'}</button>
             {exercise && <div className="mt-2 rounded-xl bg-primary/10 p-4">
               <p className="text-xs text-muted">오늘의철학이 만든 질문 · 건너뛰어도 괜찮아요</p>
               <p className="mt-3 font-serif text-lg leading-7">지금 원하는 것을 아무도 알아주지 않아도, 여전히 그것을 원할까요?</p>
-              <div className="mt-3 flex flex-wrap gap-2">{['그래도 원해요', '달라질 것 같아요', '아직 모르겠어요'].map(answer => <button key={answer} disabled={!!pending || !!draft.trim()} className="min-h-11 rounded-lg border border-primary/30 px-3 text-sm disabled:opacity-40" onClick={() => { setDraft(`사고실험: 지금 원하는 것을 아무도 알아주지 않아도 여전히 원할까요?\n내 답: ${answer}\n이유: `); input.current?.focus() }}>{answer}</button>)}</div>
+              <div className="mt-3 flex flex-wrap gap-2">{['그래도 원해요', '달라질 것 같아요', '아직 모르겠어요'].map(answer => <button key={answer} disabled={!!pending || !!draft.trim()} className="min-h-11 rounded-lg border border-primary/30 px-3 text-sm disabled:opacity-40" onClick={() => { trackPractice('dialogue_experiment_used', { entry }); setDraft(`사고실험: 지금 원하는 것을 아무도 알아주지 않아도 여전히 원할까요?\n내 답: ${answer}\n이유: `); input.current?.focus() }}>{answer}</button>)}</div>
               <p className="mt-3 text-xs leading-6 text-muted">정답이나 성격 판정은 없습니다. 선택하면 입력창에 담기며, 보내기 전 이유를 덧붙이거나 지울 수 있어요.</p>
             </div>}
           </div>
@@ -131,14 +137,14 @@ export function PhilosophyDialogue({ concern, context, entry = false }: { concer
         {ended && <div className="mt-5 rounded-xl bg-primary/10 p-5">
           <label htmlFor="dialogue-reflection" className="font-serif text-lg">오늘 내가 발견한 것은…</label>
           <textarea id="dialogue-reflection" maxLength={1000} rows={4} value={reflection} onChange={event => { setReflection(event.target.value); setConfirmed(false) }} className="mt-3 w-full rounded-lg border border-primary/30 bg-background p-3 text-base leading-7" placeholder="AI의 답과 달라도 괜찮아요. 내 말로 적어보세요." />
-          <button disabled={!reflection.trim()} onClick={() => setConfirmed(true)} className="mt-3 min-h-11 text-sm underline underline-offset-4 disabled:opacity-40">처음 생각과 나란히 보기</button>
+          <button disabled={!reflection.trim()} onClick={() => { if (!confirmed) trackPractice('dialogue_reflection_compared', { entry }); setConfirmed(true) }} className="mt-3 min-h-11 text-sm underline underline-offset-4 disabled:opacity-40">처음 생각과 나란히 보기</button>
           {confirmed && <motion.div initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: reduceMotion ? 0 : 0.2 }} className="mt-4 space-y-4 border-y border-primary/20 py-5" aria-label="내 생각의 두 문장">
             <div><p className="text-xs text-muted">처음의 문장</p><p className="mt-2 whitespace-pre-wrap break-words leading-7">{concern}</p></div>
             <div><p className="text-xs text-muted">지금 내가 쓴 문장</p><p className="mt-2 whitespace-pre-wrap break-words font-serif text-lg leading-7">{reflection}</p></div>
             <p className="text-xs leading-6 text-muted">생각이 달라지지 않았어도 괜찮아요. 둘 다 지금의 나를 이해하는 단서입니다.</p>
           </motion.div>}
           <p className="mt-3 text-xs leading-6 text-muted">이 메모는 AI로 보내거나 저장하지 않습니다. 필요하면 직접 복사해두세요. 처방 저장에도 후속 대화와 메모는 포함되지 않습니다.</p>
-          {!atLimit && <button className="mt-2 min-h-11 text-sm underline underline-offset-4" onClick={() => setEnded(false)}>조금 더 이야기하기</button>}
+          {!atLimit && <button className="mt-2 min-h-11 text-sm underline underline-offset-4" onClick={() => { trackPractice('dialogue_resumed', { entry }); setEnded(false) }}>조금 더 이야기하기</button>}
         </div>}
       </>}
     </section>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { buildDialogueSystem, parseDialogue } from '@/lib/philosophy-dialogue'
+import { schedulePreviewOutcome } from '@/lib/posthog/preview-events'
 
 const PHILOSOPHER_CONTEXT = `
 당신이 선택할 수 있는 철학자 목록 (이 외에도 잘 알려진 철학자 선택 가능):
@@ -71,6 +72,13 @@ const ClaudeResponseSchema = {
 } as const
 
 export async function POST(request: Request) {
+  const analytics: { mode: 'dialogue' | 'prescription' | 'unknown' } = { mode: 'unknown' }
+  const response = await handlePreview(request, analytics)
+  schedulePreviewOutcome(request, analytics.mode, response.status)
+  return response
+}
+
+async function handlePreview(request: Request, analytics: { mode: 'dialogue' | 'prescription' | 'unknown' }) {
   try {
     let body: unknown
     try {
@@ -82,6 +90,7 @@ export async function POST(request: Request) {
     // Follow-ups use the same endpoint and WAF allowance as the initial preview.
     if (body && typeof body === 'object' && 'mode' in body) {
       if (body.mode !== 'dialogue') return NextResponse.json({ error: 'Invalid mode' }, { status: 400 })
+      analytics.mode = 'dialogue'
       const dialogue = parseDialogue(body)
       if (!dialogue) return NextResponse.json({ error: 'Invalid dialogue' }, { status: 400 })
       const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, maxRetries: 0, timeout: 25000 })
@@ -98,6 +107,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ reply }, { headers: { 'Cache-Control': 'no-store' } })
     }
 
+    analytics.mode = 'prescription'
     const concern = body && typeof body === 'object' && 'concern' in body ? body.concern : undefined
 
     if (typeof concern !== 'string' || !concern.trim()) {

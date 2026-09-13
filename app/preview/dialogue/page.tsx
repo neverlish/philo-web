@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { PhilosophyDialogue } from '@/components/practice/philosophy-dialogue'
+import { trackPractice, practiceAnalyticsHeaders } from '@/lib/posthog/practice-events'
 
 export default function DialoguePage() {
   const router = useRouter()
@@ -23,21 +24,24 @@ export default function DialoguePage() {
 
   async function showPrescription() {
     if (!concern || requestRef.current) return
+    trackPractice('dialogue_prescription_requested')
     const request = new AbortController()
     requestRef.current = request
     setLoading(true)
     setError('')
     const timeout = setTimeout(() => request.abort(), 30000)
     try {
-      const response = await fetch('/api/prescription/preview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ concern }), signal: request.signal })
+      const response = await fetch('/api/prescription/preview', { method: 'POST', headers: { 'Content-Type': 'application/json', ...practiceAnalyticsHeaders() }, body: JSON.stringify({ concern }), signal: request.signal })
       if (response.status === 429) throw new Error('요청이 많아요. 최대 10분 뒤 다시 시도해주세요. 대화 메모는 계속 작성할 수 있어요.')
       if (!response.ok) throw new Error('처방을 받지 못했어요. 잠시 후 다시 시도해주세요.')
       const data = await response.json()
       if (!data.prescription?.quote?.application) throw new Error('처방을 받지 못했어요. 다시 시도해주세요.')
       sessionStorage.setItem('previewPrescription', JSON.stringify({ concern, ...data.prescription }))
       localStorage.setItem('pendingConcern', concern)
+      trackPractice('dialogue_prescription_received')
       router.push('/preview/prescription')
     } catch (failure) {
+      trackPractice('dialogue_prescription_failed', { reason: request.signal.aborted ? 'timeout' : 'request_failed' })
       setError(request.signal.aborted ? '응답 시간이 길어졌어요. 다시 시도해주세요.' : failure instanceof Error ? failure.message : '잠시 후 다시 시도해주세요.')
     } finally { clearTimeout(timeout); requestRef.current = null; setLoading(false) }
   }
