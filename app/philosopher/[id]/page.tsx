@@ -9,6 +9,7 @@ import type { Metadata } from 'next'
 import { getPhilosopherPath, getPhilosopherSlug, isPhilosopherId } from '@/lib/philosopher-slugs'
 import { PHILOSOPHER_GUIDES } from '@/lib/philosopher-guides'
 import { WISDOM_TOPIC_LIST } from '@/lib/wisdom-topics'
+import { PhilosopherExperienceLink } from '@/components/explorer/philosopher-experience-link'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://philo-web.vercel.app'
 
@@ -153,6 +154,8 @@ export default async function PhilosopherPage({
             <p className="font-serif text-lg leading-relaxed text-foreground">{p.core_idea}</p>
           </div>
         </section>
+
+        <PhilosopherExperienceLink slug={slug} />
 
         {/* Description */}
         {p.description && (

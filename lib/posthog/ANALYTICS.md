@@ -47,6 +47,12 @@ There is no new server mutation: scenes are local interactions. The existing
 preview API outcome events described above cover the instrumented server work.
 
 Suggested funnel: entry clicked → started → scene changed → sequence traversed.
+Entry clicks now include the allowlisted `source` (`home` or `philosopher`).
+On philosopher pages, `feature` is the destination experience and `philosopher`
+identifies the public guide. On home it remains `index`. Older entry events have
+no source; do not interpret missing values as a particular entry point. Source
+is a click property, not a persisted user/session property; compare funnels by
+the entry event's source rather than expecting it on all later events.
 Filter by `feature` (index, map, plato, aristotle, descartes, compare). A full
 traversal means each scene has been visited, not understanding or learning.
 Server-rendered metadata, descriptions and links are defined in

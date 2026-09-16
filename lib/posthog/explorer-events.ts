@@ -12,7 +12,7 @@ export function trackExplorer(event: ExplorerEvent, feature: ExplorerSlug, prope
     const safe: Record<string, string | number | boolean> = {}
     for (const name of ['enabled', 'opened']) if (typeof properties[name] === 'boolean') safe[name] = properties[name]
     if (Number.isInteger(properties.scene_index) && Number(properties.scene_index) >= 0 && Number(properties.scene_index) <= 4) safe.scene_index = Number(properties.scene_index)
-    for (const [name, values] of Object.entries({ philosopher: ['plato', 'aristotle', 'descartes'], destination: Object.keys(EXPLORER_PAGES), relation_type: ['learning', 'comparison'], object: ['window', 'cup', 'notebook'], reason: ['script_load', 'initialization'] })) {
+    for (const [name, values] of Object.entries({ source: ['home', 'philosopher'], philosopher: ['plato', 'aristotle', 'descartes'], destination: Object.keys(EXPLORER_PAGES), relation_type: ['learning', 'comparison'], object: ['window', 'cup', 'notebook'], reason: ['script_load', 'initialization'] })) {
       if (typeof properties[name] === 'string' && values.includes(properties[name])) safe[name] = properties[name]
     }
     posthog.capture(event, { ...safe, feature, environment: 'production', analytics_schema_version: 1 })

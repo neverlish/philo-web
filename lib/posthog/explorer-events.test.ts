@@ -7,6 +7,14 @@ beforeEach(() => { vi.stubEnv('NODE_ENV', 'production'); vi.stubEnv('NEXT_PUBLIC
 afterEach(() => { vi.unstubAllEnvs(); vi.clearAllMocks(); document.body.innerHTML = '' })
 
 describe('production explorer analytics', () => {
+  it('records known entry sources and drops arbitrary source strings', () => {
+    trackExplorer('explorer_entry_clicked', 'plato', { source: 'philosopher', philosopher: 'plato' })
+    expect(sdk.capture).toHaveBeenLastCalledWith('explorer_entry_clicked', expect.objectContaining({ source: 'philosopher', philosopher: 'plato' }))
+    trackExplorer('explorer_entry_clicked', 'index', { source: 'home' })
+    expect(sdk.capture).toHaveBeenLastCalledWith('explorer_entry_clicked', expect.objectContaining({ source: 'home' }))
+    trackExplorer('explorer_entry_clicked', 'index', { source: 'PRIVATE URL OR ANSWER' })
+    expect(sdk.capture.mock.calls.at(-1)?.[1]).not.toHaveProperty('source')
+  })
   it('keeps only allowlisted properties, never answers or URLs', () => {
     trackExplorer('explorer_answer_selected', 'aristotle', { answer: 'PRIVATE', reply: 2, href: '?private=1', enabled: true })
     expect(sdk.capture).toHaveBeenCalledWith('explorer_answer_selected', { enabled: true, feature: 'aristotle', environment: 'production', analytics_schema_version: 1 })

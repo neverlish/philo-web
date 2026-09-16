@@ -328,7 +328,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
         )}
 
         <Link href="/explore" prefetch={false}
-          onClick={() => trackExplorer('explorer_entry_clicked', 'index')}
+          onClick={() => trackExplorer('explorer_entry_clicked', 'index', { source: 'home' })}
           className="mb-6 block border-y border-primary/20 py-6">
           <span className="text-xs text-muted">로그인 없이, 그림으로 만나는 철학</span>
           <p className="mt-2 font-serif text-2xl">철학자의 방으로 들어가기 →</p>
