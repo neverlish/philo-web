@@ -7,6 +7,33 @@ beforeEach(() => { vi.stubEnv('NODE_ENV', 'production'); vi.stubEnv('NEXT_PUBLIC
 afterEach(() => { vi.unstubAllEnvs(); vi.clearAllMocks(); document.body.innerHTML = '' })
 
 describe('production explorer analytics', () => {
+  it('allows known artwork IDs and strips arbitrary image data', () => {
+    trackExplorer('explorer_artwork_opened', 'map', { visual_id: 'academy', alt: 'PRIVATE', href: 'PRIVATE' })
+    expect(sdk.capture).toHaveBeenLastCalledWith('explorer_artwork_opened', { visual_id: 'academy', feature: 'map', environment: 'production', analytics_schema_version: 1 })
+    trackExplorer('explorer_artwork_opened', 'map', { visual_id: 'PRIVATE' })
+    expect(sdk.capture.mock.calls.at(-1)?.[1]).not.toHaveProperty('visual_id')
+  })
+  it('allowlists placement and rejects arbitrary destinations', () => {
+    trackExplorer('explorer_navigation_clicked', 'plato', { destination: 'descartes', placement: 'recommendation', answer: 'PRIVATE' })
+    expect(sdk.capture).toHaveBeenLastCalledWith('explorer_navigation_clicked', expect.objectContaining({ destination: 'descartes', placement: 'recommendation' }))
+    trackExplorer('explorer_navigation_clicked', 'plato', { destination: 'https://private.test', placement: 'PRIVATE' })
+    expect(sdk.capture.mock.calls.at(-1)?.[1]).not.toHaveProperty('destination')
+    expect(sdk.capture.mock.calls.at(-1)?.[1]).not.toHaveProperty('placement')
+  })
+  it('tracks dialog closure without a click, and never double counts a close button', () => {
+    document.body.innerHTML = '<dialog id="reading"><button id="close-reading">close</button></dialog>'
+    const controller = new AbortController(), capture = vi.fn()
+    installExplorerTracking(document.body, 'aristotle', controller.signal, capture)
+    document.querySelector('button')!.click()
+    expect(capture.mock.calls.filter(([e]) => e === 'explorer_reading_closed')).toHaveLength(0)
+    document.querySelector('dialog')!.dispatchEvent(new Event('close'))
+    expect(capture.mock.calls.filter(([e]) => e === 'explorer_reading_closed')).toHaveLength(1)
+    document.querySelector('dialog')!.dispatchEvent(new Event('close')) // another native dismissal, e.g. Escape
+    expect(capture.mock.calls.filter(([e]) => e === 'explorer_reading_closed')).toHaveLength(2)
+    controller.abort()
+    document.querySelector('dialog')!.dispatchEvent(new Event('close'))
+    expect(capture.mock.calls.filter(([e]) => e === 'explorer_reading_closed')).toHaveLength(2)
+  })
   it('records known entry sources and drops arbitrary source strings', () => {
     trackExplorer('explorer_entry_clicked', 'plato', { source: 'philosopher', philosopher: 'plato' })
     expect(sdk.capture).toHaveBeenLastCalledWith('explorer_entry_clicked', expect.objectContaining({ source: 'philosopher', philosopher: 'plato' }))

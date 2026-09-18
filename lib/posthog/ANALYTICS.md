@@ -58,6 +58,29 @@ traversal means each scene has been visited, not understanding or learning.
 Server-rendered metadata, descriptions and links are defined in
 `lib/explorer/pages.ts`; the same registry supplies the sitemap.
 
+### Continuation tracking on public pages
+
+`explorer_artwork_opened` records an explicit click on the large-image link,
+with current `feature` and allowlisted `visual_id` (plato, aristotle, descartes,
+academy). It means intent to open, not proof the new tab loaded or learning occurred.
+No image URL, alt text, user answer or new pageview event is added. Artwork loading
+and passive scrolling are not counted as actions. Images remain ordinary crawlable
+links with a new-tab notice. No server mutation is introduced.
+
+`explorer_navigation_clicked` includes `feature` (the current experience),
+`destination` (the next experience) and `placement` (`scene`, `recommendation`,
+or `footer`). A destination of `map` identifies relationship-map entry.
+`explorer_guide_clicked` captures the public philosopher ID; `explorer_home_clicked`
+captures an explicit home click. Neither means the destination finished loading
+or the user abandoned the service. Existing page views can confirm arrival.
+Older navigation events lack placement; treat them as unknown, not as scene clicks.
+
+Dialog `explorer_reading_closed` is emitted by native `close`, covering Escape
+and buttons without double counting. A close does not imply the text was read.
+Recommendations are static editorial suggestions, not inferred user profiles.
+No new API or server-side action is introduced; existing API outcome tracking
+and login identification remain unchanged.
+
 ## Local explorer prototypes
 
 The seven `docs/philosophy-explorer-*.html` prototypes load
