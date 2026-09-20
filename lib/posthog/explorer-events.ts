@@ -3,7 +3,7 @@ import { EXPLORER_PAGES, type ExplorerSlug } from '@/lib/explorer/pages'
 import { VISUAL_IDS } from '@/lib/explorer/visual-assets'
 
 const EVENTS = ['explorer_entry_clicked', 'explorer_started', 'explorer_navigation_clicked', 'explorer_reading_opened', 'explorer_reading_closed', 'explorer_reading_toggled', 'explorer_source_clicked', 'explorer_motion_toggled', 'explorer_philosopher_selected', 'explorer_relation_selected', 'explorer_comparison_toggled', 'explorer_scene_changed', 'explorer_sequence_traversed', 'explorer_experiment_interacted', 'explorer_answer_selected', 'explorer_object_toggled', 'explorer_all_objects_inspected', 'explorer_conclusion_opened', 'explorer_reset', 'explorer_load_failed'] as const
-const NAVIGATION_EVENTS = ['explorer_guide_clicked', 'explorer_home_clicked', 'explorer_artwork_opened'] as const
+const NAVIGATION_EVENTS = ['explorer_guide_clicked', 'explorer_home_clicked', 'explorer_artwork_opened', 'explorer_looking_started', 'explorer_looking_revealed', 'explorer_looking_reset', 'explorer_table_context_changed', 'explorer_table_contexts_explored'] as const
 type ExplorerEvent = typeof EVENTS[number] | typeof NAVIGATION_EVENTS[number]
 
 export function trackExplorer(event: ExplorerEvent, feature: ExplorerSlug, properties: Record<string, unknown> = {}) {

@@ -1,12 +1,12 @@
 import { Artwork } from './artwork'
 
 export function RelationshipPlate() {
-  return <section aria-labelledby="relationship-plate-title" className="bg-[#e5dac2] px-5 py-16 text-[#322819] sm:px-8">
+  return <section aria-labelledby="relationship-plate-title" className="bg-[#f2f0e9] px-5 py-16 text-[#29372f] sm:px-8 sm:py-24">
     <div className="mx-auto max-w-5xl">
-      <p className="text-xs tracking-widest text-[#715b3b]">철학자의 그림 수첩 · 관계를 읽는 법</p>
+      <p className="text-xs tracking-widest text-[#535d53]">사유의 도록 · 배움의 흔적</p>
       <h2 id="relationship-plate-title" className="mb-8 mt-4 font-serif text-3xl leading-relaxed">함께 걸었던 사람들,<br />멀리서 만나는 질문들.</h2>
       <figure>
-        <Artwork visual="academy" slug="map" alt="올리브나무 아래에서 대화를 나누며 걷는 노년의 플라톤과 젊은 아리스토텔레스를 그린 상상화" />
+        <Artwork visual="academy" slug="map" alt="넓은 여백 속 올리브나무 아래 함께 걷는 두 인물을 가는 선으로 그린 판화풍 상상화" />
         <figcaption className="mt-3 text-xs leading-6 text-[#715b3b]">AI 생성 상상화 · 두 사람의 특정 대화나 실제 모습을 복원한 그림이 아닙니다.</figcaption>
       </figure>
       <div className="mt-10 grid gap-10 md:grid-cols-2">

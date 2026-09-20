@@ -5,7 +5,7 @@ const rows = [
 ] as const
 
 export function ComparisonSheet() {
-  return <section aria-labelledby="comparison-sheet-title" className="bg-[#eee4cd] px-5 py-14 text-[#322819] sm:px-8">
+  return <section aria-labelledby="comparison-sheet-title" className="bg-[#e7e9e2] px-5 py-14 text-[#29372f] sm:px-8">
     <div className="mx-auto max-w-5xl">
       <p className="text-xs tracking-widest text-[#715b3b]">나란히 펼쳐 읽기</p>
       <h2 id="comparison-sheet-title" className="my-4 font-serif text-3xl leading-relaxed">같은 질문, 서로 다른 길.</h2>

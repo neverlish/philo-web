@@ -7,7 +7,7 @@ import { VisualNotebook } from './visual-notebook'
 describe('visual notebook', () => {
   it.each(['plato', 'aristotle', 'descartes'] as const)('%s has a deployable illustration and accessible explanation', slug => {
     const html = renderToStaticMarkup(<VisualNotebook slug={slug} />)
-    expect(existsSync(resolve(process.cwd(), `public/explorer/${slug}-scene-v1.webp`))).toBe(true)
+    expect(existsSync(resolve(process.cwd(), `public/explorer/${slug}-scene-v2.webp`))).toBe(true)
     expect(html).toContain('loading="lazy"')
     expect(html).toContain('AI 생성 상상화 · 역사적 복원 아님')
     expect(html).toContain('원전의 직접 인용이 아닙니다')

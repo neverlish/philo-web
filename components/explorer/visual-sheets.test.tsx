@@ -14,7 +14,7 @@ describe('visual reference sheets', () => {
     expect(html).toContain('border-dashed')
     expect(html).toContain('AI 생성 상상화')
     expect(html).toContain('loading="lazy"')
-    expect(existsSync(resolve(process.cwd(), 'public/explorer/academy-scene-v1.webp'))).toBe(true)
+    expect(existsSync(resolve(process.cwd(), 'public/explorer/academy-scene-v2.webp'))).toBe(true)
   })
   it('provides a semantic comparison table with row and column headers', () => {
     const html = renderToStaticMarkup(<ComparisonSheet />)

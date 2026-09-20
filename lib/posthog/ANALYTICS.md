@@ -60,6 +60,24 @@ Server-rendered metadata, descriptions and links are defined in
 
 ### Continuation tracking on public pages
 
+Aristotle's painting keeps a fixed editorial utterance while the user switches
+three situations. `explorer_table_context_changed` records only `scene_index`
+(0–2). Re-selecting the active situation does not emit. The initial situation
+counts as presented; once all three have been presented,
+`explorer_table_contexts_explored` fires once per mount, not proof of reading or
+learning. No response selection, free text, extra pageview or API is introduced.
+The interactive area is excluded from autocapture. Existing API outcomes and
+login identification remain unchanged.
+
+Plato's painting includes a local horizontal inspection control. Its distinct
+`explorer_looking_started` and `explorer_looking_revealed` events fire once per
+mount (first value change and crossing position 75). `explorer_looking_reset`
+records an explicit reset; reset does not clear the once-per-mount milestones.
+The reveal event means reaching a viewport position, not image loading or learning.
+No slider values, pointer coordinates, or answers are captured. It does not emit
+the existing five-scene `explorer_started`, avoiding duplicate funnel starts.
+No new API is used; existing server outcomes and authentication tracking stay intact.
+
 `explorer_artwork_opened` records an explicit click on the large-image link,
 with current `feature` and allowlisted `visual_id` (plato, aristotle, descartes,
 academy). It means intent to open, not proof the new tab loaded or learning occurred.
