@@ -7,6 +7,10 @@ const PAGE_SIZE = 5;
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://philo-web.vercel.app";
 
 export const metadata: Metadata = {
+  title: { absolute: '오늘의철학 — 내 일상에서 시작하는 철학 연습' },
+  description: '친구와의 관계, 내 뜻대로 되지 않는 하루를 철학의 질문으로 살펴보세요. 로그인 없는 생활 철학 연습, 그림으로 만나는 철학자, 고민별 읽을거리를 만나보세요.',
+  openGraph: { title: '오늘의철학 — 내 일상에서 시작하는 철학 연습', description: '내 경험에서 시작해 다른 관점을 만나고, 생활로 가져갈 질문 하나를 남겨보세요.', url: '/', images: ['/explorer/aristotle-scene-v2.webp'] },
+  twitter: { card: 'summary_large_image', title: '오늘의철학 — 내 일상에서 시작하는 철학 연습', description: '로그인 없이 시작하는 생활 속 철학.', images: ['/explorer/aristotle-scene-v2.webp'] },
   alternates: {
     canonical: "/",
   },

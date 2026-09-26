@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import content from '@/lib/explorer/content.json'
 import { EXPLORER_PAGES, type ExplorerSlug } from '@/lib/explorer/pages'
 import { Experience } from './experience'
@@ -38,6 +39,14 @@ export function ExplorerPage({ slug }: { slug: ExplorerSlug }) {
     {slug === 'map' && <RelationshipPlate />}
     {slug === 'compare' && <ComparisonSheet />}
     <VisualNotebook slug={slug} />
+    {(slug === 'index' || slug === 'aristotle') && <aside className="bg-[#f2f0e9] px-6 py-12 text-[#29372f]">
+      <div className="mx-auto max-w-3xl border-y border-[#35463d]/20 py-8">
+        <p className="text-xs tracking-widest">그림 밖, 내 생활로</p>
+        <h2 className="mt-3 font-serif text-2xl">친구에게 화가 난 날</h2>
+        <p className="mt-4 text-sm leading-8">처음의 생각과 다른 사정을 살펴본 뒤의 생각을 나란히 놓아보세요. 오늘 해볼 작은 실험도 하나 골라볼 수 있어요.</p>
+        <Link href="/practice/friendship" className="mt-4 inline-flex min-h-11 items-center underline underline-offset-4">내 상황으로 철학 연습하기 →</Link>
+      </div>
+    </aside>}
     <section id="explorer-reading" className="bg-[#e7e9e2] px-6 py-14 text-[#29372f]">
       <div className="mx-auto max-w-3xl">
         <p className="text-xs tracking-widest">오늘의철학 · 로그인 없는 철학 입문</p>

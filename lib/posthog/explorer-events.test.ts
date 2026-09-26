@@ -7,6 +7,10 @@ beforeEach(() => { vi.stubEnv('NODE_ENV', 'production'); vi.stubEnv('NEXT_PUBLIC
 afterEach(() => { vi.unstubAllEnvs(); vi.clearAllMocks(); document.body.innerHTML = '' })
 
 describe('production explorer analytics', () => {
+  it('tracks reflection actions without private writing or experiment choices', () => {
+    trackExplorer('explorer_reflection_saved', 'aristotle', { before: 'PRIVATE', after: 'PRIVATE', review: 'PRIVATE', experiment: 1 })
+    expect(sdk.capture).toHaveBeenCalledWith('explorer_reflection_saved', { feature: 'aristotle', environment: 'production', analytics_schema_version: 1 })
+  })
   it('allows known artwork IDs and strips arbitrary image data', () => {
     trackExplorer('explorer_artwork_opened', 'map', { visual_id: 'academy', alt: 'PRIVATE', href: 'PRIVATE' })
     expect(sdk.capture).toHaveBeenLastCalledWith('explorer_artwork_opened', { visual_id: 'academy', feature: 'map', environment: 'production', analytics_schema_version: 1 })

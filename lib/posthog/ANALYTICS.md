@@ -126,6 +126,33 @@ These original local files stay separate from the production routes above.
 
 ## Verification
 
+### Friendship reflection
+
+Home entry: `home_practice_scene_changed` records only a change, not the selected
+situation (reselects are ignored). `home_practice_opened` records public destination
+`friendship` or `control`; `home_reflection_resume_clicked` is only intent to resume,
+not evidence of an existing record or successful restore. No text or local storage
+is read by these events. Existing server preview outcome and auth identification
+remain unchanged; this release adds no server mutation. Production-only events
+respect capture opt-out and swallow SDK failures.
+
+Public route `/practice/friendship` connects a fictional everyday situation to
+Aristotle's context exercise, before/after reflection and an optional life experiment.
+`explorer_reflection_started`, `compared`, and `reviewed` (all with the
+`explorer_reflection_` prefix) count their explicit action once per mount.
+Compared means opening the comparison, not changed understanding; reviewed means
+pressing a review prompt, not completing the experiment. Saved/resumed/deleted
+are emitted only after successful local storage operations; storage_failed covers
+browser failures without exception details. Resumed is not proof of next-day return.
+All use `feature: aristotle`, with no writing, experiment choice or review answer.
+The whole reflection region excludes autocapture and masks session replay.
+
+No new API, account storage or AI call is involved. Writing is memory-only until
+the explicit save button overwrites one unencrypted browser record at
+`philo.friendship-reflection.v1`. Loading is also explicit. Records older than 30 days
+are rejected, not automatically deleted. Explicit deletion removes only that key.
+No live ingestion or retention improvement is established by this implementation.
+
 ```sh
 npx vitest run lib/posthog components/practice app/api/prescription/preview/route.test.ts app/preview/dialogue
 npx tsc --noEmit

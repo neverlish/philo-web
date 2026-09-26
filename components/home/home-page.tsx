@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { getTodayKST, getRecentDaysKST } from "@/lib/date";
 import { calculateStreak } from "@/lib/streak";
 import { trackExplorer } from "@/lib/posthog/explorer-events";
+import { EverydayPhilosophy } from "@/components/home/everyday-philosophy";
 
 type ReflectionTarget = {
   id: string
@@ -177,6 +178,7 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
       <Header title="지혜의 다리" />
 
       <main className="flex-1 flex flex-col px-6 pt-2 pb-32 overflow-y-auto">
+        <EverydayPhilosophy />
         {/* Streak mini widget — D */}
         {user && streak > 0 && (
           <div className="flex items-center gap-2.5 py-3 mb-1">
@@ -263,10 +265,10 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
                   오늘의 영감
                 </span>
                 <h2 className="text-3xl font-serif font-normal leading-tight text-foreground mb-4 break-keep">
-                  오늘 고민을<br />이야기해보세요
+                  오늘의 일을<br />함께 들여다볼까요
                 </h2>
                 <p className="text-muted text-sm leading-relaxed mb-6">
-                  마음을 어지럽히는 것을 말하면 철학자의 지혜로 처방해드려요.
+                  마음에 걸리는 일을 들려주세요. 철학자의 관점으로 다른 질문을 만나봐요.
                 </p>
                 <button
                   onClick={() => { posthog?.capture('concern_cta_clicked', { is_logged_in: true }); setShowSheet(true); }}
@@ -279,59 +281,21 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
             )}
           </div>
         ) : (
-          <>
-            {/* Hero for non-logged-in users */}
-            <div className="w-full mb-8 mt-4">
-              <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
-                오늘의철학
-              </span>
-              <h1 className="text-3xl font-serif font-normal leading-tight text-foreground mb-4 break-keep">
-                고민을 말하면<br />
-                철학자가 처방합니다
-              </h1>
-              <p className="text-muted text-sm leading-relaxed mb-6">
-                소크라테스, 노자, 니체가 오늘 당신의 고민을 듣습니다.<br />
-                2천 년의 지혜가 지금 이 순간을 위해 준비돼 있어요.
-              </p>
-              <div className="flex justify-center items-center gap-2 mb-8">
-                {[
-                  { step: "01", label: "고민 입력" },
-                  { step: "02", label: "처방 생성" },
-                  { step: "03", label: "실천하기" },
-                ].map(({ step, label }, i, arr) => (
-                  <div key={step} className="flex items-center gap-2">
-                    <div className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-full bg-card" style={{ boxShadow: '0 2px 8px rgba(44,36,32,0.06)' }}>
-                      <span className="text-[11px] font-mono font-bold text-primary-readable">{step}</span>
-                      <span className="text-[11px] text-foreground font-medium whitespace-nowrap">{label}</span>
-                    </div>
-                    {i < arr.length - 1 && (
-                      <span className="text-muted/40 text-sm">→</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={() => { posthog?.capture('concern_cta_clicked', { is_logged_in: false }); setShowSheet(true); }}
-                className="relative w-full py-4 rounded-xl text-sm font-serif tracking-wide transition-all active:scale-[0.98] mb-8 overflow-hidden group"
-                style={{
-                  background: "linear-gradient(135deg, #6b3a1f 0%, #c9872a 50%, #7c4f1a 100%)",
-                  boxShadow: "0 4px 24px rgba(180, 100, 20, 0.4)",
-                  color: "white",
-                }}
-              >
-                <span className="relative z-10">✦ 지금 고민 말하기</span>
-                <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
-              </button>
-              <div className="h-px w-full bg-primary/20 mb-2" />
-            </div>
-          </>
+          <div className="mb-8 border-b border-[#35463d]/20 pb-7">
+            <h2 className="font-serif text-xl">내 이야기로 더 깊이 생각하고 싶다면</h2>
+            <p className="mt-3 text-sm leading-7 text-muted">마음에 걸리는 일을 들려주세요. 철학자의 관점을 빌린 AI 대화로 함께 살펴봐요.</p>
+            <button
+              onClick={() => { posthog?.capture('concern_cta_clicked', { is_logged_in: false }); setShowSheet(true); }}
+              className="mt-4 min-h-11 text-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+            >내 고민 이야기하기 →</button>
+          </div>
         )}
 
         <Link href="/explore" prefetch={false}
           onClick={() => trackExplorer('explorer_entry_clicked', 'index', { source: 'home' })}
           className="mb-6 block border-y border-primary/20 py-6">
-          <span className="text-xs text-muted">로그인 없이, 그림으로 만나는 철학</span>
-          <p className="mt-2 font-serif text-2xl">철학자의 방으로 들어가기 →</p>
+          <span className="text-xs text-muted">글보다 장면이 편한 날 · 로그인 없이</span>
+          <p className="mt-2 font-serif text-2xl">그림 속에서 질문 만나기 →</p>
           <p className="mt-2 text-xs leading-6 text-muted">플라톤의 동굴부터 생각의 관계 지도까지</p>
         </Link>
 
@@ -340,21 +304,16 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           href="/type"
           prefetch={false}
           onClick={() => posthog?.capture('quiz_banner_clicked')}
-          className="flex items-center justify-between gap-3 mb-6 px-4 py-3 rounded-xl active:scale-[0.98] transition-transform"
-          style={{
-            background: 'linear-gradient(135deg, #2C2420 0%, #5a3820 60%, #ec5b13 100%)',
-          }}
+          className="mb-6 flex items-center justify-between gap-3 border border-[#35463d]/20 bg-[#eeece3] px-5 py-6 text-[#29372f] focus-visible:outline-2 focus-visible:outline-offset-4"
         >
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.12)' }}>
-              <span className="text-white text-xs">✦</span>
-            </div>
             <div>
-              <p className="font-serif text-white text-sm font-bold leading-snug">나의 철학자 유형은?</p>
-              <p className="text-white/60 text-[11px]">7가지 질문 · 약 2분</p>
+              <p className="mb-2 text-[10px] tracking-widest text-muted">내 생각의 출발점이 궁금한 날</p>
+              <p className="font-serif text-lg leading-snug">나는 어떤 관점에 가까울까요?</p>
+              <p className="mt-2 text-xs leading-6 text-muted">7가지 질문으로 만나는 철학자 유형</p>
             </div>
           </div>
-          <ArrowRight className="w-4 h-4 text-white/70 flex-shrink-0" />
+          <ArrowRight className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
         </Link>
 
         <Link
@@ -363,21 +322,16 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
           className="group mb-8 flex items-end justify-between border-y border-primary/15 py-5"
         >
           <div>
-            <p className="mb-2 text-[10px] font-medium tracking-[0.2em] text-muted">고민별 철학 가이드</p>
+            <p className="mb-2 text-[10px] font-medium tracking-[0.2em] text-muted">조용히 읽고 싶은 날 · 고민별 철학 가이드</p>
             <p className="font-serif text-xl leading-snug text-foreground">마음의 문제를<br />철학의 질문으로</p>
           </div>
           <ArrowRight className="mb-1 h-4 w-4 text-muted transition-transform group-hover:translate-x-1" strokeWidth={1.4} />
         </Link>
 
-        <Link href="/practice/control" prefetch={false} className="mb-8 block rounded-xl border border-primary/20 p-5">
-          <p className="text-xs text-muted">로그인 없이 · 3분 철학 연습</p>
-          <p className="mt-2 font-serif text-lg">통제할 수 있는 것 나누기 →</p>
-        </Link>
-
         {/* Philosophers Section */}
         <div ref={philosophersRef} className="w-full mb-5">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-[10px] font-medium tracking-[0.2em] uppercase text-muted">철학자 탐색</h2>
+            <h2 className="font-serif text-xl text-[#29372f]">내 질문과 만날 철학자들</h2>
           </div>
           <div className="flex gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden">
             {categories.map((category, index) => (

@@ -39,6 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     {
       url: siteUrl,
+      lastModified: '2026-09-26',
       changeFrequency: 'daily',
       priority: 1.0,
     },
@@ -54,6 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     ...philosopherUrls,
     { url: `${siteUrl}/practice/control`, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${siteUrl}/practice/friendship`, lastModified: '2026-09-26', images: [`${siteUrl}/explorer/aristotle-scene-v2.webp`], changeFrequency: 'monthly', priority: 0.8 },
     ...typeResultUrls,
     ...wisdomUrls,
     ...EXPLORER_SLUGS.map((slug) => ({
