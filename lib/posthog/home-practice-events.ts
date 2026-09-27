@@ -1,6 +1,6 @@
 import posthog from 'posthog-js'
 
-const events = ['home_practice_scene_changed', 'home_practice_opened', 'home_reflection_resume_clicked'] as const
+const events = ['home_practice_scene_changed', 'home_practice_opened', 'home_reflection_resume_clicked', 'home_checkin_clicked'] as const
 export function trackHomePractice(event: typeof events[number], destination?: 'friendship' | 'control') {
   if (process.env.NODE_ENV !== 'production' || !process.env.NEXT_PUBLIC_POSTHOG_KEY || !events.includes(event)) return
   try {

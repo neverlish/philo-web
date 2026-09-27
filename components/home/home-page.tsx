@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, ArrowRight } from "lucide-react";
 import { Header } from "@/components/navigation/header";
@@ -20,6 +19,7 @@ import { getTodayKST, getRecentDaysKST } from "@/lib/date";
 import { calculateStreak } from "@/lib/streak";
 import { trackExplorer } from "@/lib/posthog/explorer-events";
 import { EverydayPhilosophy } from "@/components/home/everyday-philosophy";
+import { trackHomePractice } from "@/lib/posthog/home-practice-events";
 
 type ReflectionTarget = {
   id: string
@@ -54,7 +54,6 @@ interface HomePageProps {
 
 export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps) {
   const { user, loading } = useAuth();
-  const router = useRouter();
   const posthog = usePostHog();
   const { show: showOnboarding, done: doneOnboarding } = useOnboarding();
   const [checking, setChecking] = useState(true);
@@ -94,37 +93,36 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
   useEffect(() => {
     if (loading) return;
     if (!user) {
+      setTodayPrescription(null);
       setChecking(false);
       return;
     }
 
+    let cancelled = false;
+    const userId = user.id;
+    setTodayPrescription(null);
+    setChecking(true);
     const today = getTodayKST();
-    supabase
-      .from("check_ins")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("check_in_date", today)
-      .maybeSingle()
-      .then(({ data: checkIn }) => {
-        if (!checkIn) {
-          router.push("/opening");
-          return;
-        }
-        // 처방 fetch 완료 후 checking 해제 — 그 전에 렌더하면 빈 버튼이 순간 표시됨
-        supabase
+    async function loadTodayPrescription() {
+      try {
+        const { data, error } = await supabase
           .from("ai_prescriptions")
           .select("id, title, philosopher_name, quote_text")
-          .eq("user_id", user.id)
-          .gte("created_at", `${today}T00:00:00`)
+          .eq("user_id", userId)
+          .gte("created_at", `${today}T00:00:00+09:00`)
           .order("created_at", { ascending: false })
           .limit(1)
-          .maybeSingle()
-          .then(({ data }) => {
-            if (data) setTodayPrescription(data as TodayPrescription);
-            setChecking(false);
-          });
-      });
-  }, [user, loading, router]);
+          .maybeSingle();
+        if (!cancelled && !error) setTodayPrescription(data as TodayPrescription | null);
+      } catch {
+        // 기록 조회 실패가 홈 탐색을 막지 않도록 한다.
+      } finally {
+        if (!cancelled) setChecking(false);
+      }
+    }
+    void loadTodayPrescription();
+    return () => { cancelled = true; };
+  }, [user, loading]);
 
   useEffect(() => {
     if (checking || homeTrackedRef.current) return
@@ -172,13 +170,19 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
     <>
     {showOnboarding && <OnboardingSlides onDone={doneOnboarding} />}
     <div
-      className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl"
+      className="min-h-dvh flex flex-col max-w-md mx-auto bg-background shadow-2xl"
       aria-hidden={showOnboarding || undefined}
     >
       <Header title="지혜의 다리" />
 
       <main className="flex-1 flex flex-col px-6 pt-2 pb-32 overflow-y-auto">
         <EverydayPhilosophy />
+        <div className="px-6 py-3 text-center">
+          <Link href="/opening" onClick={() => trackHomePractice('home_checkin_clicked')} className="text-sm text-primary underline underline-offset-4">
+            내 마음을 이야기하고 싶다면
+          </Link>
+          <p className="mt-1 text-xs text-muted">고민 없이 철학을 둘러봐도 괜찮아요.</p>
+        </div>
         {/* Streak mini widget — D */}
         {user && streak > 0 && (
           <div className="flex items-center gap-2.5 py-3 mb-1">

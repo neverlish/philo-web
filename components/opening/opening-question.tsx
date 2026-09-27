@@ -2,43 +2,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Leaf, Menu, UserCircle, Mic } from "lucide-react";
-import { useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase/client";
+import { Leaf, Mic } from "lucide-react";
 import { usePostHog } from 'posthog-js/react';
-import { getTodayKST } from "@/lib/date";
 
 export function OpeningQuestion() {
   const router = useRouter();
-  const { user } = useAuth();
   const posthog = usePostHog();
 
-  const skip = async () => {
+  const skip = () => {
     posthog?.capture('checkin_skipped', { step: 'opening' });
-    if (user) {
-      const today = getTodayKST();
-      await supabase
-        .from("check_ins")
-        .upsert(
-          { user_id: user.id, check_in_date: today, checked_in_at: new Date().toISOString() },
-          { onConflict: "user_id,check_in_date", ignoreDuplicates: true }
-        );
-    }
     router.push("/");
   };
 
-  useEffect(() => {
-    // Auto transition after 3 seconds
-    const timer = setTimeout(() => {
-      router.push("/opening/input");
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [router]);
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-between p-6 relative overflow-hidden bg-background">
+    <div className="min-h-dvh flex flex-col items-center justify-between p-6 relative overflow-hidden bg-background">
       {/* Background gradient */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div className="absolute -top-[20%] -left-[10%] w-[140%] h-[140%] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
@@ -46,9 +23,8 @@ export function OpeningQuestion() {
 
       {/* Header */}
       <header className="w-full flex justify-between items-center z-10 opacity-60">
-        <Menu className="w-5 h-5 text-foreground cursor-pointer" />
-        <div className="w-8 h-1 bg-muted rounded-full" />
-        <UserCircle className="w-5 h-5 text-foreground cursor-pointer" />
+        <button type="button" onClick={skip} className="text-sm underline underline-offset-4">홈으로</button>
+        <span className="text-xs">선택하는 만큼만 이야기해요</span>
       </header>
 
       {/* Main content */}
@@ -63,20 +39,25 @@ export function OpeningQuestion() {
           무엇입니까?
         </h1>
 
-        <div
-          className="relative flex items-center justify-center mb-10 cursor-pointer animate-pulse"
-          onClick={() => router.push("/opening/input")}
+        <button
+          type="button"
+          aria-label="고민 이야기하기"
+          className="relative flex items-center justify-center mb-10 cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+          onClick={() => {
+            posthog?.capture('checkin_input_clicked', { step: 'opening' });
+            router.push("/opening/input");
+          }}
         >
           <div className="relative w-24 h-24 bg-gradient-to-br from-stone-100 to-stone-200 dark:from-stone-800 dark:to-stone-900 rounded-full shadow-lg flex items-center justify-center border border-border">
             <Mic className="w-10 h-10 text-primary" strokeWidth={1.5} />
           </div>
-        </div>
+        </button>
 
         <p className="text-sm font-medium text-primary mb-2">눌러서 이야기하기</p>
 
         <p className="mt-4 text-sm text-muted text-center leading-relaxed max-w-xs mx-auto">
           잠시 멈추어 내면을 들여다보세요.<br />
-          정직한 대답이 명료함의 시작입니다.
+          답하지 않고 둘러봐도 괜찮아요.
         </p>
       </main>
 

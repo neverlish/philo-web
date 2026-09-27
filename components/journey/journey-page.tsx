@@ -8,6 +8,7 @@ import { Header } from "@/components/navigation/header"
 import { BottomNav } from "@/components/navigation/bottom-nav"
 import { PhilosopherMapTab } from "@/components/journey/philosopher-map-tab"
 import { CollectiveFeed } from "@/components/collective/collective-feed"
+import { ReflectionProgress } from "@/components/journey/reflection-progress"
 import type { JourneyItem, PhilosopherItem } from "@/app/journey/page"
 import { groupByMonth, getUniquePhilosophers, getThemeInsights } from "@/lib/journey-utils"
 
@@ -26,7 +27,7 @@ export function JourneyPage({ items, philosophers, encounteredNames }: JourneyPa
   const uniquePhilosophers = getUniquePhilosophers(items)
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto bg-background shadow-2xl">
+    <div className="min-h-dvh flex flex-col max-w-md mx-auto bg-background shadow-2xl">
       <Header title="탐색" />
 
       {/* Tabs */}
@@ -75,7 +76,7 @@ export function JourneyPage({ items, philosophers, encounteredNames }: JourneyPa
             </div>
           ) : (
             <>
-              {/* 성장 요약 */}
+              {/* 기록 요약 */}
               <div className="flex items-center border-b border-border px-6 py-4">
                 <div className="flex-1 text-center">
                   <p className="text-2xl font-bold text-foreground">{items.length}</p>
@@ -88,12 +89,13 @@ export function JourneyPage({ items, philosophers, encounteredNames }: JourneyPa
                 </div>
                 <div className="w-px h-8 bg-border" />
                 <div className="flex-1 text-center">
-                  <p className="text-2xl font-bold text-primary">
-                    {items.length > 0 ? Math.round((reflectionCount / items.length) * 100) : 0}%
-                  </p>
-                  <p className="text-[11px] text-muted mt-0.5">성장률</p>
+                  <ReflectionProgress total={items.length} reflected={reflectionCount} />
                 </div>
               </div>
+
+              <p className="px-6 py-3 text-xs text-muted leading-relaxed">
+                다짐 {items.length}개 중 회고 {reflectionCount}개를 작성했어요. 회고 작성률은 생각의 깊이나 성장을 평가하는 점수가 아니에요.
+              </p>
 
               {/* 테마 인사이트 */}
               {themeInsights.length > 0 && (

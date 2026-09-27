@@ -11,6 +11,8 @@ it('captures navigation with only a public destination and omits selected scenes
   expect(sdk.capture).toHaveBeenLastCalledWith('home_practice_scene_changed', { source: 'home', analytics_schema_version: 1 })
   trackHomePractice('home_reflection_resume_clicked')
   expect(sdk.capture).toHaveBeenLastCalledWith('home_reflection_resume_clicked', { source: 'home', analytics_schema_version: 1 })
+  trackHomePractice('home_checkin_clicked')
+  expect(sdk.capture).toHaveBeenLastCalledWith('home_checkin_clicked', { source: 'home', analytics_schema_version: 1 })
 })
 it('ignores opt-out, absent configuration and development', () => {
   sdk.has_opted_out_capturing.mockReturnValue(true); trackHomePractice('home_practice_opened', 'control')
