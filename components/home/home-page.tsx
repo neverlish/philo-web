@@ -20,6 +20,7 @@ import { calculateStreak } from "@/lib/streak";
 import { trackExplorer } from "@/lib/posthog/explorer-events";
 import { EverydayPhilosophy } from "@/components/home/everyday-philosophy";
 import { trackHomePractice } from "@/lib/posthog/home-practice-events";
+import { AI_INTERPRETATION_LABEL } from '@/lib/prescription-provenance';
 
 type ReflectionTarget = {
   id: string
@@ -226,15 +227,15 @@ export function HomePage({ initialPhilosophers, initialHasMore }: HomePageProps)
                   >
                     <a href={`/prescription/ai/${todayPrescription.id}`} className="block group">
                       <span className="inline-block mb-3 text-[10px] font-medium tracking-[0.2em] uppercase text-muted">
-                        오늘의 처방
+                        {AI_INTERPRETATION_LABEL}
                       </span>
                       <h2 className="text-2xl font-serif font-normal leading-tight text-foreground mb-3 break-keep group-hover:text-primary transition-colors pr-6">
                         {todayPrescription.title}
                       </h2>
                       <p className="text-muted text-sm leading-relaxed mb-2 line-clamp-2">
-                        &ldquo;{todayPrescription.quote_text}&rdquo;
+                        {todayPrescription.quote_text}
                       </p>
-                      <p className="text-xs text-primary mb-6">— {todayPrescription.philosopher_name}</p>
+                      <p className="text-xs text-primary mb-6">참고한 철학자 · {todayPrescription.philosopher_name}</p>
                       <div className="h-px w-full bg-primary/20" />
                     </a>
                     <button

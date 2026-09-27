@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { AI_INTERPRETATION_LABEL, AI_INTERPRETATION_NOTICE } from '@/lib/prescription-provenance'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { Prescription } from '@/types'
 
@@ -49,6 +50,36 @@ describe('PrescriptionDetail', () => {
     render(<PrescriptionDetail prescription={MOCK_PRESCRIPTION} />)
     expect(screen.getByText('내면의 요새를 지키는 법')).toBeInTheDocument()
     expect(screen.getByText('스토아 철학의 지혜')).toBeInTheDocument()
+  })
+
+  it('labels legacy AI content even when its philosopher matches the catalogue and shares that notice', async () => {
+    const generated = { ...MOCK_PRESCRIPTION, quote: { ...MOCK_PRESCRIPTION.quote, id: 'ai-generated' } }
+    render(<PrescriptionDetail prescription={generated} />)
+    expect(screen.getByText(AI_INTERPRETATION_LABEL)).toBeVisible()
+    expect(screen.getByText(AI_INTERPRETATION_NOTICE)).toBeVisible()
+    expect(screen.getByText(generated.quote.text).tagName).toBe('P')
+    expect(screen.getByText('참고한 철학자')).toBeVisible()
+    fireEvent.click(screen.getByText('공유하기'))
+    fireEvent.click(screen.getByText('앱으로 공유'))
+    await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining(AI_INTERPRETATION_NOTICE)))
+  })
+
+  it('keeps non-generated quote presentation distinct', () => {
+    render(<PrescriptionDetail prescription={MOCK_PRESCRIPTION} />)
+    expect(screen.getByText(MOCK_PRESCRIPTION.quote.text).tagName).toBe('BLOCKQUOTE')
+    expect(screen.queryByText(AI_INTERPRETATION_LABEL)).not.toBeInTheDocument()
+  })
+
+  it('keeps the AI notice in long-press sharing', () => {
+    vi.useFakeTimers()
+    try {
+      const generated = { ...MOCK_PRESCRIPTION, quote: { ...MOCK_PRESCRIPTION.quote, id: 'ai-generated' } }
+      render(<PrescriptionDetail prescription={generated} />)
+      fireEvent.touchStart(screen.getByText(generated.quote.text))
+      act(() => { vi.advanceTimersByTime(600) })
+      fireEvent.touchEnd(screen.getByText(generated.quote.text))
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining(AI_INTERPRETATION_NOTICE))
+    } finally { vi.useRealTimers() }
   })
 
   it('renders quote text and philosopher name', () => {

@@ -11,6 +11,7 @@ import { ShareDropup } from "./share-dropup"
 import { SharePromptBanner } from "./share-prompt-banner"
 import { IntentionSection } from "./intention-section"
 import { getPhilosopherPath } from "@/lib/philosopher-slugs"
+import { AI_INTERPRETATION_LABEL, AI_INTERPRETATION_NOTICE, formatPrescriptionShare } from '@/lib/prescription-provenance'
 
 interface PrescriptionDetailProps {
   prescription: Prescription;
@@ -30,6 +31,7 @@ export function PrescriptionDetail({
   intentionSuggestions = [],
 }: PrescriptionDetailProps) {
   const { quote, philosopher, title, subtitle } = prescription;
+  const isGenerated = quote.id === 'ai-generated';
   const philosopherSymbol = getPhilosopherSymbol(philosopher.name);
   const [intentionFocusTrigger, setIntentionFocusTrigger] = useState(0);
   const intentionRef = useRef<HTMLDivElement>(null);
@@ -51,14 +53,14 @@ export function PrescriptionDetail({
     const shareUrl = prescriptionId
       ? `${window.location.origin}/share/${prescriptionId}?utm_source=longpress`
       : window.location.href
-    const text = `"${quote.text}"\n— ${philosopher.name} (${philosopher.school})\n\n${shareUrl}`
+    const text = formatPrescriptionShare({ quote: quote.text, philosopherName: philosopher.name, philosopherSchool: philosopher.school, url: shareUrl, isGenerated })
     if (navigator.share && navigator.canShare?.({ title: "오늘의 처방", text, url: shareUrl })) {
       navigator.share({ title: "오늘의 처방", text, url: shareUrl }).catch(() => {})
       posthog?.capture("prescription_shared", { share_method: "longpress", prescription_id: prescriptionId })
     } else {
       navigator.clipboard.writeText(text).catch(() => {})
     }
-  }, [prescriptionId, quote.text, philosopher.name, philosopher.school, posthog])
+  }, [prescriptionId, quote.text, philosopher.name, philosopher.school, posthog, isGenerated])
 
   const handleTouchStart = useCallback(() => {
     longPressTimer.current = setTimeout(handleQuoteLongPress, 600)
@@ -117,13 +119,17 @@ export function PrescriptionDetail({
           </span>
           <div className="relative z-10">
             <span className="inline-block border border-foreground rounded-full px-4 py-1 text-xs mb-6 font-serif">
-              오늘의 처방
+              {isGenerated ? AI_INTERPRETATION_LABEL : '오늘의 처방'}
             </span>
-            <blockquote className="font-serif text-xl leading-relaxed mb-8 text-foreground">
-              {quote.text}
-            </blockquote>
+            {isGenerated ? (
+              <>
+                <p className="font-serif text-xl leading-relaxed mb-4 text-foreground">{quote.text}</p>
+                <p className="text-xs text-foreground/70 leading-relaxed mb-6">{AI_INTERPRETATION_NOTICE}</p>
+              </>
+            ) : <blockquote className="font-serif text-xl leading-relaxed mb-8 text-foreground">{quote.text}</blockquote>}
             <div className="flex items-center justify-between">
               <div>
+                {isGenerated && <p className="text-xs text-muted mb-1">참고한 철학자</p>}
                 {philosopher.id !== 'ai-generated' ? (
                   <Link href={getPhilosopherPath(philosopher.id, philosopher.nameEn)} className="font-bold text-base font-serif text-foreground hover:text-primary transition-colors underline underline-offset-2">
                     {philosopher.name}
@@ -187,6 +193,7 @@ export function PrescriptionDetail({
         <footer className="flex gap-3 mb-8">
           <div className="flex-1">
             <ShareDropup
+              isGenerated={isGenerated}
               prescriptionId={prescriptionId}
               concern={concern}
               quote={quote.text}
@@ -216,6 +223,7 @@ export function PrescriptionDetail({
       </main>
       {prescriptionId && (
         <SharePromptBanner
+          isGenerated={isGenerated}
           prescriptionId={prescriptionId}
           quote={quote.text}
           philosopherName={philosopher.name}

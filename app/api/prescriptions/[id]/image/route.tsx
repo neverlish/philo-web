@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import { AI_INTERPRETATION_LABEL } from '@/lib/prescription-provenance'
 import { createClient } from '@/lib/supabase/server-auth'
 import { NextRequest } from 'next/server'
 import { readFileSync } from 'fs'
@@ -67,7 +68,7 @@ export async function GET(
             }}
           />
           <span style={{ fontSize: '22px', color: '#ec5b13', letterSpacing: '0.08em' }}>
-            오늘의처방
+            {AI_INTERPRETATION_LABEL}
           </span>
         </div>
 
@@ -91,7 +92,7 @@ export async function GET(
               marginBottom: '8px',
             }}
           >
-            "
+            ·
           </div>
           <p
             style={{
@@ -120,7 +121,7 @@ export async function GET(
             }}
           />
           <p style={{ fontSize: '28px', fontWeight: 700, color: '#2C2420', margin: 0 }}>
-            {data.philosopher_name}
+            참고한 철학자 · {data.philosopher_name}
           </p>
           <p style={{ fontSize: '20px', color: '#6B5F56', margin: 0, letterSpacing: '0.04em' }}>
             {data.philosopher_school} · {data.philosopher_era}

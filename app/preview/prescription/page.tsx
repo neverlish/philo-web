@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Clock, Sparkles, Flame, Bell } from "lucide-react";
 import Link from "next/link";
+import { AI_INTERPRETATION_LABEL, AI_INTERPRETATION_NOTICE } from '@/lib/prescription-provenance'
 import { LoginModal } from "@/components/auth/LoginModal";
 import { PhilosophyDialogue } from '@/components/practice/philosophy-dialogue';
 
@@ -82,12 +83,14 @@ export default function PreviewPrescriptionPage() {
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-background rounded-full opacity-50" />
           <div className="relative z-10">
             <span className="inline-block border border-foreground rounded-full px-4 py-1 text-xs mb-6 font-serif">
-              오늘의 처방
+              {AI_INTERPRETATION_LABEL}
             </span>
-            <blockquote className="font-serif text-xl leading-relaxed mb-8 text-foreground">
+            <p className="font-serif text-xl leading-relaxed mb-4 text-foreground">
               {quote.text}
-            </blockquote>
+            </p>
+            <p className="text-xs text-foreground/70 leading-relaxed mb-6">{AI_INTERPRETATION_NOTICE}</p>
             <div>
+              <p className="text-xs text-muted mb-1">참고한 철학자</p>
               <p className="font-bold text-base font-serif text-foreground">{philosopher.name}</p>
               <p className="text-xs text-muted uppercase tracking-wider mt-1">
                 {philosopher.school}, &lt;{philosopher.era}&gt;

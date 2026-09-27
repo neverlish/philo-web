@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { AI_INTERPRETATION_INSTRUCTION } from '@/lib/prescription-provenance'
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { buildDialogueSystem, parseDialogue } from '@/lib/philosophy-dialogue'
@@ -27,6 +28,7 @@ const SYSTEM_PROMPT = `당신은 사용자의 고민을 듣고 철학적 처방�
 사용자의 고민에 가장 적합한 철학자와 그 사상을 선택하여 처방을 만들어주세요.
 
 ${PHILOSOPHER_CONTEXT}
+${AI_INTERPRETATION_INSTRUCTION}
 
 반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트는 포함하지 마세요:
 {
@@ -36,8 +38,8 @@ ${PHILOSOPHER_CONTEXT}
     "era": "시대 (예: 고대 121-180)"
   },
   "quote": {
-    "text": "해당 철학자의 실제 명언 또는 핵심 사상을 담은 문장 (한국어)",
-    "meaning": "이 명언이 오늘 당신의 고민에 어떻게 닿는지 따뜻하고 구체적으로 (150-200자)",
+    "text": "철학자의 사상을 참고해 AI가 구성한 해설 (한국어, 직접 인용 아님)",
+    "meaning": "이 관점이 오늘 당신의 고민에 어떻게 닿는지 따뜻하고 구체적으로 (150-200자)",
     "application": "오늘 바로 실천할 수 있는 구체적이고 작은 행동 하나 (50-100자)"
   },
   "title": "처방 제목 - 고민의 핵심을 짚는 한 문장 (20자 이내)",

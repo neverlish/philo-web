@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ChevronRight, CheckCircle2, PenLine } from "lucide-react";
 import Link from "next/link";
 import { getPhilosopherSymbol } from "@/lib/philosopher-symbols";
+import { AI_INTERPRETATION_LABEL } from '@/lib/prescription-provenance';
 
 export interface SavedPrescription {
   id: string;
@@ -57,12 +58,13 @@ export function SavedCard({ prescription, index }: SavedCardProps) {
               <h3 className="text-lg font-serif font-normal text-foreground mb-1">
                 {prescription.title}
               </h3>
-              <p className="text-xs text-muted">{prescription.philosopher}</p>
+              <p className="text-xs text-muted">참고한 철학자 · <span>{prescription.philosopher}</span></p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted group-hover:text-primary transition-colors flex-shrink-0 mt-1" />
           </div>
 
           {/* Excerpt */}
+          <p className="text-xs text-primary mb-2">{AI_INTERPRETATION_LABEL}</p>
           <p className={`text-sm text-muted leading-relaxed line-clamp-2 break-keep ${prescription.userIntention ? 'mb-2' : 'mb-4'}`}>
             {prescription.excerpt}
           </p>

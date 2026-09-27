@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Share2, Link2, ChevronUp, ImageDown } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
+import { formatPrescriptionShare } from '@/lib/prescription-provenance';
 
 interface ShareDropupProps {
+  isGenerated?: boolean;
   prescriptionId?: string;
   concern?: string | null;
   quote: string;
@@ -13,6 +15,7 @@ interface ShareDropupProps {
 }
 
 export function ShareDropup({
+  isGenerated = false,
   prescriptionId,
   concern,
   quote,
@@ -53,7 +56,7 @@ export function ShareDropup({
       if (navigator.share && navigator.canShare) {
         const file = new File([blob], `오늘의처방_${philosopherName}.png`, { type: 'image/png' });
         if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: `${philosopherName}의 처방` });
+          await navigator.share({ files: [file], title: isGenerated ? 'AI 철학 해설' : `${philosopherName}의 처방` });
           posthog?.capture('prescription_image_shared', {
             share_method: 'native',
             prescription_id: prescriptionId,
@@ -87,9 +90,8 @@ export function ShareDropup({
     const shareUrl = prescriptionId
       ? `${window.location.origin}/share/${prescriptionId}?utm_source=share&utm_medium=prescription&utm_campaign=wom`
       : window.location.origin;
-    const concernLine = concern ? `"${concern}"\n\n` : "";
-    const text = `${concernLine}"${quote}"\n— ${philosopherName} (${philosopherSchool})\n\n${shareUrl}`;
-    const shareData = { title: `철학자가 처방하는 내 고민`, text, url: shareUrl };
+    const text = formatPrescriptionShare({ quote, philosopherName, philosopherSchool, url: shareUrl, isGenerated, concern });
+    const shareData = { title: isGenerated ? 'AI 철학 해설' : '오늘의 처방', text, url: shareUrl };
 
     try {
       let shareMethod: "native" | "clipboard";

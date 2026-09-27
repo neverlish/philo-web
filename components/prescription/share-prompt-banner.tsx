@@ -4,8 +4,10 @@ import { useState, useEffect } from "react"
 import { Share2, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { usePostHog } from "posthog-js/react"
+import { formatPrescriptionShare } from '@/lib/prescription-provenance'
 
 interface SharePromptBannerProps {
+  isGenerated?: boolean
   prescriptionId: string
   quote: string
   philosopherName: string
@@ -14,6 +16,7 @@ interface SharePromptBannerProps {
 }
 
 export function SharePromptBanner({
+  isGenerated = false,
   prescriptionId,
   quote,
   philosopherName,
@@ -32,7 +35,7 @@ export function SharePromptBanner({
       posthog?.capture("share_prompt_shown", { prescription_id: prescriptionId })
     }, 2000)
     return () => clearTimeout(timer)
-  }, [prescriptionId])
+  }, [prescriptionId, posthog])
 
   const dismiss = () => {
     sessionStorage.setItem(`share_nudge_${prescriptionId}`, "dismissed")
@@ -43,8 +46,7 @@ export function SharePromptBanner({
   const handleShare = async () => {
     sessionStorage.setItem(`share_nudge_${prescriptionId}`, "shared")
     const shareUrl = `${window.location.origin}/share/${prescriptionId}?utm_source=share_nudge`
-    const concernLine = concern ? `"${concern}"\n\n` : ""
-    const text = `${concernLine}"${quote}"\n— ${philosopherName} (${philosopherSchool})\n\n${shareUrl}`
+    const text = formatPrescriptionShare({ quote, philosopherName, philosopherSchool, url: shareUrl, isGenerated, concern })
 
     try {
       if (navigator.share && navigator.canShare?.({ title: "오늘의 처방", text, url: shareUrl })) {

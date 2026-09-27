@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { AI_INTERPRETATION_LABEL, AI_INTERPRETATION_NOTICE } from '@/lib/prescription-provenance'
 import { Clock } from 'lucide-react'
 import type { Metadata } from 'next'
 import type { Database } from '@/types/supabase'
@@ -26,18 +27,18 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${data.philosopher_name}의 처방 — ${data.title}`,
-    description: data.quote_text,
+    title: `AI 철학 해설 — ${data.title}`,
+    description: `${AI_INTERPRETATION_LABEL} · ${data.quote_text}`,
     robots: { index: false, follow: false },
     openGraph: {
-      title: `${data.philosopher_name}의 처방`,
-      description: data.quote_text,
+      title: 'AI 철학 해설',
+      description: `${AI_INTERPRETATION_LABEL} · ${data.quote_text}`,
       type: 'article',
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${data.philosopher_name}의 처방`,
-      description: data.quote_text,
+      title: 'AI 철학 해설',
+      description: `${AI_INTERPRETATION_LABEL} · ${data.quote_text}`,
     },
   }
 }
@@ -89,12 +90,14 @@ export default async function SharePage({
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-background rounded-full opacity-50" />
           <div className="relative z-10">
             <span className="inline-block border border-foreground rounded-full px-4 py-1 text-xs mb-6 font-serif">
-              오늘의 처방
+              {AI_INTERPRETATION_LABEL}
             </span>
-            <blockquote className="font-serif text-xl leading-relaxed mb-8 text-foreground">
+            <p className="font-serif text-xl leading-relaxed mb-4 text-foreground">
               {row.quote_text}
-            </blockquote>
+            </p>
+            <p className="text-xs text-foreground/70 leading-relaxed mb-6">{AI_INTERPRETATION_NOTICE}</p>
             <div>
+              <p className="text-xs text-muted mb-1">참고한 철학자</p>
               <p className="font-bold text-base font-serif text-foreground">{row.philosopher_name}</p>
               <p className="text-xs text-muted uppercase tracking-wider mt-1">
                 {row.philosopher_school}, &lt;{row.philosopher_era}&gt;

@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import { AI_INTERPRETATION_LABEL } from '@/lib/prescription-provenance'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 import { readFileSync } from 'fs'
@@ -90,7 +91,7 @@ export default async function ShareOgImage({
             display: 'flex',
           }}
         >
-          &ldquo;
+          ·
         </div>
 
         {/* 좌측 세로 액센트 라인 */}
@@ -125,12 +126,12 @@ export default async function ShareOgImage({
                 border: '1px solid rgba(236, 91, 19, 0.6)',
                 borderRadius: '9999px',
                 padding: '6px 20px',
-                fontSize: '13px',
+                fontSize: '22px',
                 color: '#ec5b13',
                 letterSpacing: '0.15em',
               }}
             >
-              오늘의 처방
+              {AI_INTERPRETATION_LABEL}
             </span>
           </div>
 
@@ -161,7 +162,7 @@ export default async function ShareOgImage({
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <p style={{ fontSize: '20px', color: '#F5F0E8', margin: 0, letterSpacing: '0.06em' }}>
-                — {data.philosopher_name}
+                참고한 철학자 · {data.philosopher_name}
               </p>
               <p style={{ fontSize: '13px', color: '#78716c', margin: 0, letterSpacing: '0.1em' }}>
                 {data.philosopher_school} · {data.philosopher_era}
